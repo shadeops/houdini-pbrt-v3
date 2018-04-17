@@ -1,0 +1,28 @@
+{
+	"typeDefinitions":[
+		{
+			"type":"struct",
+			"typeName":"PBRTSpectrum",
+			"typeLabel":"PBRTSpectrum",
+			"connectorColor":{
+				"type":"RGB",
+				"data":[0.0588314048945903778,0.0874694138765335083,0.194999992847442627
+				]
+			},
+			"variables":[
+			]
+		},
+		{
+			"type":"struct",
+			"typeName":"PBRTMaterial",
+			"typeLabel":"PBRTMaterial",
+			"connectorColor":{
+				"type":"RGB",
+				"data":[0.449999988079071045,0.89999997615814209,0
+				]
+			},
+			"variables":[
+			]
+		}
+	]
+}
