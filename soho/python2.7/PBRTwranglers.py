@@ -1,12 +1,37 @@
 import math
 
+import hou
 import soho
 
 import PBRTapi as api
-from PBRTplugins import PBRTParam, BasePlugin
+from PBRTplugins import PBRTParam, ParamSet, BasePlugin
 
 __all__ = ['wrangle_film', 'wrangle_sampler', 'wrangle_accelerator',
-           'wrangle_integrator', 'wrangle_filter', 'wrangle_camera']
+           'wrangle_integrator', 'wrangle_filter', 'wrangle_camera',
+           'wrangle_light']
+
+def _apiclosure(api_call, *args, **kwargs):
+    def api_func():
+        return api_call(*args, **kwargs)
+    return api_func
+
+def xform_to_api_srt(xform, scale=True, rotate=True, trans=True):
+    xform = hou.Matrix4(xform)
+    srt = xform.explode()
+    if trans:
+        api.Translate(*srt['translate'])
+    if rotate:
+        # TODO, be wary of -180 to 180 flips
+        rot = srt['rotate']
+        if rot.z():
+            api.Rotate(rot[2],0,0,1)
+        if rot.y():
+            api.Rotate(rot[1],0,1,0)
+        if rot.x():
+            api.Rotate(rot[0],1,0,0)
+    if scale:
+        api.Scale(*srt['scale'])
+    return
 
 class SohoPBRT(soho.SohoParm):
     def to_pbrt(self, pbrt_type=None):
@@ -20,11 +45,16 @@ class SohoPBRT(soho.SohoParm):
         pbrt_name = self.Key
         return PBRTParam(pbrt_type, pbrt_name, self.Value)
 
-def get_transform(obj, now):
+def get_transform(obj, now, invert=False, flipz=False):
     xform = []
     if not obj.evalFloat('space:world', now, xform):
         return None
-    return xform
+    xform = hou.Matrix4(xform)
+    if invert:
+        xform = xform.inverted()
+    if flipz:
+        xform = xform*hou.hmath.buildScale(1,1,-1)
+    return list(xform.asTuple())
 
 def get_wrangler(obj, now, style):
     wrangler = obj.getDefaultedString(style, now, [''])[0]
@@ -39,12 +69,12 @@ def get_wrangler(obj, now, style):
         wrangler = None  # Not supported at the current time
 
     if wrangler:
-        wrangler = wrangler(obj, now, RIBsettings.theTarget)
+        wrangler = wrangler(obj, now, 'PBRT')
     else:
         wrangler = None
     return wrangler
 
-def wrangle_rop_plugin(obj, parm_name, now):
+def wrangle_plugin_parm(obj, parm_name, now):
 
     parm_selection = {
         parm_name : SohoPBRT(parm_name, 'string', [''], False)
@@ -60,11 +90,11 @@ def wrangle_rop_plugin(obj, parm_name, now):
 
 def wrangle_film(obj, wrangler, now):
 
-    plug_nfo = wrangle_rop_plugin(obj, 'film_plugin', now)
+    plug_nfo = wrangle_plugin_parm(obj, 'film_plugin', now)
     if plug_nfo is not None:
         return plug_nfo
 
-    paramset = []
+    paramset = ParamSet()
 
     parm_selection = {
         'filename' : SohoPBRT('filename', 'string', ['pbrt.exr'], False),
@@ -73,24 +103,24 @@ def wrangle_film(obj, wrangler, now):
     }
     parms = obj.evaluate(parm_selection, now)
     for parm_name,parm in parms.iteritems():
-        paramset.append(parm.to_pbrt())
+        paramset.add(parm.to_pbrt())
 
     parm_selection = {
         'res' : SohoPBRT('res', 'integer', [1280, 720], False),
     }
     parms = obj.evaluate(parm_selection, now)
-    paramset.append(PBRTParam('integer','xresolution',parms['res'].Value[0]))
-    paramset.append(PBRTParam('integer','yresolution',parms['res'].Value[1]))
+    paramset.add(PBRTParam('integer','xresolution',parms['res'].Value[0]))
+    paramset.add(PBRTParam('integer','yresolution',parms['res'].Value[1]))
 
     crop_region = obj.getCameraCropWindow(wrangler, now)
     if crop_region != [0.0, 1.0, 0.0, 1.0]:
-        paramset.append(PBRTParam('float','cropwindow',crop_region))
+        paramset.add(PBRTParam('float','cropwindow',crop_region))
 
     return ('image', paramset)
 
 def wrangle_filter(obj, wrangler, now):
 
-    plug_nfo = wrangle_rop_plugin(obj, 'filter_plugin', now)
+    plug_nfo = wrangle_plugin_parm(obj, 'filter_plugin', now)
     if plug_nfo is not None:
         return plug_nfo
 
@@ -105,25 +135,25 @@ def wrangle_filter(obj, wrangler, now):
     parms = obj.evaluate(parm_selection, now)
 
     filter_name = parms['filter'].Value[0]
-    paramset = []
+    paramset = ParamSet()
     xwidth = parms['filter_width'].Value[0]
     ywidth = parms['filter_width'].Value[1]
-    paramset.append(PBRTParam('float','xwidth',xwidth))
-    paramset.append(PBRTParam('float','ywidth',ywidth))
+    paramset.add(PBRTParam('float','xwidth',xwidth))
+    paramset.add(PBRTParam('float','ywidth',ywidth))
 
     if filter_name == 'gaussian' and 'alpha' in parms:
-        paramset.append(parms['alpha'].to_pbrt())
+        paramset.add(parms['alpha'].to_pbrt())
     if filter_name == 'mitchell' and 'mitchell_B' in parms:
-        paramset.append(parms['B'].to_pbrt())
+        paramset.add(parms['B'].to_pbrt())
     if filter_name == 'mitchell' and 'mitchell_C' in parms:
-        paramset.append(parms['C'].to_pbrt())
+        paramset.add(parms['C'].to_pbrt())
     if filter_name == 'sinc' and 'tau' in parms:
-        paramset.append(parms['tau'].to_pbrt())
+        paramset.add(parms['tau'].to_pbrt())
     return (filter_name, paramset)
 
 def wrangle_sampler(obj, wrangler, now):
 
-    plug_nfo = wrangle_rop_plugin(obj, 'sampler_plugin', now)
+    plug_nfo = wrangle_plugin_parm(obj, 'sampler_plugin', now)
     if plug_nfo is not None:
         return plug_nfo
 
@@ -137,23 +167,23 @@ def wrangle_sampler(obj, wrangler, now):
     parms = obj.evaluate(parm_selection, now)
 
     sampler_name = parms['sampler'].Value[0]
-    paramset = []
+    paramset = ParamSet()
 
     if sampler_name == 'stratified':
         xsamples = parms['samples'].Value[0]
         ysamples = parms['samples'].Value[1]
-        paramset.append(PBRTParam('integer', 'xsamples', xsamples))
-        paramset.append(PBRTParam('integer', 'ysamples', ysamples))
-        paramset.append(parms['jitter'].to_pbrt())
-        paramset.append(parms['dimensions'].to_pbrt())
+        paramset.add(PBRTParam('integer', 'xsamples', xsamples))
+        paramset.add(PBRTParam('integer', 'ysamples', ysamples))
+        paramset.add(parms['jitter'].to_pbrt())
+        paramset.add(parms['dimensions'].to_pbrt())
     else:
-        paramset.append(parms['pixelsamples'].to_pbrt())
+        paramset.add(parms['pixelsamples'].to_pbrt())
 
     return (sampler_name, paramset)
 
 def wrangle_integrator(obj, wrangler, now):
 
-    plug_nfo = wrangle_rop_plugin(obj, 'integrator_plugin', now)
+    plug_nfo = wrangle_plugin_parm(obj, 'integrator_plugin', now)
     if plug_nfo is not None:
         return plug_nfo
 
@@ -209,17 +239,17 @@ def wrangle_integrator(obj, wrangler, now):
     parms = obj.evaluate(parm_selection, now)
 
     integrator_name = parms['integrator'].Value[0]
-    paramset = []
+    paramset = ParamSet()
     for parm_name in integrator_parms[integrator_name]:
         if parm_name not in parms:
             continue
-        paramset.append(parms[parm_name].to_pbrt())
+        paramset.add(parms[parm_name].to_pbrt())
 
     return (integrator_name, paramset)
 
 def wrangle_accelerator(obj, wrangler, now):
 
-    plug_nfo = wrangle_rop_plugin(obj, 'accelerator_plugin', now)
+    plug_nfo = wrangle_plugin_parm(obj, 'accelerator_plugin', now)
     if plug_nfo is not None:
         return plug_nfo
 
@@ -250,23 +280,37 @@ def wrangle_accelerator(obj, wrangler, now):
         }
     parms = obj.evaluate(parm_selection, now)
 
-    paramset = []
+    paramset = ParamSet()
 
     for parm in parms:
-        paramset.append(parms[parm].to_pbrt())
+        paramset.add(parms[parm].to_pbrt())
 
     return (accelerator_name, paramset)
 
+def output_cam_xform(obj, projection, now):
+    if projection in ('perspective','orthographic','realistic'):
+        xform = get_transform(obj, now, invert=True, flipz=True)
+        api.Transform(xform)
+        #xform_to_api_srt(xform)
+    elif projection in ('environment',):
+        xform = get_transform(obj, now, invert=True, flipz=False)
+        api.Transform(xform)
+        api.Rotate(180,0,1,0)
+    return
+
+def output_xform(obj, now):
+    xform = get_transform(obj, now, invert=False, flipz=False)
+    api.Transform(xform)
+    return
+
 def wrangle_camera(obj, wrangler, now):
 
-    xform = get_transform(obj, now)
-    api.Transform(xform)
-
-    plug_nfo = wrangle_rop_plugin(obj, 'camera_plugin', now)
+    plug_nfo = wrangle_plugin_parm(obj, 'camera_plugin', now)
     if plug_nfo is not None:
+        output_cam_xform(obj, plug_nfo[0], now)
         return plug_nfo
 
-    paramset = []
+    paramset = ParamSet()
 
     window = obj.getCameraScreenWindow(wrangler, now)
     parm_selection = {
@@ -283,21 +327,187 @@ def wrangle_camera(obj, wrangler, now):
     parms = obj.evaluate(parm_selection, now)
     aspect = parms['aspect'].Value[0]
     aspectfix = aspect * float(parms['res'].Value[0]) / float(parms['res'].Value[1])
-    screen = [ (window[0] - .5) * 2.0,
-               (window[1] - .5) * 2.0,
-               (window[2] - .5) * 2.0 / aspectfix,
-               (window[3] - .5) * 2.0 / aspectfix ]
 
     projection = parms['projection'].Value[0]
 
     if projection == 'perspective':
+        projection_name = 'perspective'
+
         focal = parms['focal'].Value[0]
         aperture = parms['aperture'].Value[0]
         fov = 2.0 * focal / aperture
         fov = 2.0 * math.degrees(math.atan2(1.0, fov))
-        paramset.append(PBRTParam('float', 'fov', [fov]))
-        if screen:
-            paramset.append(PBRTParam('float', 'screenwindow', screen))
+        paramset.add(PBRTParam('float', 'fov', [fov]))
 
-    return (projection, paramset)
+        screen = [ (window[0] - .5) * 2.0,
+                   (window[1] - .5) * 2.0,
+                   (window[2] - .5) * 2.0 / aspectfix,
+                   (window[3] - .5) * 2.0 / aspectfix ]
+        paramset.add(PBRTParam('float', 'screenwindow', screen))
 
+    elif projection == 'ortho':
+        projection_name = 'orthographic'
+
+        width = parms['orthowidth'].Value[0]
+        screen = [ (window[0] - .5) * width,
+                   (window[1] - .5) * width,
+                   (window[2] - .5) * width / aspectfix,
+                   (window[3] - .5) * width / aspectfix ]
+        paramset.add(PBRTParam('float', 'screenwindow', screen))
+
+    elif projection == 'sphere':
+        projection_name = 'environment'
+    else:
+        soho.error('Camera projection setting of %s not supported by PBRT' %
+                    projection)
+
+    output_cam_xform(obj, projection_name, now)
+
+    return (projection_name, paramset)
+
+def _to_light_scale(parms):
+    # TODO
+    # There is a potential issue with using "rgb" types for
+    # both L and scale as noted here -
+    # https://groups.google.com/d/msg/pbrt/EyT6F-zfBkE/M23oQwGNCAAJ
+    # To summarize, when using SpectralSamples instead of RGBSamples, 
+    # using an "rgb" type for both L and scale can result in a double application of the D65
+    # illuminate.
+    #
+    # Since Houdini's scale (intensity) parameter is a float this issue should
+    # be avoidable.
+    #
+    # Proper tests are required however.
+
+    intensity = parms['light_intensity'].Value[0]
+    exposure = parms['light_exposure'].Value[0]
+    scale = intensity*(2.0**exposure)
+    return PBRTParam('rgb', 'scale', [scale,]*3)
+
+def wrangle_light(light, wrangler, now):
+
+    plug_nfo = wrangle_plugin_parm(light, 'light_plugin', now)
+    if plug_nfo is not None:
+        output_xform(light, now)
+        return plug_nfo
+
+    parm_selection = {
+        'light_wrangler' : SohoPBRT('light_wrangler', 'string', [''], False),
+        'light_color' : SohoPBRT('light_color', 'float', [1,1,1], False),
+        'light_intensity' : SohoPBRT('light_intensity', 'float', [1], False),
+        'light_exposure' : SohoPBRT('light_exposure', 'float', [0], False),
+    }
+    parms = light.evaluate(parm_selection, now)
+    light_wrangler = parms['light_wrangler'].Value[0]
+
+    xform = get_transform(light, now)
+
+    paramset = ParamSet()
+    paramset.add(_to_light_scale(parms))
+
+    if light_wrangler == 'HoudiniEnvLight':
+        env_map = []
+        paramset.add(PBRTParam('rgb','L',parms['light_color'].Value))
+        if light.evalString('env_map', now, env_map):
+            paramset.add(PBRTParam('string','mapname', env_map))
+        api.Transform(xform)
+        api.Scale(1,1,-1)
+        api.Rotate(90, 0, 0, 1)
+        api.Rotate(90, 0, 1, 0)
+        api.LightSource('infinite', paramset)
+        return
+    elif light_wrangler != 'HoudiniLight':
+        api.Comment('This light type, %s, is unsupported' % light_wrangler)
+        return
+
+    # We are dealing with a standard HoudiniLight type.
+
+    xform = get_transform(light, now)
+
+    light_type = light.wrangleString(wrangler, 'light_type', now, ['point'])[0]
+
+    if light_type in ('sphere','disk','grid','tube','geometry'):
+        light_name = 'diffuse'
+
+        single_sided = light.wrangleInt(wrangler, 'singlesided', now, [0])[0]
+        visible = light.wrangleInt(wrangler,'light_contribprimary',now,[0])[0]
+        size = light.wrangleFloat(wrangler, 'areasize', now, [1,1])
+        paramset.add(PBRTParam('rgb', 'L', parms['light_color'].Value))
+        paramset.add(PBRTParam('bool', 'twosided', [not single_sided]))
+
+        # This is a mess and needs to be recitified
+        # * the Transform crashes despite not having a scale
+        # * the disk illuminates from the opposite side
+
+        #xform_to_api_srt(xform)# scale=False)
+        api.Transform(xform)
+        api.Rotate(180,0,1,0)
+        api.Translate(0,1.5,0)
+
+        api.AreaLightSource(light_name, paramset)
+
+        api.TransformBegin()
+        # PBRT complains about non-uniform scales
+        #api.Scale(size[0], size[1], size[0])
+        if not visible:
+            api.Material('none')
+            #api.Texture('tex','spectrum','imagemap',[PBRTParam('string','filename','/tmp/test.exr')])
+            #api.Material('matte',[PBRTParam('texture', 'Kd', 'tex')])
+        if light_type == 'sphere':
+            api.Shape('sphere', [PBRTParam('float','radius',0.5)])
+        elif light_type == 'tube':
+            api.Rotate(90,0,1,0)
+            api.Shape('cylinder',[PBRTParam('float','radius',0.075),
+                                  PBRTParam('float','zmin',-0.5),
+                                  PBRTParam('float','zmax',0.5)])
+        elif light_type == 'disk':
+            api.Scale(1,1,-1)
+            api.Shape('disk', [PBRTParam('float', 'radius', [0.5])])
+        api.TransformEnd()
+        return
+
+    cone_enable = light.wrangleInt(wrangler, 'coneenable', now, [0])[0]
+    projmap = light.wrangleString(wrangler, 'projmap', now, [''])[0]
+    areamap = light.wrangleString(wrangler, 'areamap', now, [''])[0]
+
+    api_calls = []
+    api_calls.append(_apiclosure(api.Transform, xform))
+    api_calls.append(_apiclosure(api.Scale, 1,1,-1))
+    api_calls.append(_apiclosure(api.Scale, 1,-1,1))
+
+    if light_type == 'point':
+        paramset.add(PBRTParam('rgb', 'I', parms['light_color'].Value))
+        if areamap:
+            light_name = 'goniometric'
+            paramset.add(PBRTParam('string','mapname',[areamap]))
+            api_calls = []
+            api_calls.append(_apiclosure(api.Transform, xform))
+            api_calls.append(_apiclosure(api.Scale, 1,-1,1))
+            api_calls.append(_apiclosure(api.Rotate, 90, 0,1,0))
+        elif not cone_enable:
+            light_name = 'point'
+        else:
+            conedelta = light.wrangleFloat(wrangler,'conedelta',now,[10])[0]
+            coneangle = light.wrangleFloat(wrangler,'coneangle',now,[45])[0]
+            if projmap:
+                light_name = 'projection'
+                paramset.add(PBRTParam('float','fov',[coneangle]))
+                paramset.add(PBRTParam('string','mapname',[projmap]))
+            else:
+                light_name = 'spot'
+                coneangle *= 0.5
+                coneangle += conedelta
+                paramset.add(PBRTParam('float','coneangle',[coneangle]))
+                paramset.add(PBRTParam('float','conedeltaangle',[conedelta]))
+    elif light_type == 'distant':
+        light_name = light_type
+        paramset.add(PBRTParam('rgb','L',parms['light_color'].Value))
+    else:
+        api.Comment('Light Type, %s, not supported' % light_type)
+        return
+
+    for api_call in api_calls:
+        api_call()
+    api.LightSource(light_name, paramset)
+
+    return

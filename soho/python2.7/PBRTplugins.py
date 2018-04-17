@@ -1,3 +1,5 @@
+import collections
+
 import hou
 import soho
 
@@ -85,6 +87,8 @@ def _hou_parm_to_pbrt_param(parm, parm_name=None):
 
     return PBRTParam(pbrt_type, parm_name, pbrt_value)
 
+
+
 class PBRTParam(object):
 
     pbrt_types = ('texture', 'float', 'point2', 'vector2', 'point3', 'normal3',
@@ -104,16 +108,31 @@ class PBRTParam(object):
         self.name = param_name
         self._value = param_value
 
+    def __str__(self):
+        if len(self.value) > 3:
+            suffix = '... ]'
+        else:
+            suffix = ']'
+        return '%s [ %s %s' % (self.type_name, ' '.join([str(x) for x in self.value[:3]]), suffix)
+
+    def __eq__(self, other):
+        if not isinstance(other, PBRTParam):
+            raise TypeError('Can not compare non PBRTParam type')
+        return (self.type == other.type and self.name == other.name)
+
+    def __ne__(self, other):
+        if not isinstance(other, PBRTParam):
+            raise TypeError('Can not compare non PBRTParam type')
+        return (self.type != other.type or self.name != other.name)   
+
     @property
     def value(self):
         if not isinstance(self._value, (list, tuple)):
             v = [self._value,]
         else:
             v = self._value[:]
-
         if self.type == 'bool':
             v = [ 'true' if (x and x!='false') else 'false' for x in v ]
-
         return v
 
     @property
@@ -122,6 +141,31 @@ class PBRTParam(object):
 
     def as_str(self):
         return soho.arrayToString('"%s" [ ' % self.type_name, self.value, ' ]')
+
+class ParamSet(collections.MutableSet):
+    def __init__(self, iterable=None):
+        self._data = {}
+        if not iterable:
+            return
+        if not isinstance(iterable, PBRTParam):
+            raise TypeError('Must be a PBRTParam type')
+        for i in iterable:
+            self._data[i.name] = i
+    def __contains__(self, item):
+        return item.name in self._data
+    def __iter__(self):
+        for k in sorted(self._data.keys()):
+            yield self._data[k]
+    def __len__(self):
+        return len(self._data)
+    def __getitem__(self,key):
+        return self._data[key]
+    def __str__(self):
+        return ' , '.join(str(x) for x in self)
+    def add(self, param):
+        self._data[param.name] = param
+    def discard(self, param):
+        del self._data[param.name]
 
 class BasePlugin(object):
 
@@ -174,11 +218,12 @@ class BasePlugin(object):
     @property
     def paramset(self):
         params = []
+        params = ParamSet()
         hou_parms = self.get_used_parms()
         for parm_name in sorted(hou_parms):
             parm = hou_parms[parm_name]
             param = _hou_parm_to_pbrt_param(parm, parm_name)
-            params.append(param)
+            params.add(param)
         return params
 
 class TexturePlugin(BasePlugin):

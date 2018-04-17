@@ -23,23 +23,33 @@ def _api_call_with_iter(api_call, args):
 
 # Film "image" "string filename" [ "pbrt.exr" ]
 def _api_plugin_call(api_call, plugin, paramset):
-    #soho.indent()
+    soho.indent()
     print(api_call, ' "', plugin, '"', sep='', end='')
     for param in paramset:
         print(' ', param.as_str(), sep='', end='')
     print()
 
-# Texture "name" "texture|spectrum" "plugin" parmlist
 # MakeNamedMaterial "myplastic" "string type" "plastic" "float roughness"
 def _api_named_plugin_call(api_call, name, plugin, paramset):
     soho.indent()
-    # plugin is a class or just a string
-    # if string then it will need extras like
-    # name, type, plugin
-    # print(api_call, name, plugin,
+    print(api_call, '"{name}" "{plugin}"'.format(name=name,
+                                                 plugin=plugin),
+                    end='')
+    for param in paramset:
+        print(' ', param.as_str(), sep='', end='')
+
+# Texture "name" "texture|spectrum" "plugin" parmlist
+def _api_named_output_plugin_call(api_call, name, output, plugin, paramset):
+    soho.indent()
+    print(api_call, '"{name}" "{output}" "{plugin}"'.format(name=name,
+                                                            output=output,
+                                                            plugin=plugin),
+                    end='')
+    for param in paramset:
+        print(' ', param.as_str(), sep='', end='')
+    print()
 
 def _api_geo_handler(plugin, paramset):
-    soho.indent()
     # Quadratics
     if plugin in ('cone', 'cylinder', 'disk', 'hyperboloid',
                   'paraboloid', 'sphere'):
@@ -144,8 +154,17 @@ def WorldBegin():
 def WorldEnd():
     soho.indent(-1, 'WorldEnd', PBRT_COMMENT)
 
+def Material(plugin, paramset=()):
+    _api_plugin_call('Material', plugin, paramset)
+
+def MakeNamedMaterial(name, plugin, paramset=()):
+    _api_named_plugin_call('MakeNamedMaterial', name, plugin, paramset)
+
 def NamedMaterial(name):
     _api_call_with_args('NamedMaterial', name)
+
+def Texture(name, output, plugin, paramset=()):
+    _api_named_output_plugin_call('Texture', name, output, plugin, paramset)
 
 def LightSource(plugin, paramset=()):
     _api_plugin_call('LightSource', plugin, paramset)

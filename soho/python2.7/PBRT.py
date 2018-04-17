@@ -10,43 +10,12 @@ from sohog import SohoGeometry
 
 import PBRTapi
 reload(PBRTapi)
-
 import PBRTplugins
 reload(PBRTplugins)
-
 import PBRTwranglers
 reload(PBRTwranglers)
-
-
-import PBRTapi as api
-from PBRTplugins import PBRTParam
-from PBRTwranglers import *
-
-
-def geo_ids(geo):
-    primcount = geo.globalValue('geo:primcount')[0]
-    geoid_attrib = geo.attribute('geo:prim', 'intrinsic:geometryid')
-    for prim in xrange(primcount):
-        geoid = geo.value(geoid_attrib, prim)[0]
-        yield str(geoid)
-
-#for obj in soho.objectList('objlist:instance'):
-#    soppath = []
-#    obj.evalString('object:soppath', now, soppath)
-#    print soppath
-#    print obj.getName()
-#    geo = SohoGeometry(soppath[0], now)
-#    if geo.Handle < 0:
-#        continue
-#    splits = geo.partition('geo:partattrib', 'geo:primname')
-#    packed_geo = splits.get('PackedGeometry')
-#    if not packed_geo:
-#        continue
-#    packed_parts = packed_geo.partition('geo:partlist', geo_ids(packed_geo))
-#    print 'hi'
-#    print packed_parts
-#    polys = packed_parts['22'].tesselate({})
-#    print polys.globalValue('geo:primcount')[0]
+import PBRTscene
+reload(PBRTscene)
 
 clockstart = time.time()
 
@@ -112,27 +81,7 @@ soho.lockObjects(now)
 
 clockstart = time.time()
 
-#wrangler = getWrangler(cam, now, 'camera_wrangler')
-wrangler = None
-rop = soho.getOutputDriver()
+PBRTscene.render(cam, now, soho.objectList('objlist:instance'),
+                           soho.objectList('objlist:light'))
 
-api.Film(*wrangle_film(cam, wrangler, now))
-api.Filter(*wrangle_filter(cam, wrangler, now))
-api.Sampler(*wrangle_sampler(cam, wrangler, now))
-api.Integrator(*wrangle_integrator(cam, wrangler, now))
-api.Accelerator(*wrangle_accelerator(cam, wrangler, now))
-api.Camera(*wrangle_camera(cam, wrangler, now))
 
-print ''
-api.WorldBegin()
-
-api.LightSource('infinite')
-api.Identity()
-
-api.AttributeBegin()
-api.Translate(5,0,0)
-api.Shape('sphere', [PBRTParam('float', 'radius', [1])])
-api.AttributeEnd()
-api.Shape('sphere', [PBRTParam('float', 'radius', [1])])
-
-api.WorldEnd()
