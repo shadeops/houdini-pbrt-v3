@@ -60,6 +60,8 @@ def _api_geo_handler(plugin, paramset):
         _api_plugin_call('Shape', plugin, paramset)
         return
 
+    _api_plugin_call('Shape', plugin, paramset)
+
     return
 
 def Include(path):

@@ -437,7 +437,6 @@ def wrangle_light(light, wrangler, now):
 
         # This is a mess and needs to be recitified
         # * the Transform crashes despite not having a scale
-        # * the disk illuminates from the opposite side
 
         #xform_to_api_srt(xform)# scale=False)
         api.Transform(xform)
@@ -446,13 +445,17 @@ def wrangle_light(light, wrangler, now):
 
         api.AreaLightSource(light_name, paramset)
 
-        api.TransformBegin()
-        # PBRT complains about non-uniform scales
+        api.AttributeBegin()
+        # PBRT only supports uniform scales for non-mesh area lights
+        # this is in part due to explicit light's area scaling factor.
+        api.Scale(size[0], size[0], size[0])
         #api.Scale(size[0], size[1], size[0])
+
+        # The visibility only applies to hits on the non-emissive side of the light.
+        # the emissive side will still be rendered
         if not visible:
             api.Material('none')
-            #api.Texture('tex','spectrum','imagemap',[PBRTParam('string','filename','/tmp/test.exr')])
-            #api.Material('matte',[PBRTParam('texture', 'Kd', 'tex')])
+
         if light_type == 'sphere':
             api.Shape('sphere', [PBRTParam('float','radius',0.5)])
         elif light_type == 'tube':
@@ -461,9 +464,23 @@ def wrangle_light(light, wrangler, now):
                                   PBRTParam('float','zmin',-0.5),
                                   PBRTParam('float','zmax',0.5)])
         elif light_type == 'disk':
-            api.Scale(1,1,-1)
+            # A bug was introduced with Issue #154 which requires a -z scale
+            # on disk area lights
+            # See issue #183
+            # api.Scale(1,1,-1)
             api.Shape('disk', [PBRTParam('float', 'radius', [0.5])])
-        api.TransformEnd()
+        elif light_type == 'grid':
+            api.Comment('WUT')
+            api.Shape('trianglemesh', [PBRTParam('integer','indices', [0,1,3,
+                                                                        0,3,2]),
+                                       PBRTParam('point', 'P', [-0.5, -0.5, 0,
+                                                                0.5, -0.5, 0,
+                                                                -0.5, 0.5, 0,
+                                                                0.5, 0.5, 0])])
+        elif light_type == 'geometry':
+            api.Comment('TODO')
+
+        api.AttributeEnd()
         return
 
     cone_enable = light.wrangleInt(wrangler, 'coneenable', now, [0])[0]
