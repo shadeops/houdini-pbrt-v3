@@ -4,11 +4,12 @@ import hou
 import soho
 
 import PBRTapi as api
+import PBRTgeo as Geo
 from PBRTplugins import PBRTParam, ParamSet, BasePlugin
 
 __all__ = ['wrangle_film', 'wrangle_sampler', 'wrangle_accelerator',
            'wrangle_integrator', 'wrangle_filter', 'wrangle_camera',
-           'wrangle_light']
+           'wrangle_light', 'wrangle_geo']
 
 def _apiclosure(api_call, *args, **kwargs):
     def api_func():
@@ -291,7 +292,6 @@ def output_cam_xform(obj, projection, now):
     if projection in ('perspective','orthographic','realistic'):
         xform = get_transform(obj, now, invert=True, flipz=True)
         api.Transform(xform)
-        #xform_to_api_srt(xform)
     elif projection in ('environment',):
         xform = get_transform(obj, now, invert=True, flipz=False)
         api.Transform(xform)
@@ -438,18 +438,18 @@ def wrangle_light(light, wrangler, now):
         # This is a mess and needs to be recitified
         # * the Transform crashes despite not having a scale
 
-        #xform_to_api_srt(xform)# scale=False)
-        api.Transform(xform)
-        api.Rotate(180,0,1,0)
-        api.Translate(0,1.5,0)
+        xform_to_api_srt(xform, scale=False)
 
         api.AreaLightSource(light_name, paramset)
 
         api.AttributeBegin()
+
         # PBRT only supports uniform scales for non-mesh area lights
         # this is in part due to explicit light's area scaling factor.
-        api.Scale(size[0], size[0], size[0])
-        #api.Scale(size[0], size[1], size[0])
+        if light_type in ('sphere', 'tube', 'disk'):
+            api.Scale(size[0], size[0], size[0])
+        else:
+            api.Scale(size[0], size[1], size[0])
 
         # The visibility only applies to hits on the non-emissive side of the light.
         # the emissive side will still be rendered
@@ -470,9 +470,8 @@ def wrangle_light(light, wrangler, now):
             # api.Scale(1,1,-1)
             api.Shape('disk', [PBRTParam('float', 'radius', [0.5])])
         elif light_type == 'grid':
-            api.Comment('WUT')
-            api.Shape('trianglemesh', [PBRTParam('integer','indices', [0,1,3,
-                                                                        0,3,2]),
+            api.Shape('trianglemesh', [PBRTParam('integer','indices', [0,3,1,
+                                                                        0,2,3]),
                                        PBRTParam('point', 'P', [-0.5, -0.5, 0,
                                                                 0.5, -0.5, 0,
                                                                 -0.5, 0.5, 0,
@@ -481,6 +480,7 @@ def wrangle_light(light, wrangler, now):
             api.Comment('TODO')
 
         api.AttributeEnd()
+
         return
 
     cone_enable = light.wrangleInt(wrangler, 'coneenable', now, [0])[0]
@@ -528,3 +528,14 @@ def wrangle_light(light, wrangler, now):
     api.LightSource(light_name, paramset)
 
     return
+
+def wrangle_geo(obj, wrangler, now):
+    output_xform(obj, now)
+
+    soppath = []
+    if not obj.evalString('object:soppath', now, soppath):
+        print 'wut'
+        return
+
+    Geo.save_geo(soppath[0], now)
+

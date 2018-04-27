@@ -1,4 +1,5 @@
 from __future__ import print_function
+from contextlib import contextmanager
 
 import soho
 
@@ -22,34 +23,28 @@ def _api_call_with_iter(api_call, args):
     soho.printArray(' [ ', args, ' ]\n')
 
 # Film "image" "string filename" [ "pbrt.exr" ]
-def _api_plugin_call(api_call, plugin, paramset):
+def _api_plugin_call(api_call, plugin, paramset=None):
     soho.indent()
     print(api_call, ' "', plugin, '"', sep='', end='')
-    for param in paramset:
-        print(' ', param.as_str(), sep='', end='')
+    if paramset:
+        for param in paramset:
+            print(' ', param.as_str(), sep='', end='')
     print()
 
 # MakeNamedMaterial "myplastic" "string type" "plastic" "float roughness"
-def _api_named_plugin_call(api_call, name, plugin, paramset):
-    soho.indent()
-    print(api_call, '"{name}" "{plugin}"'.format(name=name,
-                                                 plugin=plugin),
-                    end='')
-    for param in paramset:
-        print(' ', param.as_str(), sep='', end='')
-
 # Texture "name" "texture|spectrum" "plugin" parmlist
-def _api_named_output_plugin_call(api_call, name, output, plugin, paramset):
+def _api_named_plugin_call(api_call, name, output, plugin, paramset=None):
     soho.indent()
     print(api_call, '"{name}" "{output}" "{plugin}"'.format(name=name,
                                                             output=output,
                                                             plugin=plugin),
                     end='')
-    for param in paramset:
-        print(' ', param.as_str(), sep='', end='')
+    if paramset:
+        for param in paramset:
+            print(' ', param.as_str(), sep='', end='')
     print()
 
-def _api_geo_handler(plugin, paramset):
+def _api_geo_handler(plugin, paramset=None):
     # Quadratics
     if plugin in ('cone', 'cylinder', 'disk', 'hyperboloid',
                   'paraboloid', 'sphere'):
@@ -159,14 +154,14 @@ def WorldEnd():
 def Material(plugin, paramset=()):
     _api_plugin_call('Material', plugin, paramset)
 
-def MakeNamedMaterial(name, plugin, paramset=()):
-    _api_named_plugin_call('MakeNamedMaterial', name, plugin, paramset)
+def MakeNamedMaterial(name, output, plugin, paramset=()):
+    _api_named_plugin_call('MakeNamedMaterial', name, output, plugin, paramset)
 
 def NamedMaterial(name):
     _api_call_with_args('NamedMaterial', name)
 
 def Texture(name, output, plugin, paramset=()):
-    _api_named_output_plugin_call('Texture', name, output, plugin, paramset)
+    _api_named_plugin_call('Texture', name, output, plugin, paramset)
 
 def LightSource(plugin, paramset=()):
     _api_plugin_call('LightSource', plugin, paramset)
@@ -176,3 +171,33 @@ def AreaLightSource(plugin, paramset=()):
 
 def Shape(plugin, paramset=()):
     _api_geo_handler(plugin, paramset)
+
+@contextmanager
+def WorldBlock():
+    WorldBegin()
+    yield
+    WorldEnd()
+
+@contextmanager
+def AttributeBlock():
+    AttributeBegin()
+    yield
+    AttributeEnd()
+
+@contextmanager
+def TransformBlock():
+    TransformBegin()
+    yield
+    TransformEnd()
+
+@contextmanager
+def ObjectBlock():
+    ObjectBegin()
+    yield
+    ObjectEnd()
+
+# Helper context
+@contextmanager
+def NullBlock():
+    yield
+

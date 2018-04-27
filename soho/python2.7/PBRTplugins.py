@@ -3,6 +3,49 @@ import collections
 import hou
 import soho
 
+# TODO is this the best name/location for this?
+# should some of this functionality be in _hou_parm_to_pbrt_param()
+def pbrt_param_from_ref(parm, parm_value, parm_name=None):
+    """Convert hou.ParmTuple into a PBRT string
+
+    Optional parm_name for overridding the name of a parm,
+    useful in cases where you have different parm signatures
+    """
+    if parm_name is None:
+        parm_name = parm.name()
+
+    parm_tmpl = parm.parmTemplate()
+    parm_type = parm_tmpl.type()
+    parm_scheme = parm_tmpl.namingScheme()
+
+    # PBRT: bool
+    if parm_type == hou.parmTemplateType.Toggle:
+        pbrt_type = 'bool'
+    # PBRT: string (menu)
+    elif parm_type == hou.parmTemplateType.Menu:
+        pbrt_type = 'string'
+    # PBRT: string
+    elif parm_type == hou.parmTemplateType.String:
+        pbrt_type = 'string'
+    # PBRT: integer
+    elif parm_type == hou.parmTemplateType.Int:
+        pbrt_type = 'integer'
+    # PBRT: spectrum
+    elif parm_scheme == hou.parmNamingScheme.RGBA:
+        pbrt_type = 'rgb'
+    # PBRT: point/vector/normal
+    elif ( parm_type == hou.parmTemplateType.Float and
+            'pbrt_type' in parm_tmpl.tags() ):
+        pbrt_type = '%s%i' % ( parm_tmpl.tags()['pbrt_type'],
+                               parm_tmpl.numComponents() )
+    # PBRT: float (sometimes a float is just a float)
+    elif parm_type == hou.parmTemplateType.Float:
+        pbrt_type = 'float'
+    else:
+        raise hou.ValueError('Can\'t convert %s to pbrt type' % (parm))
+
+    return PBRTParam(pbrt_type, parm_name, parm_value)
+
 def _hou_parm_to_pbrt_param(parm, parm_name=None):
     """Convert hou.ParmTuple into a PBRT string
 
@@ -31,7 +74,6 @@ def _hou_parm_to_pbrt_param(parm, parm_name=None):
     parm_tmpl = parm.parmTemplate()
     parm_type = parm_tmpl.type()
     parm_scheme = parm_tmpl.namingScheme()
-
     # Assuming there will only be a single coshader "plugin"
     # per parameter.
     coshaders = parm.node().coshaderNodes(parm_name)
@@ -62,6 +104,7 @@ def _hou_parm_to_pbrt_param(parm, parm_name=None):
             pbrt_type = 'rgb'
             pbrt_value = parm.eval()
         elif coshader.type().nameComponents()[2] == 'pbrt_spectrum':
+            # FIXME, implement wrangle_spectrum
             pbrt_type, pbrt_value = wrangle_spectrum(coshader)
         else:
             pbrt_type = 'texture'
@@ -142,6 +185,9 @@ class PBRTParam(object):
     def as_str(self):
         return soho.arrayToString('"%s" [ ' % self.type_name, self.value, ' ]')
 
+# FIXME ParamSets can actually have the same name across different types
+#       apparenty a "string" "foo" and a "float" "foo" are two different
+#       things
 class ParamSet(collections.MutableSet):
     def __init__(self, iterable=None):
         self._data = {}
@@ -181,7 +227,14 @@ class BasePlugin(object):
 
     @property
     def plugin_class(self):
-        return self.node.shaderName()
+        # FIXME
+        # This returns op:_auto_/{node.path()}
+        # when the node has inputs. The PxrNodes do not have this issue
+        # I'm not sure why that is the case but I suspect its due to the
+        # shopclerk althought further experiments are needed.
+        # For now we'll bruteforce it
+        # return self.node.shaderName()
+        return self.node.type().definition().sections()['FunctionName'].contents()
 
     @property
     def name(self):
@@ -197,23 +250,38 @@ class BasePlugin(object):
     def get_used_parms(self):
         parms = {}
         for parm_tup in self.node.parmTuples():
-            if parm_tup.isDisabled() or parm_tup.isHidden():
-                continue
-            if 'pbrt.meta' in parm_tup.parmTemplate().tags():
+            parm_tags = parm_tup.parmTemplate().tags()
+            parm_name = parm_tup.name()
+
+            if 'pbrt.meta' in parm_tags:
                 # Ignore meta parameters that are used to
                 # control the UI
                 continue
-            parm_name = parm_tup.name()
-            if ( not self.node.coshaderNodes(parm_name) and
-                    (parm_tup.isAtDefault() and
-                     self.ignore_defaults and
-                     'pbrt.force' not in parm_tup.parmTemplate().tags())):
+
+            if self.node.coshaderNodes(parm_name):
+                # Instead of adding checks for this multiple
+                # times, check once and then continue
+                parms[parm_name] = parm_tup
+                continue
+
+            if parm_tup.isDisabled() or parm_tup.isHidden():
+                continue
+
+            if (parm_tup.isAtDefault() and
+                self.ignore_defaults and
+               'pbrt.force' not in parm_tags):
                 # If the parm is at its default but has an input
                 # then consider it used, otherwise skip it...
                 # unless we have metadata to says force its output
                 continue
+
             parms[parm_name] = parm_tup
+
         return parms
+
+    @property
+    def coord_sys(self):
+        return None
 
     @property
     def paramset(self):
@@ -226,7 +294,42 @@ class BasePlugin(object):
             params.add(param)
         return params
 
-class TexturePlugin(BasePlugin):
+class MaterialPlugin(BasePlugin):
+
+    # Can be a Material or Texture or a Spectrum Helper
+    # spectrum helpers will be ignored as they are just
+    # improved interfaces for a parm
+    def inputs(self):
+        # should this return the parm name and the input
+        # or just the input
+        for input_node in self.node.inputs():
+            if input_node is None:
+                continue
+            node_type = input_node.type().nameComponents()[2]
+            if node_type == 'pbrt_spectrum':
+                continue
+            yield input_node.path()
+
+    @property
+    def output_type(self):
+        return 'string type'
+
+    @property
+    def paramset(self):
+        params = super(MaterialPlugin, self).paramset
+        # Materials might have a bumpmap input
+        # which doesn't exist as a parameter
+        # TODO, another approach is to actually
+        # add the parameter but always make it
+        # invisible so it gets passed over
+        bump_coshaders = self.node.coshaderNodes('bumpmap')
+        if bump_coshaders:
+            params.add(PBRTParam('texture', 'bumpmap',
+                                 bump_coshaders[0].path()))
+        return params
+
+
+class TexturePlugin(MaterialPlugin):
 
     def get_used_parms(self):
         # Special handling for Texture plugins as they have a signature parm
@@ -234,7 +337,7 @@ class TexturePlugin(BasePlugin):
         # Start off with the base filtering, we can do this because
         # so far this filters away everything we don't care about.
         # (Parms belonging to the other signature are hidden)
-        parms = super(BasePlugin, self).get_used_parms()
+        parms = super(TexturePlugin, self).get_used_parms()
 
         # If the signature is the default then it means
         # parms won't have a suffix so we are done.
@@ -246,7 +349,10 @@ class TexturePlugin(BasePlugin):
         new_parms = {}
         for parm_name,parm in parms.iteritems():
             if parm_name == 'signature':
-                pass
+                continue
+            # We could also check for name == texture_space
+            if parm.parmTemplate().tags().get('pbrt.type') == 'space':
+                continue
             # Foolproof way:
             # re.sub('_%s$' % signature, '', parm_name)
             # Easy way:
@@ -255,7 +361,20 @@ class TexturePlugin(BasePlugin):
         return new_parms
 
     @property
-    def output(self):
+    def coord_sys(self):
+        space_parm = self.node.parm('texture_space')
+        if not space_parm:
+            return None
+        node = space_parm.evalAsNode()
+        if not node:
+            return None
+        try:
+            return node.worldTransform().asTuple()
+        except AttributeError:
+            return None
+
+    @property
+    def output_type(self):
         if self.node.currentSignatureName() == 'default':
             return 'float'
         return 'spectrum'

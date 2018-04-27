@@ -12,6 +12,8 @@ import PBRTapi
 reload(PBRTapi)
 import PBRTplugins
 reload(PBRTplugins)
+import PBRTgeo
+reload(PBRTgeo)
 import PBRTwranglers
 reload(PBRTwranglers)
 import PBRTscene
@@ -81,7 +83,6 @@ soho.lockObjects(now)
 
 clockstart = time.time()
 
-PBRTscene.render(cam, now, soho.objectList('objlist:instance'),
-                           soho.objectList('objlist:light'))
+PBRTscene.render(cam, now)
 
 
