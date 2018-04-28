@@ -240,13 +240,6 @@ class BasePlugin(object):
     def name(self):
         return self.node.path()
 
-    @property
-    def type(self):
-        # Determine if this is needed
-        # Another option is that the type is derived from
-        # the shaderName() ie) texture/imagemap
-        return node.type().nameComponents()[2].split('_')[1]
-
     def get_used_parms(self):
         parms = {}
         for parm_tup in self.node.parmTuples():
