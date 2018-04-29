@@ -1,6 +1,9 @@
 *.pyc
 *.bak
 *.hip
+*.hda
+*.exr
+*.pbrt
 
 backup/
 ifds/
