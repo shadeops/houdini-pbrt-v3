@@ -1,0 +1,210 @@
+# Dialog script for pbrt_texture_bilerp automatically generated
+
+{
+    name	pbrt_texture_bilerp
+    script	bilerp
+    label	"PBRT BilerpTexture"
+
+    rendermask	PBRT
+    externalshader 1
+    shadertype	generic
+    input	float	v00	v00
+    input	float	v01	v01
+    input	float	v10	v10
+    input	float	v11	v11
+    output	float	output	Output
+    inputflags	v00	0
+    inputflags	v01	0
+    inputflags	v10	0
+    inputflags	v11	0
+    signature	Float	default	{ float float float float float }
+    signature	Spectrum	s	{ struct_PBRTSpectrum struct_PBRTSpectrum struct_PBRTSpectrum struct_PBRTSpectrum struct_PBRTSpectrum }
+
+    outputoverrides	default
+    {
+	___begin	auto
+			(0)
+    }
+    outputoverrides	s
+    {
+	___begin	auto
+			(0)
+    }
+
+    help {
+	"#type: node"
+	"#context: vop"
+	"#tags: rman,pattern"
+	"#icon: NETWORKS/shop"
+	""
+	"= pxrhsl ="
+	""
+	"Adjust the hue, saturation and value of a given input color. Note the output is in RGB color space."
+	"@parameters"
+	""
+	"inputRGB:"
+	"The color to have HSL adjustments applied to it."
+	""
+	"hue:"
+	"The amount to shift hue by."
+	""
+	"saturation:"
+	"The amount to scale saturation by."
+	""
+	"luminance:"
+	"The amount to scale luminance by."
+	""
+    }
+
+    parm {
+        name    "signature"
+        baseparm
+        label   "Signature"
+        export  none
+    }
+    parm {
+        name    "v00"
+        label   "v00"
+        type    float
+        default { "0" }
+        help    "The four values to be bilinearly interpolated between. "
+        range   { 0 1 }
+    }
+    parm {
+        name    "v00_s"
+        label   "v00"
+        type    color
+        size    3
+        default { "0" "0" "0" }
+        help    "The four values to be bilinearly interpolated between. "
+        range   { 0 1 }
+    }
+    parm {
+        name    "v01"
+        label   "v01"
+        type    float
+        default { "1" }
+        help    "The four values to be bilinearly interpolated between. "
+        range   { 0 1 }
+    }
+    parm {
+        name    "v01_s"
+        label   "v01"
+        type    color
+        size    3
+        default { "1" "1" "1" }
+        help    "The four values to be bilinearly interpolated between. "
+        range   { 0 1 }
+    }
+    parm {
+        name    "v10"
+        label   "v10"
+        type    float
+        default { "0" }
+        help    "The four values to be bilinearly interpolated between. "
+        range   { 0 1 }
+    }
+    parm {
+        name    "v10_s"
+        label   "v10"
+        type    color
+        size    3
+        default { "0" "0" "0" }
+        help    "The four values to be bilinearly interpolated between. "
+        range   { 0 1 }
+    }
+    parm {
+        name    "v11"
+        label   "v11"
+        type    float
+        default { "1" }
+        help    "The four values to be bilinearly interpolated between. "
+        range   { 0 1 }
+    }
+    parm {
+        name    "v11_s"
+        label   "v11"
+        type    color
+        size    3
+        default { "1" "1" "1" }
+        help    "The four values to be bilinearly interpolated between. "
+        range   { 0 1 }
+    }
+    group {
+        name    "folder0"
+        label   "2D Mapping"
+
+        parm {
+            name    "mapping"
+            label   "Mapping"
+            type    ordinal
+            default { "uv" }
+            help    "A string specifying the kind of texture coordinate mapping to use. Legal values are: \"uv\", \"spherical\", \"cylindrical\", or \"planar\". "
+            menu {
+                "uv"            "UVs"
+                "spherical"     "Spherical"
+                "cylindrical"   "Cylindrical"
+                "planar"        "Planar"
+            }
+        }
+        parm {
+            name    "uscale"
+            label   "Scale U"
+            type    float
+            default { "1" }
+            help    "Scaling factors to be applied to the u and v texture coordinates, respectively. These parameters are only meaningful if the texture coordinate mapping type has been set to \"uv\". "
+            disablewhen "{ mapping != uv }"
+            range   { 0 10 }
+        }
+        parm {
+            name    "vscale"
+            label   "Scale V"
+            type    float
+            default { "1" }
+            help    "Scaling factors to be applied to the u and v texture coordinates, respectively. These parameters are only meaningful if the texture coordinate mapping type has been set to \"uv\". "
+            disablewhen "{ mapping != uv }"
+            range   { 0 10 }
+        }
+        parm {
+            name    "udelta"
+            label   "Delta U"
+            type    float
+            default { "0" }
+            help    "An offset to be applied to the u and v texture coordinates, respectively. These parameters are only meaningful if the texture coordinate mapping type has been set to \"uv\" or \"planar\". "
+            disablewhen "{ mapping != uv mapping != planar }"
+            range   { 0 10 }
+        }
+        parm {
+            name    "vdelta"
+            label   "Delta V"
+            type    float
+            default { "0" }
+            help    "An offset to be applied to the u and v texture coordinates, respectively. These parameters are only meaningful if the texture coordinate mapping type has been set to \"uv\" or \"planar\". "
+            disablewhen "{ mapping != uv mapping != planar }"
+            range   { 0 10 }
+        }
+        parm {
+            name    "v1"
+            label   "v1"
+            type    vector
+            size    3
+            default { "1" "0" "0" }
+            help    "v1 and v2 are two vectors that define a planar mapping. "
+            disablewhen "{ mapping != planar }"
+            range   { -1 1 }
+            parmtag { "pbrt.type" "vector" }
+        }
+        parm {
+            name    "v2"
+            label   "v2"
+            type    vector
+            size    3
+            default { "0" "1" "0" }
+            help    "v1 and v2 are two vectors that define a planar mapping. "
+            disablewhen "{ mapping != planar }"
+            range   { -1 1 }
+            parmtag { "pbrt.type" "vector" }
+        }
+    }
+
+}

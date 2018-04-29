@@ -1,0 +1,125 @@
+# Dialog script for pbrt_material_metal automatically generated
+
+{
+    name	pbrt_material_metal
+    script	metal
+    label	"PBRT MetalMaterial"
+
+    rendermask	PBRT
+    externalshader 1
+    shadertype	generic
+    input	float	bumpmap	bumpmap
+    input	struct_PBRTSpectrum	eta	Eta
+    input	struct_PBRTSpectrum	k	k
+    input	float	roughness	Roughness
+    input	float	uroughness	"Roughness U"
+    input	float	vroughness	"Roughness V"
+    output	struct_PBRTMaterial	material	material
+    inputflags	bumpmap	0
+    inputflags	eta	0
+    inputflags	k	0
+    inputflags	roughness	0
+    inputflags	uroughness	0
+    inputflags	vroughness	0
+    signature	"Default Inputs"	default	{ float struct_PBRTSpectrum struct_PBRTSpectrum float float float struct_PBRTMaterial }
+
+    outputoverrides	default
+    {
+	___begin	auto
+			(0)
+    }
+
+    help {
+	"#type: node"
+	"#context: vop"
+	"#tags: rman,pattern"
+	"#icon: NETWORKS/shop"
+	""
+	"= pxrhsl ="
+	""
+	"Adjust the hue, saturation and value of a given input color. Note the output is in RGB color space."
+	"@parameters"
+	""
+	"inputRGB:"
+	"The color to have HSL adjustments applied to it."
+	""
+	"hue:"
+	"The amount to shift hue by."
+	""
+	"saturation:"
+	"The amount to scale saturation by."
+	""
+	"luminance:"
+	"The amount to scale luminance by."
+	""
+    }
+
+    parm {
+        name    "eta"
+        label   "Eta"
+        type    color
+        size    3
+        default { "1.17" "0.468" "0.216" }
+        help    "Index of refraction of the surface. This value is used in both the microfacet model for specular reflection as well as for computing a Fresnel reflection term for perfect specular reflection. "
+        range   { 0 10 }
+    }
+    parm {
+        name    "k"
+        label   "Absorption"
+        type    color
+        size    3
+        default { "2.25" "2.81" "4.24" }
+        help    "Absorption coefficient to use in computing the material's reflectance. "
+        range   { 0 1 }
+    }
+    parm {
+        name    "roughness"
+        label   "Roughness"
+        type    float
+        default { "0.01" }
+        disablewhen "{ do_uroughness == 1 do_vroughness == 1 } { do_uroughness == 1 }"
+        range   { 0 1 }
+    }
+    parm {
+        name    "do_uroughness"
+        label   "Do Roughness U"
+        type    toggle
+        nolabel
+        joinnext
+        default { "0" }
+        parmtag { "pbrt.meta" "1" }
+    }
+    parm {
+        name    "uroughness"
+        label   "Roughness U"
+        type    float
+        default { "0.01" }
+        help    "Microfacet roughness in the u direction. If zero, perfect specular reflection is modeled."
+        disablewhen "{ do_uroughness == 0 }"
+        range   { 0 1 }
+    }
+    parm {
+        name    "do_vroughness"
+        label   "Do Roughness V"
+        type    toggle
+        nolabel
+        joinnext
+        default { "0" }
+    }
+    parm {
+        name    "vroughness"
+        label   "Roughness V"
+        type    float
+        default { "0.01" }
+        help    "Microfacet roughness in the v direction. If zero, perfect specular reflection is modeled."
+        disablewhen "{ do_vroughness == 0 }"
+        range   { 0 1 }
+    }
+    parm {
+        name    "remaproughness"
+        label   "Remap Roughness"
+        type    toggle
+        default { "1" }
+        help    "If true, roughness values are expected to be in the range [0,1], and are remapped to microfacet distribution function parameter values that range from near-perfect-specular at 0 to very rough at 1. Otherwise the roughness parameters are used directly for the alpha parameters of the microfacet distribution function."
+    }
+}

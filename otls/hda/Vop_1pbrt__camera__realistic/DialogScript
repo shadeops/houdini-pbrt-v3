@@ -1,0 +1,126 @@
+# Dialog script for pbrt_camera_realistic automatically generated
+
+{
+    name	pbrt_camera_realistic
+    script	realistic
+    label	"PBRT RealisticCamera"
+
+    rendermask	PBRT
+    externalshader 1
+    shadertype	generic
+    signature	"Default Inputs"	default	{ }
+
+    outputoverrides	default
+    {
+    }
+
+    help {
+	"#type: node"
+	"#context: vop"
+	"#tags: rman,pattern"
+	"#icon: NETWORKS/shop"
+	""
+	"= pxrhsl ="
+	""
+	"Adjust the hue, saturation and value of a given input color. Note the output is in RGB color space."
+	"@parameters"
+	""
+	"inputRGB:"
+	"The color to have HSL adjustments applied to it."
+	""
+	"hue:"
+	"The amount to shift hue by."
+	""
+	"saturation:"
+	"The amount to scale saturation by."
+	""
+	"luminance:"
+	"The amount to scale luminance by."
+	""
+    }
+
+    parm {
+        name    "shutteropen"
+        label   "Shutter Open"
+        type    float
+        default { "0" }
+        help    "The time at which the virtual camera shutter opens."
+        range   { 0 10 }
+    }
+    parm {
+        name    "shutterclose"
+        label   "Shutter Close"
+        type    float
+        default { "1" }
+        help    "The time at which the virtual camera shutter closes."
+        range   { 0 10 }
+    }
+    parm {
+        name    "do_frameaspectratio"
+        label   "Frame Aspect Ratio"
+        type    toggle
+        nolabel
+        joinnext
+        default { "0" }
+        parmtag { "pbrt.meta" "1" }
+    }
+    parm {
+        name    "frameaspectratio"
+        label   "Frame Aspect Ratio"
+        type    float
+        default { "1.3333" }
+        help    "The aspect ratio of the film. By default, this is computed from the x and y resolutions of the film, but it can be overridden if desired."
+        disablewhen "{ do_frameaspectratio == 0 }"
+        range   { 0 10 }
+    }
+    parm {
+        name    "do_screenwindow"
+        label   "Screen Window"
+        type    toggle
+        nolabel
+        joinnext
+        default { "0" }
+        parmtag { "pbrt.meta" "1" }
+    }
+    parm {
+        name    "screenwindow"
+        label   "Screen Window"
+        type    float
+        size    4
+        default { "-1.3333" "1.3333" "-1" "1" }
+        help    "The bounds of the film plane in screen space. By default, this is [-1,1] along the shorter image axis and is set proportionally along the longer axis."
+        disablewhen "{ do_screenwindow == 0 }"
+        range   { -1 1 }
+    }
+    parm {
+        name    "lensfile"
+        label   "Lens File"
+        type    file
+        default { "" }
+        help    " Specifies the name of a lens description file that gives the collection of lens elements in the lens system. A number of such lenses are available in the lenses directory in the pbrt-v3 scenes distribution. "
+        parmtag { "filechooser_mode" "read" }
+    }
+    parm {
+        name    "aperturediameter"
+        label   "Aperture Diameter"
+        type    float
+        default { "1" }
+        help    "Diameter of the lens system's aperture, specified in mm. The smaller the aperture, the less light reaches the film plane, but the greater the range of distances that are in focus."
+        range   { 0 10 }
+    }
+    parm {
+        name    "focusdistance"
+        label   "Focus Distance"
+        type    float
+        default { "10" }
+        help    " Distance in meters at which the lens system is focused."
+        range   { 0 10 }
+    }
+    parm {
+        name    "simpleweighting"
+        label   "Simple Weighting"
+        type    toggle
+        default { "1" }
+        help    "Indicates whether incident radiance at the film plane should just be weighted by the cosine-to-the-4th term, or whether it should also include the additional weighting terms that account for the shutter open time and the projected area of the exit pupil are included so that the image records incident energy on the film plane."
+    }
+}

@@ -1,0 +1,82 @@
+# Dialog script for pbrt_accelerator_kdtree automatically generated
+
+{
+    name	pbrt_accelerator_kdtree
+    script	kdtree
+    label	"PBRT KdTreeAccel"
+
+    rendermask	PBRT
+    externalshader 1
+    shadertype	generic
+    signature	"Default Inputs"	default	{ }
+
+    outputoverrides	default
+    {
+    }
+
+    help {
+	"#type: node"
+	"#context: vop"
+	"#tags: rman,pattern"
+	"#icon: NETWORKS/shop"
+	""
+	"= pxrhsl ="
+	""
+	"Adjust the hue, saturation and value of a given input color. Note the output is in RGB color space."
+	"@parameters"
+	""
+	"inputRGB:"
+	"The color to have HSL adjustments applied to it."
+	""
+	"hue:"
+	"The amount to shift hue by."
+	""
+	"saturation:"
+	"The amount to scale saturation by."
+	""
+	"luminance:"
+	"The amount to scale luminance by."
+	""
+    }
+
+    parm {
+        name    "intersectcost"
+        label   "Intersect Cost"
+        type    integer
+        default { "80" }
+        help    "The value of the cost function that estimates the expected cost of performing a ray-object intersection, for use in building the kd-tree. "
+        range   { 0 10 }
+    }
+    parm {
+        name    "traversalcost"
+        label   "Traversal Cost"
+        type    integer
+        default { "1" }
+        help    "Estimated cost for traversing a ray through a kd-tree node. "
+        range   { 0 10 }
+    }
+    parm {
+        name    "emptybonus"
+        label   "Empty Bonus"
+        type    float
+        default { "0.2" }
+        help    "\"Bonus\" factor for kd-tree nodes that represent empty space. "
+        range   { 0 10 }
+    }
+    parm {
+        name    "maxprims"
+        label   "Max Prims"
+        type    integer
+        default { "1" }
+        help    "Maximum number of primitives to store in kd-tree node. (Not a hard limit; more may be stored if the kd-tree can't find splitting planes that reduce the number of primitives when refining a node.) "
+        range   { 0 10 }
+    }
+    parm {
+        name    "maxdepth"
+        label   "Max Depth"
+        type    integer
+        default { "-1" }
+        help    "Maximum depth of the kd-tree. If negative, the kd-tree chooses a maximum depth based on the number of primitives to be stored in it. "
+        range   { 0 10 }
+    }
+}

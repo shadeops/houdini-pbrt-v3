@@ -1,0 +1,76 @@
+# Dialog script for pbrt_light_point automatically generated
+
+{
+    name	pbrt_light_point
+    script	distant
+    label	"PBRT PointLight"
+
+    rendermask	PBRT
+    externalshader 1
+    shadertype	generic
+    input	struct_PBRTSpectrum	scale	scale
+    input	struct_PBRTSpectrum	I	I
+    inputflags	scale	0
+    inputflags	I	0
+    signature	"Default Inputs"	default	{ struct_PBRTSpectrum struct_PBRTSpectrum }
+
+    outputoverrides	default
+    {
+    }
+
+    help {
+	"#type: node"
+	"#context: vop"
+	"#tags: rman,pattern"
+	"#icon: NETWORKS/shop"
+	""
+	"= pxrhsl ="
+	""
+	"Adjust the hue, saturation and value of a given input color. Note the output is in RGB color space."
+	"@parameters"
+	""
+	"inputRGB:"
+	"The color to have HSL adjustments applied to it."
+	""
+	"hue:"
+	"The amount to shift hue by."
+	""
+	"saturation:"
+	"The amount to scale saturation by."
+	""
+	"luminance:"
+	"The amount to scale luminance by."
+	""
+    }
+
+    parm {
+        name    "scale"
+        label   "Scale"
+        type    color
+        size    3
+        default { "1" "1" "1" }
+        help    "Scale factor that modulates the amount of light that the light source emits into the scene."
+        range   { 0 1 }
+        parmtag { "pbrt.spectrum" "input" }
+    }
+    parm {
+        name    "I"
+        label   "I"
+        type    color
+        size    3
+        default { "1" "1" "1" }
+        help    "The light's emitted radiant intensity. "
+        range   { 0 1 }
+        parmtag { "pbrt.spectrum" "input" }
+    }
+    parm {
+        name    "from"
+        label   "From"
+        type    vector
+        size    3
+        default { "0" "0" "0" }
+        help    "The location of the light. "
+        range   { -1 1 }
+        parmtag { "pbrt.type" "point" }
+    }
+}

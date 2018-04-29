@@ -1,0 +1,105 @@
+# Dialog script for pbrt_texture_mix automatically generated
+
+{
+    name	pbrt_texture_mix
+    script	mix
+    label	"PBRT MixTexture"
+
+    rendermask	PBRT
+    externalshader 1
+    shadertype	generic
+    input	float	tex1	"Texture 1"
+    input	float	tex2	"Texture 2"
+    input	float	amount	Amount
+    output	float	output	Output
+    inputflags	tex1	0
+    inputflags	tex2	0
+    inputflags	amount	0
+    signature	Float	default	{ float float float float }
+    signature	Spectrum	s	{ struct_PBRTSpectrum struct_PBRTSpectrum float struct_PBRTSpectrum }
+
+    outputoverrides	default
+    {
+	___begin	auto
+			(0)
+    }
+    outputoverrides	s
+    {
+	___begin	auto
+			(0)
+    }
+
+    help {
+	"#type: node"
+	"#context: vop"
+	"#tags: rman,pattern"
+	"#icon: NETWORKS/shop"
+	""
+	"= pxrhsl ="
+	""
+	"Adjust the hue, saturation and value of a given input color. Note the output is in RGB color space."
+	"@parameters"
+	""
+	"inputRGB:"
+	"The color to have HSL adjustments applied to it."
+	""
+	"hue:"
+	"The amount to shift hue by."
+	""
+	"saturation:"
+	"The amount to scale saturation by."
+	""
+	"luminance:"
+	"The amount to scale luminance by."
+	""
+    }
+
+    parm {
+        name    "signature"
+        baseparm
+        label   "Signature"
+        export  none
+    }
+    parm {
+        name    "tex1"
+        label   "Texture 1"
+        type    float
+        default { "0" }
+        help    "One of the two textures to be mixed. "
+        range   { 0 1 }
+    }
+    parm {
+        name    "tex1_s"
+        label   "Texture 1"
+        type    color
+        size    3
+        default { "0" "0" "0" }
+        help    "One of the two textures to be mixed. "
+        range   { 0 1 }
+    }
+    parm {
+        name    "tex2"
+        label   "Texture 2"
+        type    float
+        default { "1" }
+        help    "The other texture to be mixed. These two textures must be of the same type. "
+        range   { 0 1 }
+    }
+    parm {
+        name    "tex2_s"
+        label   "Texture 2"
+        type    color
+        size    3
+        default { "1" "1" "1" }
+        help    "The other texture to be mixed. These two textures must be of the same type. "
+        range   { 0 1 }
+    }
+    parm {
+        name    "amount"
+        label   "Amount"
+        type    float
+        default { "0.5" }
+        help    "The amount to use when linearly interpolating between the two mix textures. "
+        range   { 0 10 }
+    }
+}

@@ -1,0 +1,89 @@
+# Dialog script for pbrt_texture_fbm automatically generated
+
+{
+    name	pbrt_texture_fbm
+    script	fbm
+    label	"PBRT FBmTexture"
+
+    rendermask	PBRT
+    externalshader 1
+    shadertype	generic
+    output	float	output	Output
+    signature	Float	default	{ float }
+    signature	Spectrum	s	{ struct_PBRTSpectrum }
+
+    outputoverrides	default
+    {
+	___begin	auto
+			(0)
+    }
+    outputoverrides	s
+    {
+	___begin	auto
+			(0)
+    }
+
+    help {
+	"#type: node"
+	"#context: vop"
+	"#tags: rman,pattern"
+	"#icon: NETWORKS/shop"
+	""
+	"= pxrhsl ="
+	""
+	"Adjust the hue, saturation and value of a given input color. Note the output is in RGB color space."
+	"@parameters"
+	""
+	"inputRGB:"
+	"The color to have HSL adjustments applied to it."
+	""
+	"hue:"
+	"The amount to shift hue by."
+	""
+	"saturation:"
+	"The amount to scale saturation by."
+	""
+	"luminance:"
+	"The amount to scale luminance by."
+	""
+    }
+
+    parm {
+        name    "signature"
+        baseparm
+        label   "Signature"
+        export  none
+    }
+    parm {
+        name    "octaves"
+        label   "Octaves"
+        type    integer
+        default { "8" }
+        help    "The maximum number of octaves of noise to use in spectral synthesis. "
+        range   { 0 10 }
+    }
+    parm {
+        name    "roughness"
+        label   "Roughness"
+        type    float
+        default { "0.5" }
+        help    "The \"bumpiness\" of the resulting texture. "
+        range   { 0 10 }
+    }
+    group {
+        name    "folder0_1"
+        label   "3D Mapping"
+
+        parm {
+            name    "texture_space"
+            label   "Texture Space"
+            type    oppath
+            default { "" }
+            help    "A object to use as a reference for the 3d texture space."
+            parmtag { "opfilter" "!!OBJ!!" }
+            parmtag { "oprelative" "." }
+            parmtag { "pbrt.type" "space" }
+        }
+    }
+
+}

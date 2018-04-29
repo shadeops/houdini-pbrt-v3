@@ -1,0 +1,69 @@
+# Dialog script for pbrt_integrator_whitted automatically generated
+
+{
+    name	pbrt_integrator_whitted
+    script	whitted
+    label	"PBRT WhittedIntegrator"
+
+    rendermask	PBRT
+    externalshader 1
+    shadertype	generic
+    signature	"Default Inputs"	default	{ }
+
+    outputoverrides	default
+    {
+    }
+
+    help {
+	"#type: node"
+	"#context: vop"
+	"#tags: rman,pattern"
+	"#icon: NETWORKS/shop"
+	""
+	"= pxrhsl ="
+	""
+	"Adjust the hue, saturation and value of a given input color. Note the output is in RGB color space."
+	"@parameters"
+	""
+	"inputRGB:"
+	"The color to have HSL adjustments applied to it."
+	""
+	"hue:"
+	"The amount to shift hue by."
+	""
+	"saturation:"
+	"The amount to scale saturation by."
+	""
+	"luminance:"
+	"The amount to scale luminance by."
+	""
+    }
+
+    parm {
+        name    "maxdepth"
+        label   "Max Depth"
+        type    integer
+        default { "5" }
+        help    "Maximum length of a light-carrying path sampled by the integrator."
+        range   { 0 10 }
+    }
+    parm {
+        name    "do_pixelbounds"
+        label   "Pixel Bounds"
+        type    toggle
+        nolabel
+        joinnext
+        default { "0" }
+        parmtag { "pbrt.meta" "1" }
+    }
+    parm {
+        name    "pixelbounds"
+        label   "Pixel Bounds"
+        type    integer
+        size    4
+        default { "0" "640" "0" "480" }
+        help    "Subset of image to sample during rendering; in order, values given specify the starting and ending x coordinates and then starting and ending y coordinates. (This functionality is primarily useful for narrowing down to a few pixels for debugging.)"
+        disablewhen "{ do_pixelbounds == 0 }"
+        range   { -1 1 }
+    }
+}

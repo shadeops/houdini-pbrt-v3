@@ -1,0 +1,82 @@
+# Dialog script for pbrt_light_infinite automatically generated
+
+{
+    name	pbrt_light_infinite
+    script	infinite
+    label	"PBRT InfiniteAreaLight"
+
+    rendermask	PBRT
+    externalshader 1
+    shadertype	generic
+    input	struct_PBRTSpectrum	scale	scale
+    input	struct_PBRTSpectrum	L	L
+    inputflags	scale	0
+    inputflags	L	0
+    signature	"Default Inputs"	default	{ struct_PBRTSpectrum struct_PBRTSpectrum }
+
+    outputoverrides	default
+    {
+    }
+
+    help {
+	"#type: node"
+	"#context: vop"
+	"#tags: rman,pattern"
+	"#icon: NETWORKS/shop"
+	""
+	"= pxrhsl ="
+	""
+	"Adjust the hue, saturation and value of a given input color. Note the output is in RGB color space."
+	"@parameters"
+	""
+	"inputRGB:"
+	"The color to have HSL adjustments applied to it."
+	""
+	"hue:"
+	"The amount to shift hue by."
+	""
+	"saturation:"
+	"The amount to scale saturation by."
+	""
+	"luminance:"
+	"The amount to scale luminance by."
+	""
+    }
+
+    parm {
+        name    "scale"
+        label   "Scale"
+        type    color
+        size    3
+        default { "1" "1" "1" }
+        help    "Scale factor that modulates the amount of light that the light source emits into the scene."
+        range   { 0 1 }
+        parmtag { "pbrt.spectrum" "input" }
+    }
+    parm {
+        name    "L"
+        label   "L"
+        type    color
+        size    3
+        default { "1" "1" "1" }
+        help    "The radiance emitted from the light source. "
+        range   { 0 1 }
+        parmtag { "pbrt.spectrum" "input" }
+    }
+    parm {
+        name    "samples"
+        label   "Samples"
+        type    integer
+        default { "1" }
+        help    "Suggested number of shadow samples to take when computing illumination from the light. Depending on the number of pixel samples being taken, this value may need to be increased to reduce noise in the illumination computation for the light. (Note that this value is used only when the DirectLightingIntegrator is used.)"
+        range   { 1 32 }
+    }
+    parm {
+        name    "mapname"
+        label   "Map Name"
+        type    file
+        default { "" }
+        help    "The environment map to use for the infinite area light. If this is not provided, the light will be a constant color. "
+        parmtag { "filechooser_mode" "read" }
+    }
+}

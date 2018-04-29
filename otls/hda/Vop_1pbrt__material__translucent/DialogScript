@@ -1,0 +1,105 @@
+# Dialog script for pbrt_material_translucent automatically generated
+
+{
+    name	pbrt_material_translucent
+    script	translucent
+    label	"PBRT TranslucentMaterial"
+
+    rendermask	PBRT
+    externalshader 1
+    shadertype	generic
+    input	float	bumpmap	bumpmap
+    input	struct_PBRTSpectrum	Kd	"Diffuse Reflection"
+    input	struct_PBRTSpectrum	Ks	"Glossy Reflection"
+    input	struct_PBRTSpectrum	reflect	Reflection
+    input	struct_PBRTSpectrum	transmit	Transmission
+    input	float	roughness	Roughness
+    output	struct_PBRTMaterial	material	material
+    inputflags	bumpmap	0
+    inputflags	Kd	0
+    inputflags	Ks	0
+    inputflags	reflect	0
+    inputflags	transmit	0
+    inputflags	roughness	0
+    signature	"Default Inputs"	default	{ float struct_PBRTSpectrum struct_PBRTSpectrum struct_PBRTSpectrum struct_PBRTSpectrum float struct_PBRTMaterial }
+
+    outputoverrides	default
+    {
+	___begin	auto
+			(0)
+    }
+
+    help {
+	"#type: node"
+	"#context: vop"
+	"#tags: rman,pattern"
+	"#icon: NETWORKS/shop"
+	""
+	"= pxrhsl ="
+	""
+	"Adjust the hue, saturation and value of a given input color. Note the output is in RGB color space."
+	"@parameters"
+	""
+	"inputRGB:"
+	"The color to have HSL adjustments applied to it."
+	""
+	"hue:"
+	"The amount to shift hue by."
+	""
+	"saturation:"
+	"The amount to scale saturation by."
+	""
+	"luminance:"
+	"The amount to scale luminance by."
+	""
+    }
+
+    parm {
+        name    "Kd"
+        label   "Diffuse Reflection"
+        type    color
+        size    3
+        default { "0.25" "0.25" "0.25" }
+        range   { 0 1 }
+    }
+    parm {
+        name    "Ks"
+        label   "Glossy Reflection"
+        type    color
+        size    3
+        default { "0.25" "0.25" "0.25" }
+        range   { 0 1 }
+    }
+    parm {
+        name    "reflect"
+        label   "Reflection"
+        type    color
+        size    3
+        default { "0.5" "0.5" "0.5" }
+        help    "Fraction of light reflected."
+        range   { 0 1 }
+    }
+    parm {
+        name    "transmit"
+        label   "Transmission"
+        type    color
+        size    3
+        default { "0.5" "0.5" "0.5" }
+        help    "Fraction of light transmitted. "
+        range   { 0 1 }
+    }
+    parm {
+        name    "roughness"
+        label   "Roughness"
+        type    float
+        default { "0.1" }
+        range   { 0 1 }
+    }
+    parm {
+        name    "remaproughness"
+        label   "Remap Roughness"
+        type    toggle
+        default { "1" }
+        help    "If true, roughness values are expected to be in the range [0,1], and are remapped to microfacet distribution function parameter values that range from near-perfect-specular at 0 to very rough at 1. Otherwise the roughness parameters are used directly for the alpha parameters of the microfacet distribution function."
+    }
+}

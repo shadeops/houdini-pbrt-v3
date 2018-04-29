@@ -1,0 +1,198 @@
+# Dialog script for pbrt_material_disney automatically generated
+
+{
+    name	pbrt_material_disney
+    script	disney
+    label	"PBRT DisneyMaterial"
+
+    rendermask	PBRT
+    externalshader 1
+    shadertype	generic
+    input	float	bumpmap	bumpmap
+    input	struct_PBRTSpectrum	color	Color
+    input	float	anisotropic	Anisotropic
+    input	float	clearcoat	Clearcoat
+    input	float	clearcoatgloss	"Clearcoat Gloss"
+    input	float	eta	Eta
+    input	float	metallic	Metallic
+    input	float	roughness	Roughness
+    input	struct_PBRTSpectrum	scatterdistance	"Scatter Distance"
+    input	float	sheen	Sheen
+    input	float	sheentint	"Sheen Tint"
+    input	float	spectrans	"Specular Transmission"
+    input	float	speculartint	"Specular Tint"
+    input	struct_PBRTSpectrum	difftrans	"Diffuse Transmission"
+    input	struct_PBRTSpectrum	flatness	Flatness
+    output	struct_PBRTMaterial	material	material
+    inputflags	bumpmap	0
+    inputflags	color	0
+    inputflags	anisotropic	0
+    inputflags	clearcoat	0
+    inputflags	clearcoatgloss	0
+    inputflags	eta	0
+    inputflags	metallic	0
+    inputflags	roughness	0
+    inputflags	scatterdistance	0
+    inputflags	sheen	0
+    inputflags	sheentint	0
+    inputflags	spectrans	0
+    inputflags	speculartint	0
+    inputflags	difftrans	0
+    inputflags	flatness	0
+    signature	"Default Inputs"	default	{ float struct_PBRTSpectrum float float float float float float struct_PBRTSpectrum float float float float struct_PBRTSpectrum struct_PBRTSpectrum struct_PBRTMaterial }
+
+    outputoverrides	default
+    {
+	___begin	auto
+			(0)
+    }
+
+    help {
+	"#type: node"
+	"#context: vop"
+	"#tags: rman,pattern"
+	"#icon: NETWORKS/shop"
+	""
+	"= pxrhsl ="
+	""
+	"Adjust the hue, saturation and value of a given input color. Note the output is in RGB color space."
+	"@parameters"
+	""
+	"inputRGB:"
+	"The color to have HSL adjustments applied to it."
+	""
+	"hue:"
+	"The amount to shift hue by."
+	""
+	"saturation:"
+	"The amount to scale saturation by."
+	""
+	"luminance:"
+	"The amount to scale luminance by."
+	""
+    }
+
+    parm {
+        name    "color"
+        label   "Color"
+        type    color
+        size    3
+        default { "0.5" "0.5" "0.5" }
+        help    "Base color of the material."
+        range   { 0 1 }
+    }
+    parm {
+        name    "anisotropic"
+        label   "Anisotropic"
+        type    float
+        default { "0" }
+        help    "Controls degree of anisotropy in the specular highlight. Default, 0, is none."
+        range   { 0! 1! }
+    }
+    parm {
+        name    "clearcoat"
+        label   "Clearcoat"
+        type    float
+        default { "0" }
+        help    "Contribution of the clearcoat, which gives isotropic specular highlight that takes on the light's color."
+        range   { 0! 1! }
+    }
+    parm {
+        name    "clearcoatgloss"
+        label   "Clearcoat Gloss"
+        type    float
+        default { "1" }
+        help    "Glossiness of the clearcoat. Larger values give tighter highglights."
+        range   { 0! 1! }
+    }
+    parm {
+        name    "eta"
+        label   "Eta"
+        type    float
+        default { "1.5" }
+        help    "Object's index of refraction."
+        range   { 0 5 }
+    }
+    parm {
+        name    "metallic"
+        label   "Metallic"
+        type    float
+        default { "0" }
+        help    "Controls how \"metal\" the object appears. Higher values reduce diffuse scattering and shift the highlight color towards the material's color. "
+        range   { 0! 1! }
+    }
+    parm {
+        name    "roughness"
+        label   "Roughness"
+        type    float
+        default { "0.5" }
+        help    "Material's roughness. Affects specular reflection and transmission. "
+        range   { 0! 1! }
+    }
+    parm {
+        name    "scatterdistance"
+        label   "Scatter Distance"
+        type    color
+        size    3
+        default { "0" "0" "0" }
+        help    " Distance that light travels in the object before scattering. If greater than zero, subsurface scattering is used in place of diffuse reflection."
+        range   { 0 1 }
+    }
+    parm {
+        name    "sheen"
+        label   "Sheen"
+        type    float
+        default { "0" }
+        help    "Contribution of the \"sheen\" term, which adds retro-reflection at object edges. Mostly useful for cloth."
+        range   { 0! 1! }
+    }
+    parm {
+        name    "sheentint"
+        label   "Sheen Tint"
+        type    float
+        default { "0.5" }
+        help    "Controls how much the sheen term's color is tinted by the base color."
+        range   { 0! 1! }
+    }
+    parm {
+        name    "spectrans"
+        label   "Specular Transmission"
+        type    float
+        default { "0" }
+        help    " Controls contribution of glossy specular transmission"
+        range   { 0! 1! }
+    }
+    parm {
+        name    "speculartint"
+        label   "Specular Tint"
+        type    float
+        default { "0" }
+        help    "Controls how much the specular highlight's color is tinted by the base color"
+        range   { 0! 1! }
+    }
+    parm {
+        name    "thin"
+        label   "Thin Surface Model"
+        type    toggle
+        default { "0" }
+        help    "Controls whether the thin is enabled surface model. "
+    }
+    parm {
+        name    "difftrans"
+        label   "Diffuse Transmission"
+        type    color
+        size    3
+        default { "1" "1" "1" }
+        help    "Controls how much of the diffuse scattering is reflected versus transmitted. Zero causes only diffuse reflection and no diffuse transmission, 1 gives an even split between both, and 2 gives only diffuse transmission."
+        range   { 0! 2! }
+    }
+    parm {
+        name    "flatness"
+        label   "Flatness"
+        type    color
+        size    3
+        default { "0" "0" "0" }
+        help    "Base color of the material."
+        range   { 0 1 }
+    }
+}

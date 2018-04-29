@@ -1,0 +1,90 @@
+# Dialog script for pbrt_integrator_mlt automatically generated
+
+{
+    name	pbrt_integrator_mlt
+    script	mlt
+    label	"PBRT MLTIntegrator"
+
+    rendermask	PBRT
+    externalshader 1
+    shadertype	generic
+    signature	"Default Inputs"	default	{ }
+
+    outputoverrides	default
+    {
+    }
+
+    help {
+	"#type: node"
+	"#context: vop"
+	"#tags: rman,pattern"
+	"#icon: NETWORKS/shop"
+	""
+	"= pxrhsl ="
+	""
+	"Adjust the hue, saturation and value of a given input color. Note the output is in RGB color space."
+	"@parameters"
+	""
+	"inputRGB:"
+	"The color to have HSL adjustments applied to it."
+	""
+	"hue:"
+	"The amount to shift hue by."
+	""
+	"saturation:"
+	"The amount to scale saturation by."
+	""
+	"luminance:"
+	"The amount to scale luminance by."
+	""
+    }
+
+    parm {
+        name    "maxdepth"
+        label   "Max Depth"
+        type    integer
+        default { "5" }
+        help    "Maximum length of a light-carrying path sampled by the integrator."
+        range   { 0 10 }
+    }
+    parm {
+        name    "bootstrapsamples"
+        label   "Bootstrap Samples"
+        type    integer
+        default { "100000" }
+        help    "Number of samples to take during the \"bootstrap\" phase; some of these samples are used for initial light-carrying paths for the Metropolis algorithm. "
+        range   { 0 10 }
+    }
+    parm {
+        name    "chains"
+        label   "Chains"
+        type    integer
+        default { "1000" }
+        help    "Number of unique Markov chains chains to follow with the Metropolis algorithm. (Each chain starts with a new path from the bootstrap phase.) "
+        range   { 0 10 }
+    }
+    parm {
+        name    "mutationsperpixel"
+        label   "Mutations Per Pixel"
+        type    integer
+        default { "100" }
+        help    "Number of path mutations to apply per pixel in the image. (Note that each pixel will generally receive more or fewer path contributions, depending on how bright the pixel is. For the most part, this is the most effective parameter to increase to improve image quality. "
+        range   { 0 10 }
+    }
+    parm {
+        name    "largestepprobability"
+        label   "Large Step Probability"
+        type    float
+        default { "0.3" }
+        help    "Probability of discarding the current path and generating a new random path (versus applying a small mutation to the current path). For scenes with very difficult-to-sample light transport paths, reducing this probability may be worthwhile."
+        range   { 0 10 }
+    }
+    parm {
+        name    "sigma"
+        label   "Sigma"
+        type    float
+        default { "0.01" }
+        help    "Standard deviation of the perturbation applied to random samples in [0,1] used for small path mutations."
+        range   { 0 10 }
+    }
+}

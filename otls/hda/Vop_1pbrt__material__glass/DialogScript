@@ -1,0 +1,106 @@
+# Dialog script for pbrt_material_glass automatically generated
+
+{
+    name	pbrt_material_glass
+    script	glass
+    label	"PBRT GlassMaterial"
+
+    rendermask	PBRT
+    externalshader 1
+    shadertype	generic
+    input	float	bumpmap	bumpmap
+    input	struct_PBRTSpectrum	Kr	Reflectivity
+    input	struct_PBRTSpectrum	Kt	Transmissivity
+    input	float	eta	Eta
+    input	float	uroughness	"Roughness U"
+    input	float	vroughness	"Roughness V"
+    output	struct_PBRTMaterial	material	material
+    inputflags	bumpmap	0
+    inputflags	Kr	0
+    inputflags	Kt	0
+    inputflags	eta	0
+    inputflags	uroughness	0
+    inputflags	vroughness	0
+    signature	"Default Inputs"	default	{ float struct_PBRTSpectrum struct_PBRTSpectrum float float float struct_PBRTMaterial }
+
+    outputoverrides	default
+    {
+	___begin	auto
+			(0)
+    }
+
+    help {
+	"#type: node"
+	"#context: vop"
+	"#tags: rman,pattern"
+	"#icon: NETWORKS/shop"
+	""
+	"= pxrhsl ="
+	""
+	"Adjust the hue, saturation and value of a given input color. Note the output is in RGB color space."
+	"@parameters"
+	""
+	"inputRGB:"
+	"The color to have HSL adjustments applied to it."
+	""
+	"hue:"
+	"The amount to shift hue by."
+	""
+	"saturation:"
+	"The amount to scale saturation by."
+	""
+	"luminance:"
+	"The amount to scale luminance by."
+	""
+    }
+
+    parm {
+        name    "Kr"
+        label   "Reflectivity"
+        type    color
+        size    3
+        default { "1" "1" "1" }
+        help    " The reflectivity of the surface."
+        range   { 0 1 }
+    }
+    parm {
+        name    "Kt"
+        label   "Transmissivity"
+        type    color
+        size    3
+        default { "1" "1" "1" }
+        help    "The transmissivity of the surface."
+        range   { 0 1 }
+    }
+    parm {
+        name    "eta"
+        label   "Eta"
+        type    float
+        default { "1.5" }
+        help    " The index of refraction of the inside of the object. (pbrt implicitly assumes that the exterior of objects is a vacuum, with IOR of 1.)"
+        range   { 0.5 5 }
+    }
+    parm {
+        name    "uroughness"
+        label   "Roughness U"
+        type    float
+        default { "0" }
+        help    "Microfacet roughness in the u direction. If zero, perfect specular reflection is modeled."
+        range   { 0 1 }
+    }
+    parm {
+        name    "vroughness"
+        label   "Roughness V"
+        type    float
+        default { "0" }
+        help    "Microfacet roughness in the v direction. If zero, perfect specular reflection is modeled."
+        range   { 0 1 }
+    }
+    parm {
+        name    "remaproughness"
+        label   "Remap Roughness"
+        type    toggle
+        default { "1" }
+        help    "If true, roughness values are expected to be in the range [0,1], and are remapped to microfacet distribution function parameter values that range from near-perfect-specular at 0 to very rough at 1. Otherwise the roughness parameters are used directly for the alpha parameters of the microfacet distribution function."
+    }
+}

@@ -1,0 +1,86 @@
+# Dialog script for pbrt_light_distant automatically generated
+
+{
+    name	pbrt_light_distant
+    script	distant
+    label	"PBRT DistantLight"
+
+    rendermask	PBRT
+    externalshader 1
+    shadertype	generic
+    input	struct_PBRTSpectrum	scale	scale
+    input	struct_PBRTSpectrum	L	L
+    inputflags	scale	0
+    inputflags	L	0
+    signature	"Default Inputs"	default	{ struct_PBRTSpectrum struct_PBRTSpectrum }
+
+    outputoverrides	default
+    {
+    }
+
+    help {
+	"#type: node"
+	"#context: vop"
+	"#tags: rman,pattern"
+	"#icon: NETWORKS/shop"
+	""
+	"= pxrhsl ="
+	""
+	"Adjust the hue, saturation and value of a given input color. Note the output is in RGB color space."
+	"@parameters"
+	""
+	"inputRGB:"
+	"The color to have HSL adjustments applied to it."
+	""
+	"hue:"
+	"The amount to shift hue by."
+	""
+	"saturation:"
+	"The amount to scale saturation by."
+	""
+	"luminance:"
+	"The amount to scale luminance by."
+	""
+    }
+
+    parm {
+        name    "scale"
+        label   "Scale"
+        type    color
+        size    3
+        default { "1" "1" "1" }
+        help    "Scale factor that modulates the amount of light that the light source emits into the scene."
+        range   { 0 1 }
+        parmtag { "pbrt.spectrum" "input" }
+    }
+    parm {
+        name    "L"
+        label   "L"
+        type    color
+        size    3
+        default { "1" "1" "1" }
+        help    "The radiance emitted from the light source. "
+        range   { 0 1 }
+        parmtag { "pbrt.spectrum" "input" }
+    }
+    parm {
+        name    "from"
+        label   "From"
+        type    vector
+        size    3
+        default { "0" "0" "0" }
+        help    "\"from\" and \"to\" define the direction vector along which illumination from the light arrives at the scene. The defaults give a light that shines along the z axis."
+        range   { -1 1 }
+        parmtag { "pbrt.type" "point" }
+    }
+    parm {
+        name    "to"
+        label   "To"
+        type    vector
+        size    3
+        default { "0" "0" "1" }
+        help    "\"from\" and \"to\" define the direction vector along which illumination from the light arrives at the scene. The defaults give a light that shines along the z axis."
+        range   { -1 1 }
+        parmtag { "pbrt.type" "point" }
+    }
+}

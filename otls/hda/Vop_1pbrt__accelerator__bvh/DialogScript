@@ -1,0 +1,63 @@
+# Dialog script for pbrt_accelerator_bvh automatically generated
+
+{
+    name	pbrt_accelerator_bvh
+    script	bvh
+    label	"PBRT BVHAccel"
+
+    rendermask	PBRT
+    externalshader 1
+    shadertype	generic
+    signature	"Default Inputs"	default	{ }
+
+    outputoverrides	default
+    {
+    }
+
+    help {
+	"#type: node"
+	"#context: vop"
+	"#tags: rman,pattern"
+	"#icon: NETWORKS/shop"
+	""
+	"= pxrhsl ="
+	""
+	"Adjust the hue, saturation and value of a given input color. Note the output is in RGB color space."
+	"@parameters"
+	""
+	"inputRGB:"
+	"The color to have HSL adjustments applied to it."
+	""
+	"hue:"
+	"The amount to shift hue by."
+	""
+	"saturation:"
+	"The amount to scale saturation by."
+	""
+	"luminance:"
+	"The amount to scale luminance by."
+	""
+    }
+
+    parm {
+        name    "maxnodeprims"
+        label   "Max Node Prims"
+        type    integer
+        default { "4" }
+        help    "Maximum number of primitives to allow in a node in the tree. Once the primitives have been split to groups of this size or smaller, a leaf node is created."
+        range   { 0 10 }
+    }
+    parm {
+        name    "splitmethod"
+        label   "Split Method"
+        type    ordinal
+        default { "sah" }
+        help    "Method to use to partition the primitives when building the tree. The default, \"sah\", denotes the surface area heuristic; the default should almost certainly be used. The other options—\"middle\", which splits each node at its midpoint along the split axis, \"equal\", which splits the current group of primitives into two equal-sized sets, and \"hlbvh\", which selects the HLBVH algorithm, which parallelizes well—are slightly more efficient to evaluate at tree construction time, but lead to substantially lower-quality hierarchies."
+        menu {
+            "sah"       "Surface Area Heuristic"
+            "middle"    "Midpoin"
+            "equal"     "Equal Sets"
+            "hlbvh"     "HLBVH"
+        }
+    }
+}

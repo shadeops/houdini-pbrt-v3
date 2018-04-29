@@ -1,0 +1,66 @@
+# Dialog script for pbrt_filter_gaussian automatically generated
+
+{
+    name	pbrt_filter_gaussian
+    script	gaussian
+    label	"PBRT GaussianFilter"
+
+    rendermask	PBRT
+    externalshader 1
+    shadertype	generic
+    signature	"Default Inputs"	default	{ }
+
+    outputoverrides	default
+    {
+    }
+
+    help {
+	"#type: node"
+	"#context: vop"
+	"#tags: rman,pattern"
+	"#icon: NETWORKS/shop"
+	""
+	"= pxrhsl ="
+	""
+	"Adjust the hue, saturation and value of a given input color. Note the output is in RGB color space."
+	"@parameters"
+	""
+	"inputRGB:"
+	"The color to have HSL adjustments applied to it."
+	""
+	"hue:"
+	"The amount to shift hue by."
+	""
+	"saturation:"
+	"The amount to scale saturation by."
+	""
+	"luminance:"
+	"The amount to scale luminance by."
+	""
+    }
+
+    parm {
+        name    "xwidth"
+        label   "Width X"
+        type    float
+        default { "2" }
+        help    "The width of the filter in the x direction. "
+        range   { 0 10 }
+    }
+    parm {
+        name    "ywidth"
+        label   "Width Y"
+        type    float
+        default { "2" }
+        help    "The width of the filter in the y direction. "
+        range   { 0 10 }
+    }
+    parm {
+        name    "alpha"
+        label   "Alpha"
+        type    float
+        default { "2" }
+        help    "alpha controls the falloff rate of the Gaussian filter. Smaller values give a blurrier image. "
+        range   { 0 10 }
+    }
+}

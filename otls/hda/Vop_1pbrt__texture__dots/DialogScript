@@ -1,0 +1,172 @@
+# Dialog script for pbrt_texture_dots automatically generated
+
+{
+    name	pbrt_texture_dots
+    script	dots
+    label	"PBRT DotsTexture"
+
+    rendermask	PBRT
+    externalshader 1
+    shadertype	generic
+    input	float	inside	Inside
+    input	float	outside	Outside
+    output	float	output	Output
+    inputflags	inside	0
+    inputflags	outside	0
+    signature	Float	default	{ float float float }
+    signature	Spectrum	s	{ struct_PBRTSpectrum struct_PBRTSpectrum struct_PBRTSpectrum }
+
+    outputoverrides	default
+    {
+	___begin	auto
+			(0)
+    }
+    outputoverrides	s
+    {
+	___begin	auto
+			(0)
+    }
+
+    help {
+	"#type: node"
+	"#context: vop"
+	"#tags: rman,pattern"
+	"#icon: NETWORKS/shop"
+	""
+	"= pxrhsl ="
+	""
+	"Adjust the hue, saturation and value of a given input color. Note the output is in RGB color space."
+	"@parameters"
+	""
+	"inputRGB:"
+	"The color to have HSL adjustments applied to it."
+	""
+	"hue:"
+	"The amount to shift hue by."
+	""
+	"saturation:"
+	"The amount to scale saturation by."
+	""
+	"luminance:"
+	"The amount to scale luminance by."
+	""
+    }
+
+    parm {
+        name    "signature"
+        baseparm
+        label   "Signature"
+        export  none
+    }
+    parm {
+        name    "inside"
+        label   "Inside"
+        type    float
+        default { "1" }
+        help    "The textures to use for coloring the dots and the background. "
+        range   { 0 1 }
+    }
+    parm {
+        name    "inside_s"
+        label   "Inside"
+        type    color
+        size    3
+        default { "1" "1" "1" }
+        help    "The textures to use for coloring the dots and the background. "
+        range   { 0 1 }
+    }
+    parm {
+        name    "outside"
+        label   "Outside"
+        type    float
+        default { "1" }
+        help    "The four values to be bilinearly interpolated between. "
+        range   { 0 1 }
+    }
+    parm {
+        name    "outside_s"
+        label   "Outside"
+        type    color
+        size    3
+        default { "1" "1" "1" }
+        help    "The textures to use for coloring the dots and the background. "
+        range   { 0 1 }
+    }
+    group {
+        name    "folder0"
+        label   "2D Mapping"
+
+        parm {
+            name    "mapping"
+            label   "Mapping"
+            type    ordinal
+            default { "uv" }
+            help    "A string specifying the kind of texture coordinate mapping to use. Legal values are: \"uv\", \"spherical\", \"cylindrical\", or \"planar\". "
+            menu {
+                "uv"            "UVs"
+                "spherical"     "Spherical"
+                "cylindrical"   "Cylindrical"
+                "planar"        "Planar"
+            }
+        }
+        parm {
+            name    "uscale"
+            label   "Scale U"
+            type    float
+            default { "1" }
+            help    "Scaling factors to be applied to the u and v texture coordinates, respectively. These parameters are only meaningful if the texture coordinate mapping type has been set to \"uv\". "
+            disablewhen "{ mapping != uv }"
+            range   { 0 10 }
+        }
+        parm {
+            name    "vscale"
+            label   "Scale V"
+            type    float
+            default { "1" }
+            help    "Scaling factors to be applied to the u and v texture coordinates, respectively. These parameters are only meaningful if the texture coordinate mapping type has been set to \"uv\". "
+            disablewhen "{ mapping != uv }"
+            range   { 0 10 }
+        }
+        parm {
+            name    "udelta"
+            label   "Delta U"
+            type    float
+            default { "0" }
+            help    "An offset to be applied to the u and v texture coordinates, respectively. These parameters are only meaningful if the texture coordinate mapping type has been set to \"uv\" or \"planar\". "
+            disablewhen "{ mapping != uv mapping != planar }"
+            range   { 0 10 }
+        }
+        parm {
+            name    "vdelta"
+            label   "Delta V"
+            type    float
+            default { "0" }
+            help    "An offset to be applied to the u and v texture coordinates, respectively. These parameters are only meaningful if the texture coordinate mapping type has been set to \"uv\" or \"planar\". "
+            disablewhen "{ mapping != uv mapping != planar }"
+            range   { 0 10 }
+        }
+        parm {
+            name    "v1"
+            label   "v1"
+            type    vector
+            size    3
+            default { "1" "0" "0" }
+            help    "v1 and v2 are two vectors that define a planar mapping. "
+            disablewhen "{ mapping != planar }"
+            range   { -1 1 }
+            parmtag { "pbrt.type" "vector" }
+        }
+        parm {
+            name    "v2"
+            label   "v2"
+            type    vector
+            size    3
+            default { "0" "1" "0" }
+            help    "v1 and v2 are two vectors that define a planar mapping. "
+            disablewhen "{ mapping != planar }"
+            range   { -1 1 }
+            parmtag { "pbrt.type" "vector" }
+        }
+    }
+
+}

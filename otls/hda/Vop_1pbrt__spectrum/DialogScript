@@ -1,0 +1,122 @@
+# Dialog script for pbrt_spectrum automatically generated
+
+{
+    name	pbrt_spectrum
+    script	pbrt_spectrum
+    label	"PBRT Spectrum"
+
+    rendermask	PBRT
+    externalshader 1
+    shadertype	generic
+    output	struct_PBRTSpectrum	output1	"Output 1"
+    signature	"Default Inputs"	default	{ struct_PBRTSpectrum }
+
+    outputoverrides	default
+    {
+	___begin	auto
+			(0)
+    }
+
+    help {
+	"#type: node"
+	"#context: vop"
+	"#tags: rman,pattern"
+	"#icon: NETWORKS/shop"
+	""
+	"= pxrhsl ="
+	""
+	"Adjust the hue, saturation and value of a given input color. Note the output is in RGB color space."
+	"@parameters"
+	""
+	"inputRGB:"
+	"The color to have HSL adjustments applied to it."
+	""
+	"hue:"
+	"The amount to shift hue by."
+	""
+	"saturation:"
+	"The amount to scale saturation by."
+	""
+	"luminance:"
+	"The amount to scale luminance by."
+	""
+    }
+
+    parm {
+        name    "type"
+        label   "Spectrum Type"
+        type    ordinal
+        default { "0" }
+        menu {
+            "rgb"       "RGB"
+            "xyz"       "XYZ"
+            "spd"       "SPD"
+            "file"      "SPD File"
+            "ramp"      "SPD Ramp"
+            "blackbody" "Blackbody"
+        }
+    }
+    parm {
+        name    "rgb"
+        label   "RGB"
+        type    color
+        size    3
+        default { "1" "1" "1" }
+        hidewhen "{ type != rgb }"
+        range   { 0 1 }
+    }
+    parm {
+        name    "xyz"
+        label   "XYZ"
+        type    vector
+        size    3
+        default { "0.9504" "1" "1.0888" }
+        hidewhen "{ type != xyz }"
+        range   { 0 1 }
+    }
+    parm {
+        name    "spd"
+        label   "SPD"
+        type    keyvaluedict
+        default { "0" }
+        hidewhen "{ type != spd }"
+        parmtag { "sidefx::key_value_dict_key_label" "Wavelength" }
+        parmtag { "sidefx::key_value_dict_value_label" "Value" }
+    }
+    parm {
+        name    "file"
+        label   "SPD File"
+        type    file
+        default { "" }
+        hidewhen "{ type != file }"
+        parmtag { "filechooser_mode" "read" }
+    }
+    parm {
+        name    "blackbody"
+        label   "Kelvin/Value"
+        type    vector2
+        size    2
+        default { "6500" "1" }
+        hidewhen "{ type != blackbody }"
+        range   { 0! 1 }
+    }
+    parm {
+        name    "ramp"
+        label   "SPD Ramp"
+        type    ramp_flt
+        default { "2" }
+        hidewhen "{ type != ramp }"
+        range   { 1! 10 }
+        parmtag { "rampbasisdefault" "catmull-rom" }
+        parmtag { "rampcolortype" "rgb" }
+    }
+    parm {
+        name    "ramp_range"
+        label   "Spectrum Range"
+        type    vector2
+        size    2
+        default { "380" "780" }
+        hidewhen "{ type != ramp }"
+        range   { -1 1 }
+    }
+}

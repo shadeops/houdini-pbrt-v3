@@ -1,0 +1,111 @@
+# Dialog script for pbrt_camera_orthographic automatically generated
+
+{
+    name	pbrt_camera_orthographic
+    script	orthographic
+    label	"PBRT OrthographicCamera"
+
+    rendermask	PBRT
+    externalshader 1
+    shadertype	generic
+    signature	"Default Inputs"	default	{ }
+
+    outputoverrides	default
+    {
+    }
+
+    help {
+	"#type: node"
+	"#context: vop"
+	"#tags: rman,pattern"
+	"#icon: NETWORKS/shop"
+	""
+	"= pxrhsl ="
+	""
+	"Adjust the hue, saturation and value of a given input color. Note the output is in RGB color space."
+	"@parameters"
+	""
+	"inputRGB:"
+	"The color to have HSL adjustments applied to it."
+	""
+	"hue:"
+	"The amount to shift hue by."
+	""
+	"saturation:"
+	"The amount to scale saturation by."
+	""
+	"luminance:"
+	"The amount to scale luminance by."
+	""
+    }
+
+    parm {
+        name    "shutteropen"
+        label   "Shutter Open"
+        type    float
+        default { "0" }
+        help    "The time at which the virtual camera shutter opens."
+        range   { 0 10 }
+    }
+    parm {
+        name    "shutterclose"
+        label   "Shutter Close"
+        type    float
+        default { "1" }
+        help    "The time at which the virtual camera shutter closes."
+        range   { 0 10 }
+    }
+    parm {
+        name    "do_frameaspectratio"
+        label   "Frame Aspect Ratio"
+        type    toggle
+        nolabel
+        joinnext
+        default { "0" }
+        parmtag { "pbrt.meta" "1" }
+    }
+    parm {
+        name    "frameaspectratio"
+        label   "Frame Aspect Ratio"
+        type    float
+        default { "1.3333" }
+        help    "The aspect ratio of the film. By default, this is computed from the x and y resolutions of the film, but it can be overridden if desired."
+        disablewhen "{ do_frameaspectratio == 0 }"
+        range   { 0 10 }
+    }
+    parm {
+        name    "do_screenwindow"
+        label   "Screen Window"
+        type    toggle
+        nolabel
+        joinnext
+        default { "0" }
+        parmtag { "pbrt.meta" "1" }
+    }
+    parm {
+        name    "screenwindow"
+        label   "Screen Window"
+        type    float
+        size    4
+        default { "-1.3333" "1.3333" "-1" "1" }
+        help    "The bounds of the film plane in screen space. By default, this is [-1,1] along the shorter image axis and is set proportionally along the longer axis."
+        disablewhen "{ do_screenwindow == 0 }"
+        range   { -1 1 }
+    }
+    parm {
+        name    "lensradius"
+        label   "Lens Radius"
+        type    float
+        default { "0" }
+        help    "The radius of the lens. Used to render scenes with depth of field and focus effects. The default value yields a pinhole camera."
+        range   { 0 10 }
+    }
+    parm {
+        name    "focaldistance"
+        label   "Focal Distance"
+        type    float
+        default { "1e+31" }
+        help    "Specifies the distance from the camera origin to the focal plane."
+        range   { 0 10 }
+    }
+}

@@ -1,0 +1,73 @@
+# Dialog script for pbrt_sampler_stratified automatically generated
+
+{
+    name	pbrt_sampler_stratified
+    script	stratified
+    label	"PBRT StratifiedSampler"
+
+    rendermask	PBRT
+    externalshader 1
+    shadertype	generic
+    signature	"Default Inputs"	default	{ }
+
+    outputoverrides	default
+    {
+    }
+
+    help {
+	"#type: node"
+	"#context: vop"
+	"#tags: rman,pattern"
+	"#icon: NETWORKS/shop"
+	""
+	"= pxrhsl ="
+	""
+	"Adjust the hue, saturation and value of a given input color. Note the output is in RGB color space."
+	"@parameters"
+	""
+	"inputRGB:"
+	"The color to have HSL adjustments applied to it."
+	""
+	"hue:"
+	"The amount to shift hue by."
+	""
+	"saturation:"
+	"The amount to scale saturation by."
+	""
+	"luminance:"
+	"The amount to scale luminance by."
+	""
+    }
+
+    parm {
+        name    "jitter"
+        label   "Jitter"
+        type    toggle
+        default { "1" }
+        help    "Whether or not the generated samples should be jittered inside each stratum; this is generally only worth setting to \"false\" for comparisons between jittered and uniform sampling—uniform sampling will almost always give a worse result."
+    }
+    parm {
+        name    "xsamples"
+        label   "Samples X"
+        type    integer
+        default { "4" }
+        help    "The number of samples per pixel to take in the x direction."
+        range   { 1! 1024 }
+    }
+    parm {
+        name    "ysamples"
+        label   "Samples Y"
+        type    integer
+        default { "4" }
+        help    " The number of samples per pixel to take in the y direction. In general, \"xsamples\" and \"ysamples\" should be set to the same value for best results."
+        range   { 1! 1024 }
+    }
+    parm {
+        name    "dimensions"
+        label   "Dimensions"
+        type    integer
+        default { "4" }
+        help    " The number of samples per pixel to take in the y direction. In general, \"xsamples\" and \"ysamples\" should be set to the same value for best results."
+        range   { 1! 16 }
+    }
+}

@@ -1,0 +1,868 @@
+Operator:     pbrt
+Label:        PBRT
+Path:         oplib:/Driver/pbrt?Driver/pbrt
+Icon:         opdef:/Driver/pbrt?IconImage
+Table:        Driver
+License:      
+Extra:        
+User:         
+Inputs:       0 to 9999
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Wed Apr 11 14:12:14 2018
+
+Operator:     pbrt_spectrum
+Label:        PBRT Spectrum
+Path:         oplib:/Vop/pbrt_spectrum?Vop/pbrt_spectrum
+Icon:         opdef:/Vop/pbrt_spectrum?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 0
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:37:14 2018
+
+Operator:     pbrt_camera_environment
+Label:        PBRT EnvironmentCamera
+Path:         oplib:/Vop/pbrt_camera_environment?Vop/pbrt_camera_environment
+Icon:         opdef:/Vop/pbrt_camera_environment?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 0
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:36:11 2018
+
+Operator:     pbrt_camera_perspective
+Label:        PBRT PerspectiveCamera
+Path:         oplib:/Vop/pbrt_camera_perspective?Vop/pbrt_camera_perspective
+Icon:         opdef:/Vop/pbrt_camera_perspective?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 0
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:36:19 2018
+
+Operator:     pbrt_camera_orthographic
+Label:        PBRT OrthographicCamera
+Path:         oplib:/Vop/pbrt_camera_orthographic?Vop/pbrt_camera_orthographic
+Icon:         opdef:/Vop/pbrt_camera_orthographic?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 0
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:36:15 2018
+
+Operator:     pbrt_camera_realistic
+Label:        PBRT RealisticCamera
+Path:         oplib:/Vop/pbrt_camera_realistic?Vop/pbrt_camera_realistic
+Icon:         opdef:/Vop/pbrt_camera_realistic?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 0
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:36:23 2018
+
+Operator:     pbrt_sampler_02sequence
+Label:        PBRT ZeroTwoSequenceSampler
+Path:         oplib:/Vop/pbrt_sampler_02sequence?Vop/pbrt_sampler_02sequence
+Icon:         opdef:/Vop/pbrt_sampler_02sequence?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 0
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:35:58 2018
+
+Operator:     pbrt_sampler_halton
+Label:        PBRT HaltonSampler
+Path:         oplib:/Vop/pbrt_sampler_halton?Vop/pbrt_sampler_halton
+Icon:         opdef:/Vop/pbrt_sampler_halton?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 0
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:35:39 2018
+
+Operator:     pbrt_sampler_maxmindist
+Label:        PBRT MaxMinDistSampler
+Path:         oplib:/Vop/pbrt_sampler_maxmindist?Vop/pbrt_sampler_maxmindist
+Icon:         opdef:/Vop/pbrt_sampler_maxmindist?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 0
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:35:47 2018
+
+Operator:     pbrt_sampler_random
+Label:        PBRT RandomSampler
+Path:         oplib:/Vop/pbrt_sampler_random?Vop/pbrt_sampler_random
+Icon:         opdef:/Vop/pbrt_sampler_random?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 0
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:35:50 2018
+
+Operator:     pbrt_sampler_sobol
+Label:        PBRT SobolSampler
+Path:         oplib:/Vop/pbrt_sampler_sobol?Vop/pbrt_sampler_sobol
+Icon:         opdef:/Vop/pbrt_sampler_sobol?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 0
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:37:58 2018
+
+Operator:     pbrt_sampler_stratified
+Label:        PBRT StratifiedSampler
+Path:         oplib:/Vop/pbrt_sampler_stratified?Vop/pbrt_sampler_stratified
+Icon:         opdef:/Vop/pbrt_sampler_stratified?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 0
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:35:54 2018
+
+Operator:     pbrt_film_image
+Label:        PBRT ImageFilm
+Path:         oplib:/Vop/pbrt_film_image?Vop/pbrt_film_image
+Icon:         opdef:/Vop/pbrt_film_image?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 0
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:36:58 2018
+
+Operator:     pbrt_filter_box
+Label:        PBRT BoxFilter
+Path:         oplib:/Vop/pbrt_filter_box?Vop/pbrt_filter_box
+Icon:         opdef:/Vop/pbrt_filter_box?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 0
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:36:33 2018
+
+Operator:     pbrt_filter_gaussian
+Label:        PBRT GaussianFilter
+Path:         oplib:/Vop/pbrt_filter_gaussian?Vop/pbrt_filter_gaussian
+Icon:         opdef:/Vop/pbrt_filter_gaussian?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 0
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:36:38 2018
+
+Operator:     pbrt_filter_triangle
+Label:        PBRT TriangleFilter
+Path:         oplib:/Vop/pbrt_filter_triangle?Vop/pbrt_filter_triangle
+Icon:         opdef:/Vop/pbrt_filter_triangle?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 0
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:36:50 2018
+
+Operator:     pbrt_filter_mitchell
+Label:        PBRT MitchellFilter
+Path:         oplib:/Vop/pbrt_filter_mitchell?Vop/pbrt_filter_mitchell
+Icon:         opdef:/Vop/pbrt_filter_mitchell?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 0
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:36:46 2018
+
+Operator:     pbrt_filter_sinc
+Label:        PBRT LanczosSincFilter
+Path:         oplib:/Vop/pbrt_filter_sinc?Vop/pbrt_filter_sinc
+Icon:         opdef:/Vop/pbrt_filter_sinc?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 0
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:36:42 2018
+
+Operator:     pbrt_integrator_path
+Label:        PBRT PathIntegrator
+Path:         oplib:/Vop/pbrt_integrator_path?Vop/pbrt_integrator_path
+Icon:         opdef:/Vop/pbrt_integrator_path?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 0
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:34:46 2018
+
+Operator:     pbrt_integrator_directlighting
+Label:        PBRT DirectLightingIntegrator
+Path:         oplib:/Vop/pbrt_integrator_directlighting?Vop/pbrt_integrator_directlighting
+Icon:         opdef:/Vop/pbrt_integrator_directlighting?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 0
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:34:38 2018
+
+Operator:     pbrt_integrator_bdpt
+Label:        PBRT BDPTIntegrator
+Path:         oplib:/Vop/pbrt_integrator_bdpt?Vop/pbrt_integrator_bdpt
+Icon:         opdef:/Vop/pbrt_integrator_bdpt?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 0
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:35:19 2018
+
+Operator:     pbrt_integrator_mlt
+Label:        PBRT MLTIntegrator
+Path:         oplib:/Vop/pbrt_integrator_mlt?Vop/pbrt_integrator_mlt
+Icon:         opdef:/Vop/pbrt_integrator_mlt?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 0
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:34:42 2018
+
+Operator:     pbrt_integrator_sppm
+Label:        PBRT SPPMIntegrator
+Path:         oplib:/Vop/pbrt_integrator_sppm?Vop/pbrt_integrator_sppm
+Icon:         opdef:/Vop/pbrt_integrator_sppm?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 0
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:34:51 2018
+
+Operator:     pbrt_integrator_whitted
+Label:        PBRT WhittedIntegrator
+Path:         oplib:/Vop/pbrt_integrator_whitted?Vop/pbrt_integrator_whitted
+Icon:         opdef:/Vop/pbrt_integrator_whitted?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 0
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:35:01 2018
+
+Operator:     pbrt_integrator_ao
+Label:        PBRT AOIntegrator
+Path:         oplib:/Vop/pbrt_integrator_ao?Vop/pbrt_integrator_ao
+Icon:         opdef:/Vop/pbrt_integrator_ao?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 0
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:34:56 2018
+
+Operator:     pbrt_integrator_volpath
+Label:        PBRT VolPathIntegrator
+Path:         oplib:/Vop/pbrt_integrator_volpath?Vop/pbrt_integrator_volpath
+Icon:         opdef:/Vop/pbrt_integrator_volpath?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 0
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:35:15 2018
+
+Operator:     pbrt_accelerator_bvh
+Label:        PBRT BVHAccel
+Path:         oplib:/Vop/pbrt_accelerator_bvh?Vop/pbrt_accelerator_bvh
+Icon:         opdef:/Vop/pbrt_accelerator_bvh?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 0
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:34:24 2018
+
+Operator:     pbrt_accelerator_kdtree
+Label:        PBRT KdTreeAccel
+Path:         oplib:/Vop/pbrt_accelerator_kdtree?Vop/pbrt_accelerator_kdtree
+Icon:         opdef:/Vop/pbrt_accelerator_kdtree?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 0
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:34:28 2018
+
+Operator:     pbrt_light_distant
+Label:        PBRT DistantLight
+Path:         oplib:/Vop/pbrt_light_distant?Vop/pbrt_light_distant
+Icon:         opdef:/Vop/pbrt_light_distant?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 2
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:33:43 2018
+
+Operator:     pbrt_light_goniometric
+Label:        PBRT GonioPhotometricLight
+Path:         oplib:/Vop/pbrt_light_goniometric?Vop/pbrt_light_goniometric
+Icon:         opdef:/Vop/pbrt_light_goniometric?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 2
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:33:48 2018
+
+Operator:     pbrt_light_infinite
+Label:        PBRT InfiniteAreaLight
+Path:         oplib:/Vop/pbrt_light_infinite?Vop/pbrt_light_infinite
+Icon:         opdef:/Vop/pbrt_light_infinite?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 2
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:33:52 2018
+
+Operator:     pbrt_light_point
+Label:        PBRT PointLight
+Path:         oplib:/Vop/pbrt_light_point?Vop/pbrt_light_point
+Icon:         opdef:/Vop/pbrt_light_point?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 2
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:33:56 2018
+
+Operator:     pbrt_light_projection
+Label:        PBRT ProjectionLight
+Path:         oplib:/Vop/pbrt_light_projection?Vop/pbrt_light_projection
+Icon:         opdef:/Vop/pbrt_light_projection?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 2
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:34:00 2018
+
+Operator:     pbrt_light_spot
+Label:        PBRT SpotLight
+Path:         oplib:/Vop/pbrt_light_spot?Vop/pbrt_light_spot
+Icon:         opdef:/Vop/pbrt_light_spot?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 2
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:34:06 2018
+
+Operator:     pbrt_arealight_diffuse
+Label:        PBRT DiffuseAreaLight
+Path:         oplib:/Vop/pbrt_arealight_diffuse?Vop/pbrt_arealight_diffuse
+Icon:         opdef:/Vop/pbrt_arealight_diffuse?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 2
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:34:10 2018
+
+Operator:     pbrt_material_fourier
+Label:        PBRT FourierMaterial
+Path:         oplib:/Vop/pbrt_material_fourier?Vop/pbrt_material_fourier
+Icon:         opdef:/Vop/pbrt_material_fourier?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 1
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:31:20 2018
+
+Operator:     pbrt_material_disney
+Label:        PBRT DisneyMaterial
+Path:         oplib:/Vop/pbrt_material_disney?Vop/pbrt_material_disney
+Icon:         opdef:/Vop/pbrt_material_disney?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 15
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:31:24 2018
+
+Operator:     pbrt_material_glass
+Label:        PBRT GlassMaterial
+Path:         oplib:/Vop/pbrt_material_glass?Vop/pbrt_material_glass
+Icon:         opdef:/Vop/pbrt_material_glass?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 6
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:31:28 2018
+
+Operator:     pbrt_material_hair
+Label:        PBRT HairMaterial
+Path:         oplib:/Vop/pbrt_material_hair?Vop/pbrt_material_hair
+Icon:         opdef:/Vop/pbrt_material_hair?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 9
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:31:33 2018
+
+Operator:     pbrt_material_translucent
+Label:        PBRT TranslucentMaterial
+Path:         oplib:/Vop/pbrt_material_translucent?Vop/pbrt_material_translucent
+Icon:         opdef:/Vop/pbrt_material_translucent?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 6
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:31:47 2018
+
+Operator:     pbrt_material_substrate
+Label:        PBRT SubstrateMaterial
+Path:         oplib:/Vop/pbrt_material_substrate?Vop/pbrt_material_substrate
+Icon:         opdef:/Vop/pbrt_material_substrate?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 5
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:32:01 2018
+
+Operator:     pbrt_material_plastic
+Label:        PBRT PlasticMaterial
+Path:         oplib:/Vop/pbrt_material_plastic?Vop/pbrt_material_plastic
+Icon:         opdef:/Vop/pbrt_material_plastic?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 4
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:31:56 2018
+
+Operator:     pbrt_material_metal
+Label:        PBRT MetalMaterial
+Path:         oplib:/Vop/pbrt_material_metal?Vop/pbrt_material_metal
+Icon:         opdef:/Vop/pbrt_material_metal?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 6
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:31:51 2018
+
+Operator:     pbrt_material_uber
+Label:        PBRT UberMaterial
+Path:         oplib:/Vop/pbrt_material_uber?Vop/pbrt_material_uber
+Icon:         opdef:/Vop/pbrt_material_uber?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 10
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:31:37 2018
+
+Operator:     pbrt_material_mix
+Label:        PBRT MixMaterial
+Path:         oplib:/Vop/pbrt_material_mix?Vop/pbrt_material_mix
+Icon:         opdef:/Vop/pbrt_material_mix?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 3
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:32:07 2018
+
+Operator:     pbrt_material_mirror
+Label:        PBRT MirrorMaterial
+Path:         oplib:/Vop/pbrt_material_mirror?Vop/pbrt_material_mirror
+Icon:         opdef:/Vop/pbrt_material_mirror?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 2
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:32:12 2018
+
+Operator:     pbrt_material_matte
+Label:        PBRT MatteMaterial
+Path:         oplib:/Vop/pbrt_material_matte?Vop/pbrt_material_matte
+Icon:         opdef:/Vop/pbrt_material_matte?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 3
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:32:18 2018
+
+Operator:     pbrt_material_subsurface
+Label:        PBRT SubsurfaceMaterial
+Path:         oplib:/Vop/pbrt_material_subsurface?Vop/pbrt_material_subsurface
+Icon:         opdef:/Vop/pbrt_material_subsurface?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 8
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:32:22 2018
+
+Operator:     pbrt_material_kdsubsurface
+Label:        PBRT KdSubsurfaceMaterial
+Path:         oplib:/Vop/pbrt_material_kdsubsurface?Vop/pbrt_material_kdsubsurface
+Icon:         opdef:/Vop/pbrt_material_kdsubsurface?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 8
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:33:19 2018
+
+Operator:     pbrt_texture_constant
+Label:        PBRT ConstantTexture
+Path:         oplib:/Vop/pbrt_texture_constant?Vop/pbrt_texture_constant
+Icon:         opdef:/Vop/pbrt_texture_constant?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 1
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:31:01 2018
+
+Operator:     pbrt_texture_scale
+Label:        PBRT ScaleTexture
+Path:         oplib:/Vop/pbrt_texture_scale?Vop/pbrt_texture_scale
+Icon:         opdef:/Vop/pbrt_texture_scale?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 2
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:30:56 2018
+
+Operator:     pbrt_texture_mix
+Label:        PBRT MixTexture
+Path:         oplib:/Vop/pbrt_texture_mix?Vop/pbrt_texture_mix
+Icon:         opdef:/Vop/pbrt_texture_mix?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 3
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:30:51 2018
+
+Operator:     pbrt_texture_bilerp
+Label:        PBRT BilerpTexture
+Path:         oplib:/Vop/pbrt_texture_bilerp?Vop/pbrt_texture_bilerp
+Icon:         opdef:/Vop/pbrt_texture_bilerp?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 4
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:30:47 2018
+
+Operator:     pbrt_texture_imagemap
+Label:        PBRT ImageTexture
+Path:         oplib:/Vop/pbrt_texture_imagemap?Vop/pbrt_texture_imagemap
+Icon:         opdef:/Vop/pbrt_texture_imagemap?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 0
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:30:42 2018
+
+Operator:     pbrt_texture_uv
+Label:        PBRT UVTexture
+Path:         oplib:/Vop/pbrt_texture_uv?Vop/pbrt_texture_uv
+Icon:         opdef:/Vop/pbrt_texture_uv?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 0
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:30:36 2018
+
+Operator:     pbrt_texture_dots
+Label:        PBRT DotsTexture
+Path:         oplib:/Vop/pbrt_texture_dots?Vop/pbrt_texture_dots
+Icon:         opdef:/Vop/pbrt_texture_dots?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 2
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:30:31 2018
+
+Operator:     pbrt_texture_checkerboard
+Label:        PBRT CheckerboardTexture
+Path:         oplib:/Vop/pbrt_texture_checkerboard?Vop/pbrt_texture_checkerboard
+Icon:         opdef:/Vop/pbrt_texture_checkerboard?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 2
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:30:26 2018
+
+Operator:     pbrt_texture_fbm
+Label:        PBRT FBmTexture
+Path:         oplib:/Vop/pbrt_texture_fbm?Vop/pbrt_texture_fbm
+Icon:         opdef:/Vop/pbrt_texture_fbm?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 0
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:30:20 2018
+
+Operator:     pbrt_texture_wrinkled
+Label:        PBRT WrinkledTexture
+Path:         oplib:/Vop/pbrt_texture_wrinkled?Vop/pbrt_texture_wrinkled
+Icon:         opdef:/Vop/pbrt_texture_wrinkled?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 0
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:30:15 2018
+
+Operator:     pbrt_texture_windy
+Label:        PBRT WindyTexture
+Path:         oplib:/Vop/pbrt_texture_windy?Vop/pbrt_texture_windy
+Icon:         opdef:/Vop/pbrt_texture_windy?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 0
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:30:09 2018
+
+Operator:     pbrt_texture_marble
+Label:        PBRT MarbleTexture
+Path:         oplib:/Vop/pbrt_texture_marble?Vop/pbrt_texture_marble
+Icon:         opdef:/Vop/pbrt_texture_marble?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 0
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:23:34 2018
+
+Operator:     pbrt_texture_ptex
+Label:        PBRT PtexTexture
+Path:         oplib:/Vop/pbrt_texture_ptex?Vop/pbrt_texture_ptex
+Icon:         opdef:/Vop/pbrt_texture_ptex?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 0
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Sat Apr 28 21:21:58 2018
+

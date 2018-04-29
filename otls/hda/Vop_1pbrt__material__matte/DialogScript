@@ -1,0 +1,67 @@
+# Dialog script for pbrt_material_matte automatically generated
+
+{
+    name	pbrt_material_matte
+    script	matte
+    label	"PBRT MatteMaterial"
+
+    rendermask	PBRT
+    externalshader 1
+    shadertype	generic
+    input	float	bumpmap	bumpmap
+    input	struct_PBRTSpectrum	Kd	"Diffuse Reflection"
+    input	float	sigma	sigma
+    output	struct_PBRTMaterial	material	material
+    inputflags	bumpmap	0
+    inputflags	Kd	0
+    inputflags	sigma	0
+    signature	"Default Inputs"	default	{ float struct_PBRTSpectrum float struct_PBRTMaterial }
+
+    outputoverrides	default
+    {
+	___begin	auto
+			(0)
+    }
+
+    help {
+	"#type: node"
+	"#context: vop"
+	"#tags: rman,pattern"
+	"#icon: NETWORKS/shop"
+	""
+	"= pxrhsl ="
+	""
+	"Adjust the hue, saturation and value of a given input color. Note the output is in RGB color space."
+	"@parameters"
+	""
+	"inputRGB:"
+	"The color to have HSL adjustments applied to it."
+	""
+	"hue:"
+	"The amount to shift hue by."
+	""
+	"saturation:"
+	"The amount to scale saturation by."
+	""
+	"luminance:"
+	"The amount to scale luminance by."
+	""
+    }
+
+    parm {
+        name    "Kd"
+        label   "Diffuse Reflectivity"
+        type    color
+        size    3
+        default { "0.5" "0.5" "0.5" }
+        range   { 0 1 }
+    }
+    parm {
+        name    "sigma"
+        label   "Sigma"
+        type    float
+        default { "0" }
+        help    "The sigma parameter for the Oren-Nayar model, in degrees. If this is zero, the surface exhibits pure Lambertian reflection. "
+        range   { 0 1 }
+    }
+}

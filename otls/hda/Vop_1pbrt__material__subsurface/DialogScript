@@ -1,0 +1,194 @@
+# Dialog script for pbrt_material_subsurface automatically generated
+
+{
+    name	pbrt_material_subsurface
+    script	subsurface
+    label	"PBRT SubsurfaceMaterial"
+
+    rendermask	PBRT
+    externalshader 1
+    shadertype	generic
+    input	float	bumpmap	bumpmap
+    input	struct_PBRTSpectrum	sigma_a	"Sigma a"
+    input	struct_PBRTSpectrum	sigma_prime_s	"Sigma Prime s"
+    input	float	eta	Eta
+    input	struct_PBRTSpectrum	Kr	Reflectivity
+    input	struct_PBRTSpectrum	Kt	Transmissivity
+    input	float	uroughness	"Roughness U"
+    input	float	vroughness	"Roughness V"
+    output	struct_PBRTMaterial	material	material
+    inputflags	bumpmap	0
+    inputflags	sigma_a	0
+    inputflags	sigma_prime_s	0
+    inputflags	eta	0
+    inputflags	Kr	0
+    inputflags	Kt	0
+    inputflags	uroughness	0
+    inputflags	vroughness	0
+    signature	"Default Inputs"	default	{ float struct_PBRTSpectrum struct_PBRTSpectrum float struct_PBRTSpectrum struct_PBRTSpectrum float float struct_PBRTMaterial }
+
+    outputoverrides	default
+    {
+	___begin	auto
+			(0)
+    }
+
+    help {
+	"#type: node"
+	"#context: vop"
+	"#tags: rman,pattern"
+	"#icon: NETWORKS/shop"
+	""
+	"= pxrhsl ="
+	""
+	"Adjust the hue, saturation and value of a given input color. Note the output is in RGB color space."
+	"@parameters"
+	""
+	"inputRGB:"
+	"The color to have HSL adjustments applied to it."
+	""
+	"hue:"
+	"The amount to shift hue by."
+	""
+	"saturation:"
+	"The amount to scale saturation by."
+	""
+	"luminance:"
+	"The amount to scale luminance by."
+	""
+    }
+
+    parm {
+        name    "name"
+        label   "Name"
+        type    ordinal
+        default { "none" }
+        help    "Name of measured subsurface scattering coefficients. See the file src/core/media.cpp in the pbrt distribution for all of the measurements that are available."
+        menu {
+            "none"                          "----"
+            "Apple"                         "Apple"
+            "Chicken1"                      "Chicken1"
+            "Chicken2"                      "Chicken2"
+            "Cream"                         "Cream"
+            "Ketchup"                       "Ketchup"
+            "Marble"                        "Marble"
+            "Potato"                        "Potato"
+            "Skimmilk"                      "Skimmilk"
+            "Skin1"                         "Skin1"
+            "Skin2"                         "Skin2"
+            "Spectralon"                    "Spectralon"
+            "Wholemilk"                     "Wholemilk"
+            "Lowfat Milk"                   "Lowfat Milk"
+            "Reduced Milk"                  "Reduced Milk"
+            "Regular Milk"                  "Regular Milk"
+            "Espresso"                      "Espresso"
+            "Mint Mocha Coffee"             "Mint Mocha Coffee"
+            "Lowfat Soy Milk"               "Lowfat Soy Milk"
+            "Regular Soy Milk"              "Regular Soy Milk"
+            "Lowfat Chocolate Milk"         "Lowfat Chocolate Milk"
+            "Regular Chocolate Milk"        "Regular Chocolate Milk"
+            "Coke"                          "Coke"
+            "Pepsi"                         "Pepsi"
+            "Sprite"                        "Sprite"
+            "Gatorade"                      "Gatorade"
+            "Chardonnay"                    "Chardonnay"
+            "White Zinfandel"               "White Zinfandel"
+            "Merlot"                        "Merlot"
+            "Budweiser Beer"                "Budweiser Beer"
+            "Coors Light Beer"              "Coors Light Beer"
+            "Clorox"                        "Clorox"
+            "Apple Juice"                   "Apple Juice"
+            "Cranberry Juice"               "Cranberry Juice"
+            "Grape Juice"                   "Grape Juice"
+            "Ruby Grapefruit Juice"         "Ruby Grapefruit Juice"
+            "White Grapefruit Juice"        "White Grapefruit Juice"
+            "Shampoo"                       "Shampoo"
+            "Head & Shoulders Shampoo"      "Head & Shoulders Shampoo"
+            "Lemon Tea Powder"              "Lemon Tea Powder"
+            "Orange Powder"                 "Orange Powder"
+            "Pink Lemonade Powder"          "Pink Lemonade Powder"
+            "Cappuccino Powder"             "Cappuccino Powder"
+            "Salt Powder"                   "Salt Powder"
+            "Sugar Powder"                  "Sugar Powder"
+            "Suisse Mocha Powder"           "Suisse Mocha Powder"
+            "Pacific Ocean Surface Water"   "Pacific Ocean Surface Water"
+        }
+    }
+    parm {
+        name    "sigma_a"
+        label   "Sigma a"
+        type    color
+        size    3
+        default { "0.0011" "0.0024" "0.014" }
+        help    "Absorption coefficient of the volume, measured in mm^-1."
+        disablewhen "{ name != none }"
+        range   { 0 1 }
+    }
+    parm {
+        name    "sigma_prime_s"
+        label   "Sigma Prime s"
+        type    color
+        size    3
+        default { "2.55" "3.12" "3.77" }
+        help    "Reduced scattering coefficient of the volume, measured in mm^-1. "
+        disablewhen "{ name != none }"
+        range   { 0 1 }
+    }
+    parm {
+        name    "scale"
+        label   "Scale"
+        type    float
+        default { "1" }
+        help    "Scale factor that is applied to sigma_a and sigma_prime_s. This is particularly useful when the scene is not measured in mm and the coefficients need to be scaled accordingly. For example, if the scene is modeled in meters, then a scale factor of 0.001 would be appropriate. "
+        range   { 0 10 }
+    }
+    parm {
+        name    "eta"
+        label   "Eta"
+        type    float
+        default { "1.33" }
+        help    "Index of refraction of the scattering volume. "
+        range   { 0.5 5 }
+    }
+    parm {
+        name    "Kr"
+        label   "Reflectivity"
+        type    color
+        size    3
+        default { "1" "1" "1" }
+        help    " The reflectivity of the surface."
+        range   { 0 1 }
+    }
+    parm {
+        name    "Kt"
+        label   "Transmissivity"
+        type    color
+        size    3
+        default { "1" "1" "1" }
+        help    "The transmissivity of the surface."
+        range   { 0 1 }
+    }
+    parm {
+        name    "uroughness"
+        label   "Roughness U"
+        type    float
+        default { "0" }
+        help    "Microfacet roughness in the u direction. If zero, perfect specular reflection is modeled."
+        range   { 0 1 }
+    }
+    parm {
+        name    "vroughness"
+        label   "Roughness V"
+        type    float
+        default { "0" }
+        help    "Microfacet roughness in the v direction. If zero, perfect specular reflection is modeled."
+        range   { 0 1 }
+    }
+    parm {
+        name    "remaproughness"
+        label   "Remap Roughness"
+        type    toggle
+        default { "1" }
+        help    "If true, roughness values are expected to be in the range [0,1], and are remapped to microfacet distribution function parameter values that range from near-perfect-specular at 0 to very rough at 1. Otherwise the roughness parameters are used directly for the alpha parameters of the microfacet distribution function."
+    }
+}

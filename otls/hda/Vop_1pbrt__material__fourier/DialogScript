@@ -1,0 +1,55 @@
+# Dialog script for pbrt_material_fourier automatically generated
+
+{
+    name	pbrt_material_fourier
+    script	fourier
+    label	"PBRT FourierMaterial"
+
+    rendermask	PBRT
+    externalshader 1
+    shadertype	generic
+    input	float	bumpmap	bumpmap
+    output	struct_PBRTMaterial	material	material
+    inputflags	bumpmap	0
+    signature	"Default Inputs"	default	{ float struct_PBRTMaterial }
+
+    outputoverrides	default
+    {
+	___begin	auto
+			(0)
+    }
+
+    help {
+	"#type: node"
+	"#context: vop"
+	"#tags: rman,pattern"
+	"#icon: NETWORKS/shop"
+	""
+	"= pxrhsl ="
+	""
+	"Adjust the hue, saturation and value of a given input color. Note the output is in RGB color space."
+	"@parameters"
+	""
+	"inputRGB:"
+	"The color to have HSL adjustments applied to it."
+	""
+	"hue:"
+	"The amount to shift hue by."
+	""
+	"saturation:"
+	"The amount to scale saturation by."
+	""
+	"luminance:"
+	"The amount to scale luminance by."
+	""
+    }
+
+    parm {
+        name    "bsdffile"
+        label   "BSDF File"
+        type    file
+        default { "" }
+        help    "File that stores the Fourier BSDF description."
+        parmtag { "filechooser_mode" "read" }
+    }
+}

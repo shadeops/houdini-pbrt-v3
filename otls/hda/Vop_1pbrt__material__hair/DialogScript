@@ -1,0 +1,145 @@
+# Dialog script for pbrt_material_hair automatically generated
+
+{
+    name	pbrt_material_hair
+    script	hair
+    label	"PBRT HairMaterial"
+
+    rendermask	PBRT
+    externalshader 1
+    shadertype	generic
+    input	float	bumpmap	bumpmap
+    input	struct_PBRTSpectrum	sigma_a	"Sigma a"
+    input	struct_PBRTSpectrum	color	Color
+    input	float	eumelanin	Eumelanin
+    input	float	pheomelanin	Pheomelanin
+    input	float	eta	Eta
+    input	float	beta_m	"Beta m"
+    input	float	beta_n	"Beta n"
+    input	float	alpha	Alpha
+    output	struct_PBRTMaterial	material	material
+    inputflags	bumpmap	0
+    inputflags	sigma_a	0
+    inputflags	color	0
+    inputflags	eumelanin	0
+    inputflags	pheomelanin	0
+    inputflags	eta	0
+    inputflags	beta_m	0
+    inputflags	beta_n	0
+    inputflags	alpha	0
+    signature	"Default Inputs"	default	{ float struct_PBRTSpectrum struct_PBRTSpectrum float float float float float float struct_PBRTMaterial }
+
+    outputoverrides	default
+    {
+	___begin	auto
+			(0)
+    }
+
+    help {
+	"#type: node"
+	"#context: vop"
+	"#tags: rman,pattern"
+	"#icon: NETWORKS/shop"
+	""
+	"= pxrhsl ="
+	""
+	"Adjust the hue, saturation and value of a given input color. Note the output is in RGB color space."
+	"@parameters"
+	""
+	"inputRGB:"
+	"The color to have HSL adjustments applied to it."
+	""
+	"hue:"
+	"The amount to shift hue by."
+	""
+	"saturation:"
+	"The amount to scale saturation by."
+	""
+	"luminance:"
+	"The amount to scale luminance by."
+	""
+    }
+
+    parm {
+        name    "mode"
+        label   "Mode"
+        type    ordinal
+        default { "sigma_a" }
+        menu {
+            "sigma_a"   "Sigma A"
+            "color"     "Color"
+            "eumelanin" "Eumelanin/Pheomelanin"
+        }
+        parmtag { "pbrt.meta" "1" }
+    }
+    parm {
+        name    "sigma_a"
+        label   "Sigma a"
+        type    color
+        size    3
+        default { "1.3" "1.3" "1.3" }
+        help    "Absorption coefficient of the medium inside the hair. This absorption coefficient is normalized such that the value provided should be with respect to the diameter of the hair."
+        disablewhen "{ mode != sigma_a }"
+        range   { 0 1 }
+    }
+    parm {
+        name    "color"
+        label   "Color"
+        type    color
+        size    3
+        default { "0.2" "0.2" "0.2" }
+        help    "If specified, a value of the absorption coefficient is computed using an approximation that leads to the hair having roughly this color, after multiple scattering in the hair during rendering."
+        disablewhen "{ mode != color }"
+        range   { 0 1 }
+    }
+    parm {
+        name    "eumelanin"
+        label   "Eumelanin"
+        type    float
+        default { "1.3" }
+        help    "Concentration of the eumelanin pigment in the hair. Blonde hair has concentrations around 0.3, brown around 1.3, and black around 8."
+        disablewhen "{ mode != eumelanin }"
+        range   { 0 10 }
+    }
+    parm {
+        name    "pheomelanin"
+        label   "Pheomelanin"
+        type    float
+        default { "0" }
+        help    "Concentration of the pheomelanin pigment in the hair. Pheomelanin makes red hair red."
+        disablewhen "{ mode != eumelanin }"
+        range   { 0 10 }
+    }
+    parm {
+        name    "eta"
+        label   "Eta"
+        type    float
+        default { "1.55" }
+        help    "Index of refraction of the hair medium."
+        range   { 0 10 }
+    }
+    parm {
+        name    "beta_m"
+        label   "Beta m"
+        type    float
+        default { "0.3" }
+        help    "Longitudinal roughness of the hair. Should be between 0 and 1. This roughness controls the size and shape of the hair highlight."
+        range   { 0 1 }
+    }
+    parm {
+        name    "beta_n"
+        label   "Beta n"
+        type    float
+        default { "0.3" }
+        help    "Azimuthal roughness of the hair. Should be between 0 and 1."
+        range   { 0 1 }
+    }
+    parm {
+        name    "alpha"
+        label   "Alpha"
+        type    float
+        default { "2" }
+        help    "Angle of scales on the hair surface, in degrees."
+        range   { 0 10 }
+    }
+}

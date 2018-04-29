@@ -1,0 +1,81 @@
+# Dialog script for pbrt_arealight_diffuse automatically generated
+
+{
+    name	pbrt_arealight_diffuse
+    script	diffuse
+    label	"PBRT DiffuseAreaLight"
+
+    rendermask	PBRT
+    externalshader 1
+    shadertype	generic
+    input	struct_PBRTSpectrum	scale	scale
+    input	struct_PBRTSpectrum	L	L
+    inputflags	scale	0
+    inputflags	L	0
+    signature	"Default Inputs"	default	{ struct_PBRTSpectrum struct_PBRTSpectrum }
+
+    outputoverrides	default
+    {
+    }
+
+    help {
+	"#type: node"
+	"#context: vop"
+	"#tags: rman,pattern"
+	"#icon: NETWORKS/shop"
+	""
+	"= pxrhsl ="
+	""
+	"Adjust the hue, saturation and value of a given input color. Note the output is in RGB color space."
+	"@parameters"
+	""
+	"inputRGB:"
+	"The color to have HSL adjustments applied to it."
+	""
+	"hue:"
+	"The amount to shift hue by."
+	""
+	"saturation:"
+	"The amount to scale saturation by."
+	""
+	"luminance:"
+	"The amount to scale luminance by."
+	""
+    }
+
+    parm {
+        name    "scale"
+        label   "Scale"
+        type    color
+        size    3
+        default { "1" "1" "1" }
+        help    "Scale factor that modulates the amount of light that the light source emits into the scene."
+        range   { 0 1 }
+        parmtag { "pbrt.spectrum" "input" }
+    }
+    parm {
+        name    "L"
+        label   "L"
+        type    color
+        size    3
+        default { "1" "1" "1" }
+        help    "The radiance emitted from the light source. "
+        range   { 0 1 }
+        parmtag { "pbrt.spectrum" "input" }
+    }
+    parm {
+        name    "twosided"
+        label   "Two Sided"
+        type    toggle
+        default { "0" }
+        help    "Determines whether the light source emits light from just the side of the surface where the surface normal points or both sides. "
+    }
+    parm {
+        name    "samples"
+        label   "Samples"
+        type    integer
+        default { "1" }
+        help    " Suggested number of shadow samples to take when computing illumination from the light. (As with the InfintieAreaLight, this value is used only when the DirectLightingIntegrator is used.) "
+        range   { 1 64 }
+    }
+}
