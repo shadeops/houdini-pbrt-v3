@@ -28,7 +28,8 @@ def _api_plugin_call(api_call, plugin, paramset=None):
     print(api_call, ' "', plugin, '"', sep='', end='')
     if paramset:
         for param in paramset:
-            print(' ', param.as_str(), sep='', end='')
+            print(' ', sep='', end='')
+            param.print_str()
     print()
 
 # MakeNamedMaterial "myplastic" "string type" "plastic" "float roughness"

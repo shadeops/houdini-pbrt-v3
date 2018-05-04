@@ -1,8 +1,8 @@
+import types
 import collections
 
 import hou
 import soho
-
 # TODO is this the best name/location for this?
 # should some of this functionality be in _hou_parm_to_pbrt_param()
 def pbrt_param_from_ref(parm, parm_value, parm_name=None):
@@ -170,12 +170,14 @@ class PBRTParam(object):
 
     @property
     def value(self):
-        if not isinstance(self._value, (list, tuple)):
+        if isinstance(self._value, types.GeneratorType):
+            v = self._value
+        elif not isinstance(self._value, (list, tuple)):
             v = [self._value,]
         else:
             v = self._value[:]
         if self.type == 'bool':
-            v = [ 'true' if (x and x!='false') else 'false' for x in v ]
+            v = ( 'true' if (x and x!='false') else 'false' for x in v )
         return v
 
     @property
@@ -184,6 +186,9 @@ class PBRTParam(object):
 
     def as_str(self):
         return soho.arrayToString('"%s" [ ' % self.type_name, self.value, ' ]')
+
+    def print_str(self):
+        return soho.printArray('"%s" [ ' % self.type_name, self.value, ' ]')
 
 # FIXME ParamSets can actually have the same name across different types
 #       apparenty a "string" "foo" and a "float" "foo" are two different
