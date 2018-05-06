@@ -40,6 +40,10 @@ def sphere_wrangler(gdp, paramset=None):
             api.Shape('sphere', paramset)
 
 def disk_wrangler(gdp, paramset=None):
+
+    # NOTE: PBRT's and Houdini's parameteric UVs are different
+    # so when using textures this will need to be fixed on the
+    # texture/material side as its not resolvable within Soho.
     num_prims = gdp.globalValue('geo:primcount')[0]
     prim_xform_h = gdp.attribute('geo:prim', 'geo:primtransform')
     for prim_num in xrange(num_prims):
@@ -88,7 +92,10 @@ def tube_wrangler(gdp, paramset=None):
                 # has no ends of trouble with this shape type
                 # crashes or hangs
                 pass
-            api.Shape(shape, shape_paramset)
+            with api.TransformBlock():
+                # Flip in Y so parameteric UV's match Houdini's
+                api.Scale(1,-1,1)
+                api.Shape(shape, shape_paramset)
 
             if closed:
                 disk_paramset = copy.copy(paramset)
