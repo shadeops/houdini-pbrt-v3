@@ -3,6 +3,7 @@ import collections
 
 import hou
 import soho
+
 # TODO is this the best name/location for this?
 # should some of this functionality be in _hou_parm_to_pbrt_param()
 def pbrt_param_from_ref(parm, parm_value, parm_name=None):
@@ -33,11 +34,10 @@ def pbrt_param_from_ref(parm, parm_value, parm_name=None):
     # PBRT: spectrum
     elif parm_scheme == hou.parmNamingScheme.RGBA:
         pbrt_type = 'rgb'
-    # PBRT: point/vector/normal
+    # PBRT: point*/vector*/normal
     elif ( parm_type == hou.parmTemplateType.Float and
-            'pbrt_type' in parm_tmpl.tags() ):
-        pbrt_type = '%s%i' % ( parm_tmpl.tags()['pbrt_type'],
-                               parm_tmpl.numComponents() )
+            'pbrt.type' in parm_tmpl.tags() ):
+        pbrt_type = parm_tmpl.tags()['pbrt.type']
     # PBRT: float (sometimes a float is just a float)
     elif parm_type == hou.parmTemplateType.Float:
         pbrt_type = 'float'
@@ -56,7 +56,7 @@ def _hou_parm_to_pbrt_param(parm, parm_name=None):
         parm_name = parm.name()
 
     # 9 types
-    # integer, float, point2, vector2, point3, vector3, normal3, spectrum,
+    # integer, float, point2, vector2, point3, vector3, normal, spectrum,
     # bool, and string
     # Houdini has the concept of float arrays as well as float vectors
     # parm0, parm1, parm2 and parmx, parmy, parmz respectively
@@ -114,11 +114,10 @@ def _hou_parm_to_pbrt_param(parm, parm_name=None):
             coshader is not None ):
         pbrt_type = 'texture'
         pbrt_value = coshader.path()
-    # PBRT: point/vector/normal
+    # PBRT: point*/vector*/normal
     elif ( parm_type == hou.parmTemplateType.Float and
-            'pbrt_type' in parm_tmpl.tags() ):
-        pbrt_type = '%s%i' % ( parm_tmpl.tags()['pbrt_type'],
-                               parm_tmpl.numComponents() )
+            'pbrt.type' in parm_tmpl.tags() ):
+        pbrt_type = parm_tmpl.tags()['pbrt.type']
         pbrt_value = parm.eval()
     # PBRT: float (sometimes a float is just a float)
     elif parm_type == hou.parmTemplateType.Float:
@@ -134,11 +133,17 @@ def _hou_parm_to_pbrt_param(parm, parm_name=None):
 
 class PBRTParam(object):
 
-    pbrt_types = ('texture', 'float', 'point2', 'vector2', 'point3', 'normal3',
+    # NOTE: There is a typo on the pbrt website with regards to the allowed
+    #       types. It lists normal as a valid type and normal as an synonym
+    #       currently according to core/parser.cpp only normal is supported
+    #       and not normal. (Most likely a typo since internally the type is
+    #       Normal3f
+    #       http://www.pbrt.org/fileformat-v3.html#parameter-lists
+
+    pbrt_types = ('texture', 'float', 'point2', 'vector2', 'point3', 'normal',
                   'integer', 'spectrum', 'rgb', 'xyz', 'blackbody', 'string',
                   'bool')
     type_synonyms = {'point' : 'point3',
-                     'normal' : 'normal3',
                      'vector' : 'vector3',
                      'color' : 'rgb',
                      }
