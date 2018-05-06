@@ -108,21 +108,66 @@ def tube_wrangler(gdp, paramset=None):
                     disk_paramset.add(PBRTParam('float', 'height', 0))
                     api.Shape('disk', disk_paramset)
 
+# The following generators could be simplified if we
+# assume that each gdp will always have 3 verts thus
+# removing the need to constantly fetch the
+# geo:vertexcount. (Could be passed as a parm, and if the
+# default is None, then compute)
+
 def vtx_attrib_gen(gdp, attrib):
+    """ Per prim, per vertex fetching vertex values
+    """
     num_prims = gdp.globalValue('geo:primcount')[0]
     vtx_count_h = gdp.attribute('geo:prim', 'geo:vertexcount')
     for prim in xrange(num_prims):
         num_vtx = gdp.value(vtx_count_h, prim)[0]
-        for vtx in xrange(num_vtx):
+        # TODO reverse order?
         #for vtx in xrange(num_vtx-1,-1,-1):
+        for vtx in xrange(num_vtx):
             # could also use gdp.vertex(attrib, prim, vtx)
-            value = gdp.value(attrib, (prim,vtx))
-            yield value
+            yield gdp.value(attrib, (prim,vtx))
+
+def pt2vtx_attrib_gen(gdp, attrib):
+    """ Per prim, per vertex fetching point values
+    """
+    num_prims = gdp.globalValue('geo:primcount')[0]
+    vtx_count_h = gdp.attribute('geo:prim', 'geo:vertexcount')
+    p_ref_attrib = gdp.attribute('geo:vertex', 'geo:pointref')
+    for prim in xrange(num_prims):
+        num_vtx = gdp.value(vtx_count_h, prim)[0]
+        for vtx in xrange(num_vtx):
+            ptnum = gdp.value(p_ref_attrib, (prim,vtx))[0]
+            yield gdp.value(attrib, ptnum)
+
+def linear_vtx_gen(gdp):
+    """ generate the linearvertex
+
+    A linear vertex is a unique value for every vertex in the mesh
+    where as a vertex number is the vertex offset on a prim
+
+    We need a linear vertex for generating inidices when we have uniqe points
+    http://www.sidefx.com/docs/houdini/vex/functions/vertexindex.html
+    """
+    num_prims = gdp.globalValue('geo:primcount')[0]
+    vtx_count_h = gdp.attribute('geo:prim', 'geo:vertexcount')
+    i = 0
+    for prim in xrange(num_prims):
+        num_vtx = gdp.value(vtx_count_h, prim)[0]
+        for vtx in xrange(num_vtx):
+            yield i
+            i+=1
 
 def geo_attrib_gen(gdp, attrib, count):
+    """ Per prim/point fetching their values
+    """
     for i in xrange(count):
         value = gdp.value(attrib, i)
         yield value
+
+# TODO: The below logic could possibly be simplified a bit by having a
+#       GeoAttrib class, which wraps up some of the below functionality.
+#       Including auto resolution of vtx or pt attrib, handle, attrib size
+#       and application of the correct generator function.
 
 def trianglemesh_wrangler(gdp, paramset=None):
     if paramset is None:
@@ -130,28 +175,116 @@ def trianglemesh_wrangler(gdp, paramset=None):
     else:
         mesh_paramset = copy.copy(paramset)
 
+    # Triangle Meshes in PBRT uses "verticies" to denote positions.
+    # These are similar to Houdini "points". Since the PBRT verts
+    # are shared between primitives if hard edges or "vertex normals"
+    # (Houdini-ese) are required then need to unique the points so
+    # so each point can have its own normal.
+    # To support this, if any of the triangle mesh params (N, uv, S)
+    # are vertex attributes, then we'll uniquify the points.
+
     # We can only deal with triangles, where Houdini is a bit more
     # general, so we'll need to tesselate
-    options = {'geo:triangulate' : True}
-    options = {'geo:polysides' : 3}
+    #
+    # NOTE: You'll see references to other options like geo:convstyle
+    #       and geo:triangulate. These, as far as I can tell, do not
+    #       actually exist. Use the soho.doc or run "strings" on
+    #       libHoudiniOP2.so
+    options = {
+               'tess:style' : 'lod',
+               'tess:polysides' : 3,
+               'tess:metastyle' : 'lod',
+               }
 
     mesh_gdp = gdp.tesselate(options)
+    if not mesh_gdp:
+        return None
 
-    num_pts = gdp.globalValue('geo:pointcount')[0]
+    unique_points = False
 
-    p_attrib = mesh_gdp.attribute('geo:point', 'P')
-    p_ref_attrib = mesh_gdp.attribute('geo:vertex', 'geo:pointref')
+    num_pts = mesh_gdp.globalValue('geo:pointcount')[0]
 
-    P = geo_attrib_gen(mesh_gdp, p_attrib, num_pts)
-    indices = vtx_attrib_gen(mesh_gdp, p_ref_attrib)
+    # Required
+    P_attrib = mesh_gdp.attribute('geo:point', 'P')
+    pointref_attrib = mesh_gdp.attribute('geo:vertex', 'geo:pointref')
+
+    # Optional
+    N_attrib = mesh_gdp.attribute('geo:vertex', 'N')
+    uv_attrib = mesh_gdp.attribute('geo:vertex', 'uv')
+    S_attrib = mesh_gdp.attribute('geo:vertex', 'S')
+
+    # We need to unique the points if any of the handles
+    # to vtx attributes exists.
+    if N_attrib >= 0 or uv_attrib >= 0 or S_attrib >= 0:
+        unique_points = True
+
+    # TODO: Add option to disable automatic normals?
+
+    S = None
+    uv = None
+    N = None
+
+    # We will unique points (verts in PBRT) if any of the attributes are
+    # per vertex instead of per point.
+    if unique_points:
+        P = pt2vtx_attrib_gen(mesh_gdp, P_attrib)
+        indices = linear_vtx_gen(mesh_gdp)
+
+        # N is slightly special as we might compute normals automatically.
+        if N_attrib >= 0:
+            N = vtx_attrib_gen(mesh_gdp, N_attrib)
+        else:
+            N_attrib = mesh_gdp.normal()
+            N = pt2vtx_attrib_gen(mesh_gdp, N_attrib)
+
+        if uv_attrib >= 0:
+            uv = vtx_attrib_gen(mesh_gdp, uv_attrib)
+        else:
+            uv_attrib = mesh_gdp.attribute('geo:point', 'uv')
+            if uv_attrib >= 0:
+                uv = pt2vtx_attrib_gen(mesh_gdp, uv_attrib)
+
+        if S_attrib >= 0:
+            S = vtx_attrib_gen(mesh_gdp, S_attrib)
+        else:
+            S_attrib = mesh_gdp.attribute('geo:point', 'S')
+            if S_attrib >= 0:
+                S = pt2vtx_attrib_gen(mesh_gdp, S_attrib)
+    else:
+        P = geo_attrib_gen(mesh_gdp, P_attrib, num_pts)
+        indices = vtx_attrib_gen(mesh_gdp, pointref_attrib)
+        N_attrib = mesh_gdp.normal()
+        N = geo_attrib_gen(mesh_gdp, N_attrib, num_pts)
+        S_attrib = mesh_gdp.attribute('geo:point', 'S')
+        if S_attrib >= 0:
+            S = geo_attrib_gen(mesh_gdp, S_attrib, num_pts)
+        uv_attrib = mesh_gdp.attribute('geo:point', 'uv')
+        if uv_attrib >= 0:
+            uv = geo_attrib_gen(mesh_gdp, uv_attrib, num_pts)
+
     mesh_paramset.add(PBRTParam('integer', 'indices', indices))
-    mesh_paramset.add(PBRTParam('point','P', P))
+    mesh_paramset.add(PBRTParam('point', 'P', P))
+    mesh_paramset.add(PBRTParam('normal', 'N', N))
+    if uv is not None:
+        # Houdini's uvs are stored as 3 floats, but pbrt only needs two
+        # We'll use a generator comprehension to strip off the extra
+        # float.
+        uv2 = ( x[0:2] for x in uv )
+        mesh_paramset.add(PBRTParam('float', 'uv', uv2))
+    if S is not None:
+        mesh_paramset.add(PBRTParam('vector', 'S', S))
+
     api.Shape('trianglemesh', mesh_paramset)
+
+    return None
 
 shape_wranglers = { 'Sphere': sphere_wrangler,
                     'Circle' : disk_wrangler,
                     'Tube' : tube_wrangler,
                     'Poly' : trianglemesh_wrangler,
+                    'Mesh' : trianglemesh_wrangler,
+                    'MetaBall' : trianglemesh_wrangler,
+                    'PolySoup' : trianglemesh_wrangler,
                   }
 
 def shape_splits(gdp):
