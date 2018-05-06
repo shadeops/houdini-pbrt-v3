@@ -532,9 +532,13 @@ def wrangle_light(light, wrangler, now):
 def wrangle_geo(obj, wrangler, now):
     output_xform(obj, now)
 
+    shop = obj.wrangleString(wrangler, 'shop_materialpath', now, [''])[0]
+    if shop:
+        api.NamedMaterial(shop)
+
     soppath = []
     if not obj.evalString('object:soppath', now, soppath):
-        print 'wut'
+        api.Comment('Can not find soppath for object')
         return
 
     Geo.save_geo(soppath[0], now)
