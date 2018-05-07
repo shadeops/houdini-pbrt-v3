@@ -46,19 +46,7 @@ def _api_named_plugin_call(api_call, name, output, plugin, paramset=None):
     print()
 
 def _api_geo_handler(plugin, paramset=None):
-    # Quadratics
-    if plugin in ('cone', 'cylinder', 'disk', 'hyperboloid',
-                  'paraboloid', 'sphere'):
-        _api_plugin_call('Shape', plugin, paramset)
-        return
-
-    if plugin == 'plymesh':
-        _api_plugin_call('Shape', plugin, paramset)
-        return
-
     _api_plugin_call('Shape', plugin, paramset)
-
-    return
 
 def Include(path):
     _api_call_with_args('Include', path)
