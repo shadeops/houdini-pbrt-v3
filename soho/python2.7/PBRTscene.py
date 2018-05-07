@@ -42,6 +42,8 @@ def output_shading_network(node_path):
              plugin.paramset)
     if coord_sys:
         api.TransformEnd()
+    if api_call == api.MakeNamedMaterial:
+        print()
     return
 
 
@@ -109,7 +111,6 @@ def render(cam, now):
     api.Comment('NamedMaterial Definitions')
     for obj in soho.objectList('objlist:instance'):
         output_materials(obj, wrangler, now)
-        print()
 
     # Output Geometry
     api.Comment('==========================')
