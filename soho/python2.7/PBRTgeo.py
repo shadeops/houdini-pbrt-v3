@@ -30,7 +30,10 @@ def override_to_paramset(material, override_str):
         paramset.add(pbrt_param)
     return paramset
 
-def sphere_wrangler(gdp, paramset=None):
+def sphere_wrangler(gdp, paramset=None, properties=None):
+    if properties is None:
+        properties = {}
+
     num_prims = gdp.globalValue('geo:primcount')[0]
     prim_xform_h = gdp.attribute('geo:prim', 'geo:primtransform')
     for prim_num in xrange(num_prims):
@@ -39,7 +42,9 @@ def sphere_wrangler(gdp, paramset=None):
             api.ConcatTransform(xform)
             api.Shape('sphere', paramset)
 
-def disk_wrangler(gdp, paramset=None):
+def disk_wrangler(gdp, paramset=None, properties=None):
+    if properties is None:
+        properties = {}
 
     # NOTE: PBRT's and Houdini's parameteric UVs are different
     # so when using textures this will need to be fixed on the
@@ -52,9 +57,13 @@ def disk_wrangler(gdp, paramset=None):
             api.ConcatTransform(xform)
             api.Shape('disk', paramset)
 
-def tube_wrangler(gdp, paramset=None):
+def tube_wrangler(gdp, paramset=None, properties=None):
+    if properties is None:
+        properties = {}
+
     if paramset is None:
         paramset = ParamSet()
+
     num_prims = gdp.globalValue('geo:primcount')[0]
     prim_xform_h = gdp.attribute('geo:prim', 'geo:primtransform')
     # SOHO BUG
@@ -169,7 +178,24 @@ def geo_attrib_gen(gdp, attrib, count):
 #       Including auto resolution of vtx or pt attrib, handle, attrib size
 #       and application of the correct generator function.
 
-def trianglemesh_wrangler(gdp, paramset=None):
+
+# TODO: A better interface is to make a mesh_params(gdp) function
+#       which then trianglemesh_wrangler will take, so all the
+#       work happens inside of the mesh_params(). This way both
+#       the loopsubdiv wrangler and the trianglemesh wrangler can
+#       use them. However the support for loopsubdiv is so limited
+#       compared to trianglemesh (no uvs, no N, etc) that for now
+#       we'll suffer from code duplication as to avoid over-complicating
+#       the trianglemesh param creation.
+#       def create_mesh_params(gdp):
+#           mesh_paramset = ParamSet()
+#           ... the bulk of trianglemesh_wrangler()
+#           return mesh_params
+
+def mesh_wrangler(gdp, paramset=None, properties=None):
+    if properties is None:
+        properties = {}
+
     if paramset is None:
         mesh_paramset = ParamSet()
     else:
@@ -200,6 +226,32 @@ def trianglemesh_wrangler(gdp, paramset=None):
     if not mesh_gdp:
         return None
 
+    # If subdivs are turned on, instead of running the
+    # trianglemesh wrangler, use the loop subdiv one instead
+    shape = 'trianglemesh'
+    if 'pbrt_rendersubd' in properties:
+        if properties['pbrt_rendersubd'].Value[0]:
+            shape = 'loopsubdiv'
+
+    if shape == 'loopsubdiv':
+        wrangler_paramset = loopsubdiv_params(mesh_gdp)
+        if 'levels' in properties:
+            mesh_paramset.replace(properties['levels'].to_pbrt())
+    else:
+        computeN = True
+        if 'pbrt_computeN' in properties:
+            computeN = properties['pbrt_computeN'].Value[0]
+        wrangler_paramset = trianglemesh_params(mesh_gdp, computeN)
+
+    mesh_paramset.update(wrangler_paramset)
+
+    api.Shape(shape, mesh_paramset)
+
+    return None
+
+def trianglemesh_params(mesh_gdp, computeN=True):
+
+    mesh_paramset = ParamSet()
     unique_points = False
 
     num_pts = mesh_gdp.globalValue('geo:pointcount')[0]
@@ -213,12 +265,17 @@ def trianglemesh_wrangler(gdp, paramset=None):
     uv_attrib = mesh_gdp.attribute('geo:vertex', 'uv')
     S_attrib = mesh_gdp.attribute('geo:vertex', 'S')
 
+    # TODO: If uv's don't exist, check for 'st', we'll assume uvs are a float[3]
+    #       in Houdini and st are a float[2], or we could just auto-convert as
+    #       needed.
+
+    # TODO: faceIndices are prim attribute which pbrt looks for, its not
+    #       documented but its most likely for ptex support.
+
     # We need to unique the points if any of the handles
     # to vtx attributes exists.
     if N_attrib >= 0 or uv_attrib >= 0 or S_attrib >= 0:
         unique_points = True
-
-    # TODO: Add option to disable automatic normals?
 
     S = None
     uv = None
@@ -253,8 +310,15 @@ def trianglemesh_wrangler(gdp, paramset=None):
     else:
         P = geo_attrib_gen(mesh_gdp, P_attrib, num_pts)
         indices = vtx_attrib_gen(mesh_gdp, pointref_attrib)
-        N_attrib = mesh_gdp.normal()
-        N = geo_attrib_gen(mesh_gdp, N_attrib, num_pts)
+        N_attrib = mesh_gdp.attribute('geo:point', 'N')
+        if N_attrib < 0 and computeN:
+            N_attrib = mesh_gdp.attribute('geo:point', 'geo:computeN')
+        else:
+            N_attrib = None
+        if N_attrib is not None:
+            N = geo_attrib_gen(mesh_gdp, N_attrib, num_pts)
+        else:
+            N = None
         S_attrib = mesh_gdp.attribute('geo:point', 'S')
         if S_attrib >= 0:
             S = geo_attrib_gen(mesh_gdp, S_attrib, num_pts)
@@ -264,27 +328,43 @@ def trianglemesh_wrangler(gdp, paramset=None):
 
     mesh_paramset.add(PBRTParam('integer', 'indices', indices))
     mesh_paramset.add(PBRTParam('point', 'P', P))
-    mesh_paramset.add(PBRTParam('normal', 'N', N))
+    if N is not None:
+        mesh_paramset.add(PBRTParam('normal', 'N', N))
+    if S is not None:
+        mesh_paramset.add(PBRTParam('vector', 'S', S))
     if uv is not None:
         # Houdini's uvs are stored as 3 floats, but pbrt only needs two
         # We'll use a generator comprehension to strip off the extra
         # float.
         uv2 = ( x[0:2] for x in uv )
         mesh_paramset.add(PBRTParam('float', 'uv', uv2))
-    if S is not None:
-        mesh_paramset.add(PBRTParam('vector', 'S', S))
 
-    api.Shape('trianglemesh', mesh_paramset)
+    return mesh_paramset
 
-    return None
+def loopsubdiv_params(mesh_gdp):
+
+    mesh_paramset = ParamSet()
+    num_pts = mesh_gdp.globalValue('geo:pointcount')[0]
+
+    # Required
+    P_attrib = mesh_gdp.attribute('geo:point', 'P')
+    pointref_attrib = mesh_gdp.attribute('geo:vertex', 'geo:pointref')
+
+    P = geo_attrib_gen(mesh_gdp, P_attrib, num_pts)
+    indices = vtx_attrib_gen(mesh_gdp, pointref_attrib)
+
+    mesh_paramset.add(PBRTParam('integer', 'indices', indices))
+    mesh_paramset.add(PBRTParam('point', 'P', P))
+
+    return mesh_paramset
 
 shape_wranglers = { 'Sphere': sphere_wrangler,
                     'Circle' : disk_wrangler,
                     'Tube' : tube_wrangler,
-                    'Poly' : trianglemesh_wrangler,
-                    'Mesh' : trianglemesh_wrangler,
-                    'MetaBall' : trianglemesh_wrangler,
-                    'PolySoup' : trianglemesh_wrangler,
+                    'Poly' : mesh_wrangler,
+                    'Mesh' : mesh_wrangler,
+                    'PolySoup' : mesh_wrangler,
+                    'MetaBall' : mesh_wrangler,
                   }
 
 def shape_splits(gdp):
@@ -297,10 +377,15 @@ def shape_splits(gdp):
         prim_name = gdp.value(prim_name_h, prim_num)[0]
         yield prim_name
 
-def save_geo(soppath, now):
+def save_geo(soppath, now, properties=None):
     # split by material
         # split by material override #
             # split by geo type
+
+    if properties is None:
+        properties = {}
+
+    paramset = ParamSet()
 
     gdp = SohoGeometry(soppath, now)
 
@@ -341,14 +426,16 @@ def save_geo(soppath, now):
             shape_gdps = override_gdp.partition('geo:partlist',
                                                 shape_splits(override_gdp))
             for shape in shape_gdps:
+                paramset = ParamSet()
+
                 if override and material:
-                    paramset = override_to_paramset(material, override)
-                else:
-                    paramset = None
+                    paramset.update(override_to_paramset(material, override))
+
                 shape_gdp = shape_gdps[shape]
+
                 shape_wrangler = shape_wranglers.get(shape)
                 if shape_wrangler:
-                    shape_wrangler(shape_gdp, paramset)
+                    shape_wrangler(shape_gdp, paramset, properties)
 
         if material:
             api.AttributeEnd()

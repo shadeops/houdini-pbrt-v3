@@ -541,5 +541,12 @@ def wrangle_geo(obj, wrangler, now):
         api.Comment('Can not find soppath for object')
         return
 
-    Geo.save_geo(soppath[0], now)
+    parm_selection = {
+        'pbrt_rendersubd' : SohoPBRT('pbrt_rendersubd', 'bool', [False], False),
+        'pbrt_subdlevels' : SohoPBRT('pbrt_subdlevels', 'integer', [3], False, key='levels'),
+        'pbrt_computeN' : SohoPBRT('pbrt_computeN', 'bool', [True], False),
+    }
+    properties = obj.evaluate(parm_selection, now)
+
+    Geo.save_geo(soppath[0], now, properties)
 
