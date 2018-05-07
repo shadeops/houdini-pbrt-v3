@@ -151,17 +151,25 @@ class PBRTParam(object):
     def __init__(self, param_type, param_name, param_value):
         param_type = self.type_synonyms.get(param_type, param_type)
         if param_type not in self.pbrt_types:
-            raise hou.TypeError('%s not a known PBRT type' % param_type)
+            raise TypeError('%s not a known PBRT type' % param_type)
         self.type = param_type
         self.name = param_name
         self._value = param_value
 
     def __str__(self):
-        if len(self.value) > 3:
-            suffix = '... ]'
+        if isinstance(self.value, types.GeneratorType):
+            value_str = '...'
         else:
-            suffix = ']'
-        return '%s [ %s %s' % (self.type_name, ' '.join([str(x) for x in self.value[:3]]), suffix)
+            if len(self.value) > 3:
+                suffix = ' ...'
+            else:
+                suffix = ''
+            value_str = '%s' % (' '.join([str(x) for x in self.value[0:3]]))
+            value_str += suffix
+        return '%s [ %s ]' % (self.type_name, value_str)
+
+    def __hash__(self):
+        return hash((self.type, self.name))
 
     def __eq__(self, other):
         if not isinstance(other, PBRTParam):
@@ -171,7 +179,7 @@ class PBRTParam(object):
     def __ne__(self, other):
         if not isinstance(other, PBRTParam):
             raise TypeError('Can not compare non PBRTParam type')
-        return (self.type != other.type or self.name != other.name)   
+        return (self.type != other.type or self.name != other.name)
 
     @property
     def value(self):
@@ -195,33 +203,47 @@ class PBRTParam(object):
     def print_str(self):
         return soho.printArray('"%s" [ ' % self.type_name, self.value, ' ]')
 
-# FIXME ParamSets can actually have the same name across different types
-#       apparenty a "string" "foo" and a "float" "foo" are two different
-#       things
 class ParamSet(collections.MutableSet):
+
     def __init__(self, iterable=None):
-        self._data = {}
+        self._data = set()
         if not iterable:
             return
-        if not isinstance(iterable, PBRTParam):
-            raise TypeError('Must be a PBRTParam type')
-        for i in iterable:
-            self._data[i.name] = i
+        self |= iterable
+
     def __contains__(self, item):
-        return item.name in self._data
+        return item in self._data
+
     def __iter__(self):
-        for k in sorted(self._data.keys()):
-            yield self._data[k]
+        # TODO: Sort based on type/name?
+        for v in self._data:
+            yield v
+
     def __len__(self):
         return len(self._data)
-    def __getitem__(self,key):
-        return self._data[key]
+
     def __str__(self):
         return ' , '.join(str(x) for x in self)
+
     def add(self, param):
-        self._data[param.name] = param
+        self._data.add(param)
+
     def discard(self, param):
-        del self._data[param.name]
+        self._data.discard(param)
+
+    def replace(self, param):
+        self.discard(param)
+        self.add(param)
+
+    def find_param(self, ptype, name):
+        for p in self._data:
+            if p.type == ptype and p.name == name:
+                return p
+        return None
+
+    def update(self, other):
+        for o in other:
+            self.replace(o)
 
 class BasePlugin(object):
 
@@ -232,7 +254,6 @@ class BasePlugin(object):
             self.node = hou.node(node)
         else:
             raise hou.TypeError('%s is unknown type' % node)
-
         self.ignore_defaults = ignore_defaults
 
     @property
@@ -288,7 +309,6 @@ class BasePlugin(object):
 
     @property
     def paramset(self):
-        params = []
         params = ParamSet()
         hou_parms = self.get_used_parms()
         for parm_name in sorted(hou_parms):
@@ -327,7 +347,7 @@ class MaterialPlugin(BasePlugin):
         # invisible so it gets passed over
         bump_coshaders = self.node.coshaderNodes('bumpmap')
         if bump_coshaders:
-            params.add(PBRTParam('texture', 'bumpmap',
+            params.replace(PBRTParam('texture', 'bumpmap',
                                  bump_coshaders[0].path()))
         return params
 
