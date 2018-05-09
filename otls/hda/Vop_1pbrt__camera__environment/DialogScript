@@ -56,6 +56,20 @@
         range   { 0 10 }
     }
     parm {
+        name    "lensradius"
+        label   "Lens Radius"
+        type    float
+        default { "0" }
+        range   { 0 10 }
+    }
+    parm {
+        name    "focaldistance"
+        label   "Focal Distance"
+        type    float
+        default { "1e+30" }
+        range   { 0 10 }
+    }
+    parm {
         name    "do_frameaspectratio"
         label   "Frame Aspect Ratio"
         type    toggle

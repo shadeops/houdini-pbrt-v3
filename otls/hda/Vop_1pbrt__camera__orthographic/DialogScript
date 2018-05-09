@@ -56,6 +56,22 @@
         range   { 0 10 }
     }
     parm {
+        name    "lensradius"
+        label   "Lens Radius"
+        type    float
+        default { "0" }
+        help    "The radius of the lens. Used to render scenes with depth of field and focus effects. The default value yields a pinhole camera."
+        range   { 0 10 }
+    }
+    parm {
+        name    "focaldistance"
+        label   "Focal Distance"
+        type    float
+        default { "1e+06" }
+        help    "Specifies the distance from the camera origin to the focal plane."
+        range   { 0 10 }
+    }
+    parm {
         name    "do_frameaspectratio"
         label   "Frame Aspect Ratio"
         type    toggle
@@ -91,21 +107,5 @@
         help    "The bounds of the film plane in screen space. By default, this is [-1,1] along the shorter image axis and is set proportionally along the longer axis."
         disablewhen "{ do_screenwindow == 0 }"
         range   { -1 1 }
-    }
-    parm {
-        name    "lensradius"
-        label   "Lens Radius"
-        type    float
-        default { "0" }
-        help    "The radius of the lens. Used to render scenes with depth of field and focus effects. The default value yields a pinhole camera."
-        range   { 0 10 }
-    }
-    parm {
-        name    "focaldistance"
-        label   "Focal Distance"
-        type    float
-        default { "1e+31" }
-        help    "Specifies the distance from the camera origin to the focal plane."
-        range   { 0 10 }
     }
 }

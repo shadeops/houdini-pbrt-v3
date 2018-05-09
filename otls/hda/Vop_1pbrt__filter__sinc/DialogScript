@@ -43,7 +43,7 @@
         name    "xwidth"
         label   "Width X"
         type    float
-        default { "2" }
+        default { "4" }
         help    "The width of the filter in the x direction. "
         range   { 0 10 }
     }
@@ -51,7 +51,7 @@
         name    "ywidth"
         label   "Width Y"
         type    float
-        default { "2" }
+        default { "4" }
         help    "The width of the filter in the y direction. "
         range   { 0 10 }
     }

@@ -56,6 +56,37 @@
         range   { 0 10 }
     }
     parm {
+        name    "lensfile"
+        label   "Lens File"
+        type    file
+        default { "" }
+        help    " Specifies the name of a lens description file that gives the collection of lens elements in the lens system. A number of such lenses are available in the lenses directory in the pbrt-v3 scenes distribution. "
+        parmtag { "filechooser_mode" "read" }
+    }
+    parm {
+        name    "aperturediameter"
+        label   "Aperture Diameter"
+        type    float
+        default { "1" }
+        help    "Diameter of the lens system's aperture, specified in mm. The smaller the aperture, the less light reaches the film plane, but the greater the range of distances that are in focus."
+        range   { 0 10 }
+    }
+    parm {
+        name    "focusdistance"
+        label   "Focus Distance"
+        type    float
+        default { "10" }
+        help    " Distance in meters at which the lens system is focused."
+        range   { 0 10 }
+    }
+    parm {
+        name    "simpleweighting"
+        label   "Simple Weighting"
+        type    toggle
+        default { "1" }
+        help    "Indicates whether incident radiance at the film plane should just be weighted by the cosine-to-the-4th term, or whether it should also include the additional weighting terms that account for the shutter open time and the projected area of the exit pupil are included so that the image records incident energy on the film plane."
+    }
+    parm {
         name    "do_frameaspectratio"
         label   "Frame Aspect Ratio"
         type    toggle
@@ -91,36 +122,5 @@
         help    "The bounds of the film plane in screen space. By default, this is [-1,1] along the shorter image axis and is set proportionally along the longer axis."
         disablewhen "{ do_screenwindow == 0 }"
         range   { -1 1 }
-    }
-    parm {
-        name    "lensfile"
-        label   "Lens File"
-        type    file
-        default { "" }
-        help    " Specifies the name of a lens description file that gives the collection of lens elements in the lens system. A number of such lenses are available in the lenses directory in the pbrt-v3 scenes distribution. "
-        parmtag { "filechooser_mode" "read" }
-    }
-    parm {
-        name    "aperturediameter"
-        label   "Aperture Diameter"
-        type    float
-        default { "1" }
-        help    "Diameter of the lens system's aperture, specified in mm. The smaller the aperture, the less light reaches the film plane, but the greater the range of distances that are in focus."
-        range   { 0 10 }
-    }
-    parm {
-        name    "focusdistance"
-        label   "Focus Distance"
-        type    float
-        default { "10" }
-        help    " Distance in meters at which the lens system is focused."
-        range   { 0 10 }
-    }
-    parm {
-        name    "simpleweighting"
-        label   "Simple Weighting"
-        type    toggle
-        default { "1" }
-        help    "Indicates whether incident radiance at the film plane should just be weighted by the cosine-to-the-4th term, or whether it should also include the additional weighting terms that account for the shutter open time and the projected area of the exit pupil are included so that the image records incident energy on the film plane."
     }
 }

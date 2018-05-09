@@ -59,7 +59,7 @@
         name    "emptybonus"
         label   "Empty Bonus"
         type    float
-        default { "0.2" }
+        default { "0.5" }
         help    "\"Bonus\" factor for kd-tree nodes that represent empty space. "
         range   { 0 10 }
     }
