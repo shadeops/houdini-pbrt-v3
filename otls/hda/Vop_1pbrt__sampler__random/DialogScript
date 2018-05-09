@@ -43,7 +43,7 @@
         name    "pixelsamples"
         label   "Pixel Samples"
         type    integer
-        default { "16" }
+        default { "4" }
         help    "The number of samples to take, per pixel. Note that the number of samples is taken per pixel on average; depending on the actual sampling algorithm being used, individual pixel areas may have slightly more or slightly fewer."
         range   { 1! 1024 }
     }
