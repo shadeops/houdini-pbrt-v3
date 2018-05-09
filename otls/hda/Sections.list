@@ -63,3 +63,4 @@ Vop_1pbrt__texture__wrinkled	Vop/pbrt_texture_wrinkled
 Vop_1pbrt__texture__windy	Vop/pbrt_texture_windy
 Vop_1pbrt__texture__marble	Vop/pbrt_texture_marble
 Vop_1pbrt__texture__ptex	Vop/pbrt_texture_ptex
+Vop_1pbrt__medium	Vop/pbrt_medium

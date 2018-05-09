@@ -1,9 +1,9 @@
-# Dialog script for pbrt_material_subsurface automatically generated
+# Dialog script for pbrt_medium automatically generated
 
 {
-    name	pbrt_material_subsurface
-    script	subsurface
-    label	"PBRT SubsurfaceMaterial"
+    name	pbrt_medium
+    script	pbrt_medium
+    label	"PBRT Medium"
 
     rendermask	PBRT
     externalshader 1
@@ -59,8 +59,8 @@
     }
 
     parm {
-        name    "name"
-        label   "Name"
+        name    "preset"
+        label   "Preset"
         type    ordinal
         default { "none" }
         help    "Name of measured subsurface scattering coefficients. See the file src/core/media.cpp in the pbrt distribution for all of the measurements that are available."
@@ -120,8 +120,8 @@
         type    color
         size    3
         default { "0.0011" "0.0024" "0.014" }
-        help    "Absorption coefficient of the volume, measured in mm^-1."
-        disablewhen "{ name != none }"
+        help    "The absorption cross section."
+        disablewhen "{ preset != none }"
         range   { 0 1 }
     }
     parm {
@@ -130,8 +130,8 @@
         type    color
         size    3
         default { "2.55" "3.12" "3.77" }
-        help    "Reduced scattering coefficient of the volume, measured in mm^-1. "
-        disablewhen "{ name != none }"
+        help    "The scattering cross section."
+        disablewhen "{ preset != none }"
         range   { 0 1 }
     }
     parm {
@@ -139,56 +139,15 @@
         label   "Scale"
         type    float
         default { "1" }
-        help    "Scale factor that is applied to sigma_a and sigma_prime_s. This is particularly useful when the scene is not measured in mm and the coefficients need to be scaled accordingly. For example, if the scene is modeled in meters, then a scale factor of 0.001 would be appropriate. "
+        help    "Scale factor applied to the absorption and scattering cross sections."
         range   { 0 10 }
     }
     parm {
-        name    "eta"
-        label   "Eta"
+        name    "g"
+        label   "g"
         type    float
         default { "1.33" }
-        help    "Index of refraction of the scattering volume. "
-        range   { 0.5 5 }
-    }
-    parm {
-        name    "Kr"
-        label   "Reflectivity"
-        type    color
-        size    3
-        default { "1" "1" "1" }
-        help    " The reflectivity of the surface."
-        range   { 0 1 }
-    }
-    parm {
-        name    "Kt"
-        label   "Transmissivity"
-        type    color
-        size    3
-        default { "1" "1" "1" }
-        help    "The transmissivity of the surface."
-        range   { 0 1 }
-    }
-    parm {
-        name    "uroughness"
-        label   "Roughness U"
-        type    float
-        default { "0" }
-        help    "Microfacet roughness in the u direction. If zero, perfect specular reflection is modeled."
-        range   { 0 1 }
-    }
-    parm {
-        name    "vroughness"
-        label   "Roughness V"
-        type    float
-        default { "0" }
-        help    "Microfacet roughness in the v direction. If zero, perfect specular reflection is modeled."
-        range   { 0 1 }
-    }
-    parm {
-        name    "remaproughness"
-        label   "Remap Roughness"
-        type    toggle
-        default { "1" }
-        help    "If true, roughness values are expected to be in the range [0,1], and are remapped to microfacet distribution function parameter values that range from near-perfect-specular at 0 to very rough at 1. Otherwise the roughness parameters are used directly for the alpha parameters of the microfacet distribution function."
+        help    "The phase function asymmetry parameter."
+        range   { -1 1 }
     }
 }

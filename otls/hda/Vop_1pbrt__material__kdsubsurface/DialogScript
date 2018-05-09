@@ -79,9 +79,23 @@
         name    "eta"
         label   "Eta"
         type    float
-        default { "1.3" }
+        default { "1.33" }
         help    "The index of refraction inside the object. "
         range   { 0.5 5 }
+    }
+    parm {
+        name    "scale"
+        label   "Scale"
+        type    float
+        default { "1" }
+        range   { 0 10 }
+    }
+    parm {
+        name    "g"
+        label   "g"
+        type    float
+        default { "0" }
+        range   { -1 1 }
     }
     parm {
         name    "Kr"

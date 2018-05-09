@@ -668,7 +668,7 @@ Inputs:       0 to 8
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:32:22 2018
+Modified:     Wed May  9 19:31:37 2018
 
 Operator:     pbrt_material_kdsubsurface
 Label:        PBRT KdSubsurfaceMaterial
@@ -682,7 +682,7 @@ Inputs:       0 to 8
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:33:19 2018
+Modified:     Wed May  9 19:33:57 2018
 
 Operator:     pbrt_texture_constant
 Label:        PBRT ConstantTexture
@@ -865,4 +865,18 @@ Subnet:       false
 Python:       false
 Empty:        false
 Modified:     Sat Apr 28 21:21:58 2018
+
+Operator:     pbrt_medium
+Label:        PBRT Medium
+Path:         oplib:/Vop/pbrt_medium?Vop/pbrt_medium
+Icon:         opdef:/Vop/pbrt_medium?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         
+Inputs:       0 to 8
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Wed May  9 19:29:41 2018
 
