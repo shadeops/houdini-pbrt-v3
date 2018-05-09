@@ -179,19 +179,6 @@ def geo_attrib_gen(gdp, attrib, count):
 #       and application of the correct generator function.
 
 
-# TODO: A better interface is to make a mesh_params(gdp) function
-#       which then trianglemesh_wrangler will take, so all the
-#       work happens inside of the mesh_params(). This way both
-#       the loopsubdiv wrangler and the trianglemesh wrangler can
-#       use them. However the support for loopsubdiv is so limited
-#       compared to trianglemesh (no uvs, no N, etc) that for now
-#       we'll suffer from code duplication as to avoid over-complicating
-#       the trianglemesh param creation.
-#       def create_mesh_params(gdp):
-#           mesh_paramset = ParamSet()
-#           ... the bulk of trianglemesh_wrangler()
-#           return mesh_params
-
 def mesh_wrangler(gdp, paramset=None, properties=None):
     if properties is None:
         properties = {}
@@ -255,6 +242,7 @@ def trianglemesh_params(mesh_gdp, computeN=True):
     unique_points = False
 
     num_pts = mesh_gdp.globalValue('geo:pointcount')[0]
+    num_prims = mesh_gdp.globalValue('geo:primcount')[0]
 
     # Required
     P_attrib = mesh_gdp.attribute('geo:point', 'P')
@@ -264,13 +252,11 @@ def trianglemesh_params(mesh_gdp, computeN=True):
     N_attrib = mesh_gdp.attribute('geo:vertex', 'N')
     uv_attrib = mesh_gdp.attribute('geo:vertex', 'uv')
     S_attrib = mesh_gdp.attribute('geo:vertex', 'S')
+    faceIndices_attrib = mesh_gdp.attribute('geo:prim', 'faceIndices')
 
     # TODO: If uv's don't exist, check for 'st', we'll assume uvs are a float[3]
     #       in Houdini and st are a float[2], or we could just auto-convert as
     #       needed.
-
-    # TODO: faceIndices are prim attribute which pbrt looks for, its not
-    #       documented but its most likely for ptex support.
 
     # We need to unique the points if any of the handles
     # to vtx attributes exists.
@@ -280,6 +266,14 @@ def trianglemesh_params(mesh_gdp, computeN=True):
     S = None
     uv = None
     N = None
+    faceIndices = None
+
+    # TODO: Reevaluate this. If the mesh is tesselated and new polys are
+    #       created then the new polys will inherit the existing faceIndices
+    #       This may or may not be what we want, for now leave it and work
+    #       through use cases later.  Also look at obj2pbrt as a reference
+    if faceIndices_attrib >= 0:
+        faceIndices = geo_attrib_gen(mesh_gdp, faceIndices_attrib, num_prims)
 
     # We will unique points (verts in PBRT) if any of the attributes are
     # per vertex instead of per point.
@@ -332,6 +326,8 @@ def trianglemesh_params(mesh_gdp, computeN=True):
         mesh_paramset.add(PBRTParam('normal', 'N', N))
     if S is not None:
         mesh_paramset.add(PBRTParam('vector', 'S', S))
+    if faceIndices is not None:
+        mesh_paramset.add(PBRTParam('integer', 'faceIndices', faceIndices))
     if uv is not None:
         # Houdini's uvs are stored as 3 floats, but pbrt only needs two
         # We'll use a generator comprehension to strip off the extra
