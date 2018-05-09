@@ -152,6 +152,12 @@ def NamedMaterial(name):
 def Texture(name, output, plugin, paramset=()):
     _api_named_plugin_call('Texture', name, output, plugin, paramset)
 
+def MakeNamedMedium(name, plugin, paramset=()):
+    _api_named_plugin_call('MakeNamedMedium', name, 'string type', plugin, paramset)
+
+def MediumInterface(interior, exterior):
+    _api_call_with_args('MediumInterface', interior, exterior)
+
 def LightSource(plugin, paramset=()):
     _api_plugin_call('LightSource', plugin, paramset)
 
@@ -190,3 +196,6 @@ def ObjectBlock():
 def NullBlock():
     yield
 
+# TODO: Verify
+# Default material can be changed via  MakeNamedMaterial "" ...
+# Default medium as well?
