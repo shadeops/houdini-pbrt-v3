@@ -403,19 +403,18 @@ def bounds_to_api_box(b):
                                            b[1], b[2], b[4],
                                            b[0], b[3], b[4],
                                            b[1], b[3], b[4] ]))
-    paramset.add(PBRTParam('integer', 'indices', [0,1,3,
-                                                  0,3,2,
-                                                  4,5,7,
-                                                  4,7,6,
-                                                  6,7,2,
-                                                  6,2,3,
-                                                  5,4,1,
-                                                  5,1,0,
-                                                  5,0,2,
-                                                  5,2,7,
-                                                  1,4,6,
-                                                  1,6,3]))
-    api.ReverseOrientation()
+    paramset.add(PBRTParam('integer', 'indices', [0,3,1,
+                                                  0,2,3,
+                                                  4,7,5,
+                                                  4,6,7,
+                                                  6,2,7,
+                                                  6,3,2,
+                                                  5,1,4,
+                                                  5,0,1,
+                                                  5,2,0,
+                                                  5,7,2,
+                                                  1,6,4,
+                                                  1,3,6]))
     api.Shape('trianglemesh', paramset)
 
 def smoke_wrangler(gdp, paramset=None, properties=None):
@@ -428,8 +427,11 @@ def smoke_wrangler(gdp, paramset=None, properties=None):
     resolution_h = gdp.attribute('geo:prim', 'intrinsic:voxelresolution')
     for prim_num in xrange(num_prims):
         smoke_paramset = copy.copy(paramset)
-        name = '%s:[%i]' % (gdp.globalValue('geo:soppath')[0], prim_num)
+        # FIXME: Get real prim_num, not partitioned one
+        name = '%s[%i]' % (gdp.globalValue('geo:soppath')[0], prim_num)
         resolution = gdp.value(resolution_h, prim_num)
+        # TODO: Benchmark this vs other methods like fetching the volume prim
+        #       using hou.
         voxels = gdp.value(voxeldata_h, prim_num)
         smoke_paramset.add(PBRTParam('integer','nx', resolution[0]))
         smoke_paramset.add(PBRTParam('integer','ny', resolution[1]))
@@ -437,17 +439,16 @@ def smoke_wrangler(gdp, paramset=None, properties=None):
         smoke_paramset.add(PBRTParam('point','p0', [-1,-1,-1]))
         smoke_paramset.add(PBRTParam('point','p1', [1,1,1]))
         smoke_paramset.add(PBRTParam('float','density', voxels))
+        # These must be uniform
         smoke_paramset.add(PBRTParam('color','sigma_a',[1, 1, 1]))
         smoke_paramset.add(PBRTParam('color','sigma_s',[9, 9, 9]))
-        with api.TransformBlock():
+        with api.AttributeBlock():
             xform = gdp.value(prim_xform_h, prim_num)
             api.ConcatTransform(xform)
             api.MakeNamedMedium(name, 'heterogeneous', smoke_paramset)
-        bounds = gdp.value(prim_bounds_h, prim_num)
-        with api.AttributeBlock():
             api.Material('')
             api.MediumInterface(name, "")
-            bounds_to_api_box(bounds)
+            bounds_to_api_box([-1,1,-1,1,-1,1])
 
 def heightfield_wrangler(gdp, paramset=None, properties=None):
     if paramset is None:
