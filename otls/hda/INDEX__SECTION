@@ -668,7 +668,7 @@ Inputs:       0 to 8
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Wed May  9 19:31:37 2018
+Modified:     Wed May  9 19:44:58 2018
 
 Operator:     pbrt_material_kdsubsurface
 Label:        PBRT KdSubsurfaceMaterial
@@ -874,9 +874,9 @@ Table:        Vop
 License:      
 Extra:        
 User:         
-Inputs:       0 to 8
+Inputs:       0 to 2
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Wed May  9 19:29:41 2018
+Modified:     Wed May  9 19:43:42 2018
 

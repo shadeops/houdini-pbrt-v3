@@ -10,7 +10,7 @@
     shadertype	generic
     input	float	bumpmap	bumpmap
     input	struct_PBRTSpectrum	sigma_a	"Sigma a"
-    input	struct_PBRTSpectrum	sigma_prime_s	"Sigma Prime s"
+    input	struct_PBRTSpectrum	sigma_s	"Sigma s"
     input	float	eta	Eta
     input	struct_PBRTSpectrum	Kr	Reflectivity
     input	struct_PBRTSpectrum	Kt	Transmissivity
@@ -19,7 +19,7 @@
     output	struct_PBRTMaterial	material	material
     inputflags	bumpmap	0
     inputflags	sigma_a	0
-    inputflags	sigma_prime_s	0
+    inputflags	sigma_s	0
     inputflags	eta	0
     inputflags	Kr	0
     inputflags	Kt	0
