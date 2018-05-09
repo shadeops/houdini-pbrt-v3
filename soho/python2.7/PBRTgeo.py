@@ -380,7 +380,7 @@ def volume_wrangler(gdp, paramset=None, properties=None):
         # limitation of pbrt, we'll duplication that logic here.
         return None
 
-    smoke_gdps = volumemode_gdps('smoke')
+    smoke_gdps = volumemode_gdps.get('smoke')
     volumenames_gdps = smoke_gdps.partition('geo:partattrib','name')
 
     # First we try to find any smoke volumes named density
@@ -393,15 +393,61 @@ def volume_wrangler(gdp, paramset=None, properties=None):
     if density_gdps is not None:
         smoke_wrangler(density_gdps, paramset, properties)
 
+def bounds_to_api_box(b):
+    paramset = ParamSet()
+    paramset.add(PBRTParam('point', 'P', [ b[1], b[2], b[5],
+                                           b[0], b[2], b[5],
+                                           b[1], b[3], b[5],
+                                           b[0], b[3], b[5],
+                                           b[0], b[2], b[4],
+                                           b[1], b[2], b[4],
+                                           b[0], b[3], b[4],
+                                           b[1], b[3], b[4] ]))
+    paramset.add(PBRTParam('integer', 'indices', [0,1,3,
+                                                  0,3,2,
+                                                  4,5,7,
+                                                  4,7,6,
+                                                  6,7,2,
+                                                  6,2,3,
+                                                  5,4,1,
+                                                  5,1,0,
+                                                  5,0,2,
+                                                  5,2,7,
+                                                  1,4,6,
+                                                  1,6,3]))
+    api.ReverseOrientation()
+    api.Shape('trianglemesh', paramset)
+
 def smoke_wrangler(gdp, paramset=None, properties=None):
-    return
+    if paramset is None:
+        paramset = ParamSet()
     num_prims = gdp.globalValue('geo:primcount')[0]
     prim_xform_h = gdp.attribute('geo:prim', 'geo:primtransform')
+    prim_bounds_h = gdp.attribute('geo:prim', 'intrinsic:bounds')
+    voxeldata_h = gdp.attribute('geo:prim', 'intrinsic:voxeldata')
+    resolution_h = gdp.attribute('geo:prim', 'intrinsic:voxelresolution')
     for prim_num in xrange(num_prims):
+        smoke_paramset = copy.copy(paramset)
+        name = '%s:[%i]' % (gdp.globalValue('geo:soppath')[0], prim_num)
+        resolution = gdp.value(resolution_h, prim_num)
+        voxels = gdp.value(voxeldata_h, prim_num)
+        smoke_paramset.add(PBRTParam('integer','nx', resolution[0]))
+        smoke_paramset.add(PBRTParam('integer','ny', resolution[1]))
+        smoke_paramset.add(PBRTParam('integer','nz', resolution[2]))
+        smoke_paramset.add(PBRTParam('point','p0', [-1,-1,-1]))
+        smoke_paramset.add(PBRTParam('point','p1', [1,1,1]))
+        smoke_paramset.add(PBRTParam('float','density', voxels))
+        smoke_paramset.add(PBRTParam('color','sigma_a',[1, 1, 1]))
+        smoke_paramset.add(PBRTParam('color','sigma_s',[9, 9, 9]))
         with api.TransformBlock():
             xform = gdp.value(prim_xform_h, prim_num)
             api.ConcatTransform(xform)
-            api.Shape('sphere', paramset)
+            api.MakeNamedMedium(name, 'heterogeneous', smoke_paramset)
+        bounds = gdp.value(prim_bounds_h, prim_num)
+        with api.AttributeBlock():
+            api.Material('')
+            api.MediumInterface(name, "")
+            bounds_to_api_box(bounds)
 
 def heightfield_wrangler(gdp, paramset=None, properties=None):
     if paramset is None:
