@@ -354,6 +354,97 @@ def loopsubdiv_params(mesh_gdp):
 
     return mesh_paramset
 
+def volumemode_splits(gdp):
+    num_prims = gdp.globalValue('geo:primcount')[0]
+
+    vismode_h = gdp.attribute('geo:prim', 'intrinsic:volumevisualmode')
+    for prim_num in xrange(num_prims):
+        vismode = gdp.value(vismode_h, prim_num)[0]
+        yield vismode
+
+def volume_wrangler(gdp, paramset=None, properties=None):
+
+    # We are going to further partition the volumes based on whether
+    # they are a smoke of heightfield.
+    volumemode_gdps = gdp.partition('geo:partlist', volumemode_splits(gdp))
+
+    # Heightfield masks are not supported currently
+    heightfield_gdps = volumemode_gdps.get('heightfield')
+    if heightfield_gdps is not None:
+        heightfield_wrangler(heightfield_gdps, paramset, properties)
+
+        # Houdini geometry objects don't allow more than one "volume" set
+        # meaning, an object will only ever render one combined volume. That
+        # volume could be multiple cloud prims, or multiple heightfields
+        # but it can't be a mix of heightfields and clouds. So while not a
+        # limitation of pbrt, we'll duplication that logic here.
+        return None
+
+    smoke_gdps = volumemode_gdps('smoke')
+    volumenames_gdps = smoke_gdps.partition('geo:partattrib','name')
+
+    # First we try to find any smoke volumes named density
+    density_gdps = volumenames_gdps.get('density')
+    if density_gdps is None:
+        # If that fails, look for no named ones as they'll be considered
+        # density by Houdini
+        density_gdps = volumenames_gdps.get('')
+
+    if density_gdps is not None:
+        smoke_wrangler(density_gdps, paramset, properties)
+
+def smoke_wrangler(gdp, paramset=None, properties=None):
+    return
+    num_prims = gdp.globalValue('geo:primcount')[0]
+    prim_xform_h = gdp.attribute('geo:prim', 'geo:primtransform')
+    for prim_num in xrange(num_prims):
+        with api.TransformBlock():
+            xform = gdp.value(prim_xform_h, prim_num)
+            api.ConcatTransform(xform)
+            api.Shape('sphere', paramset)
+
+def heightfield_wrangler(gdp, paramset=None, properties=None):
+    if paramset is None:
+        paramset = ParamSet()
+    num_prims = gdp.globalValue('geo:primcount')[0]
+    prim_xform_h = gdp.attribute('geo:prim', 'geo:primtransform')
+    resolution_h = gdp.attribute('geo:prim', 'intrinsic:voxelresolution')
+    voxeldata_h = gdp.attribute('geo:prim', 'intrinsic:voxeldata')
+    for prim_num in xrange(num_prims):
+        resolution = gdp.value(resolution_h, prim_num)
+        # If the z resolution is not 1 then this really isn't a heightfield
+        if resolution[2] != 1:
+            continue
+        voxeldata = gdp.value(voxeldata_h, prim_num)
+        hf_paramset = copy.copy(paramset)
+        with api.TransformBlock():
+
+            xform = gdp.value(prim_xform_h, prim_num)
+            xform = hou.Matrix4(xform)
+            srt = xform.explode()
+            # Here we need to split up the xform mainly so we can manipulate
+            # the scale. In particular Houdini's prim xforms maintain a
+            # rotation matrix but the z scale is ignored. So here we are
+            # setting it directly to 1 as the "Pz" (or voxeldata) will always
+            # be the exact height, no scales are applied to the prim xform.
+            # We also need to scale up heightfield since in Houdini by default
+            # the size is -1,-1,-1 to 1,1,1 where in pbrt its 0,0,0 to 1,1,1
+            api.Translate(*srt['translate'])
+            rot = srt['rotate']
+            if rot.z():
+                api.Rotate(rot[2],0,0,1)
+            if rot.y():
+                api.Rotate(rot[1],0,1,0)
+            if rot.x():
+                api.Rotate(rot[0],1,0,0)
+            api.Scale(srt['scale'][0]*2.0, srt['scale'][1]*2.0, 1.0)
+            api.Translate(-0.5, -0.5, 0)
+            hf_paramset.add(PBRTParam('integer','nu',resolution[0]))
+            hf_paramset.add(PBRTParam('integer','nv',resolution[1]))
+            hf_paramset.add(PBRTParam('float','Pz',voxeldata))
+
+            api.Shape('heightfield', hf_paramset)
+
 shape_wranglers = { 'Sphere': sphere_wrangler,
                     'Circle' : disk_wrangler,
                     'Tube' : tube_wrangler,
@@ -361,6 +452,7 @@ shape_wranglers = { 'Sphere': sphere_wrangler,
                     'Mesh' : mesh_wrangler,
                     'PolySoup' : mesh_wrangler,
                     'MetaBall' : mesh_wrangler,
+                    'Volume' : volume_wrangler,
                   }
 
 def shape_splits(gdp):
