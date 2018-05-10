@@ -248,10 +248,12 @@ class ParamSet(collections.MutableSet):
 class BasePlugin(object):
 
     def __init__(self, node, ignore_defaults=True):
+
+        if isinstance(node, basestring):
+            node = hou.node(node)
+
         if isinstance(node, hou.VopNode):
             self.node = node
-        elif isinstance(node, basestring):
-            self.node = hou.node(node)
         else:
             raise hou.TypeError('%s is unknown type' % node)
         self.ignore_defaults = ignore_defaults
@@ -329,7 +331,9 @@ class MaterialPlugin(BasePlugin):
             if input_node is None:
                 continue
             node_type = input_node.type().nameComponents()[2]
-            if node_type == 'pbrt_spectrum':
+            # TODO: Don't hard code these, instead add userData to
+            #       to the definitions and skip that way.
+            if node_type in ('pbrt_spectrum','pbrt_medium'):
                 continue
             yield input_node.path()
 
