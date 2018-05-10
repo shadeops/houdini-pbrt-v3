@@ -26,6 +26,8 @@ def output_shading_network(node_path):
         plugin = MaterialPlugin(node)
         api_call = api.MakeNamedMaterial
     else:
+        # TODO: Don't assume any other node is a texture
+        #       pbrt_medium / pbrt_spectrum / other *op
         plugin = TexturePlugin(node)
         api_call = api.Texture
 

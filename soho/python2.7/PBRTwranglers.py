@@ -545,6 +545,8 @@ def wrangle_geo(obj, wrangler, now):
         'pbrt_rendersubd' : SohoPBRT('pbrt_rendersubd', 'bool', [False], False),
         'pbrt_subdlevels' : SohoPBRT('pbrt_subdlevels', 'integer', [3], False, key='levels'),
         'pbrt_computeN' : SohoPBRT('pbrt_computeN', 'bool', [True], False),
+        'pbrt_interior' : SohoPBRT('pbrt_interior', 'string', [''], False),
+        'pbrt_exterior' : SohoPBRT('pbrt_exterior', 'string', [''], False),
     }
     properties = obj.evaluate(parm_selection, now)
 

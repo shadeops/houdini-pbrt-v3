@@ -1,4 +1,5 @@
 import copy
+import itertools
 
 import hou
 import soho
@@ -417,7 +418,39 @@ def bounds_to_api_box(b):
                                                   1,3,6]))
     api.Shape('trianglemesh', paramset)
 
+
+# NOTE: Handling Medium Parameters
+# Approach: shop_materialpath
+#           Treat the medium as a material, so if the volume prim
+#           has a medium shader as a shop_materialpath (and its overrides)
+#           Fetch the params from it (and its possible overrides) and add
+#           them to the MakeNamedMedium paramset.
+#           Pros: - Much of the functionality is already there
+#           Cons: - Conflicts with the concept of a material
+#                 - Reqiures excepting when a pbrt_medium is encountered.
+#
+# Approach: Add a scene iterator to define MakeNamedMediums similar to 
+#           MakeNamedMaterials. Then the wranglers can refer to these.
+#           Pros: - Cleaner scene file
+#           Cons: - Attaching to actual geometry?
+#
+# Approach: Similar to above, but point to the sop volume in the
+#           pbrt_medium. The wrangler would skip volumes when outputing
+#           geometry, but then mediums could be applied to shapes.
+#           Pros: - Works well with PBRT's design
+#           Cons: - Could only reliably attach to objects not prims.
+#
+#   How to apply heterogeneous mediums to shapes?
+#
+
 def smoke_wrangler(gdp, paramset=None, properties=None):
+    # TODO: Overlapping heterogeneous volumes don't currently
+    #       appear to be supported, although this may be an issue
+    #       with the Medium interface order? Visually it appears one
+    #       object is blocking the other.
+
+    # TODO: Not all samplers support heterogeneous volumes. Determine which
+    #       ones do, (and verify this is accurate).
     if paramset is None:
         paramset = ParamSet()
     num_prims = gdp.globalValue('geo:primcount')[0]
@@ -447,7 +480,8 @@ def smoke_wrangler(gdp, paramset=None, properties=None):
             api.ConcatTransform(xform)
             api.MakeNamedMedium(name, 'heterogeneous', smoke_paramset)
             api.Material('')
-            api.MediumInterface(name, "")
+            api.MediumInterface(name, '')
+            # Pad this slightly?
             bounds_to_api_box([-1,1,-1,1,-1,1])
 
 def heightfield_wrangler(gdp, paramset=None, properties=None):
@@ -492,6 +526,59 @@ def heightfield_wrangler(gdp, paramset=None, properties=None):
 
             api.Shape('heightfield', hf_paramset)
 
+def nurbs_wrangler(gdp, paramset=None, properties=None):
+    if paramset is None:
+        paramset = ParamSet()
+    num_prims = gdp.globalValue('geo:primcount')[0]
+    num_pts = gdp.globalValue('geo:pointcount')[0]
+
+    vtx_count_h = gdp.attribute('geo:prim', 'geo:vertexcount')
+    pointref_h = gdp.attribute('geo:vertex', 'geo:pointref')
+
+    P_attrib_h = gdp.attribute('geo:point', 'P')
+    Pw_attrib_h = gdp.attribute('geo:point', 'Pw')
+    u_order_h = gdp.attribute('geo:prim', 'geo:primuorder')
+    v_order_h = gdp.attribute('geo:prim', 'geo:primvorder')
+    u_knots_h = gdp.attribute('geo:prim', 'geo:ubasisknots')
+    v_knots_h = gdp.attribute('geo:prim', 'geo:vbasisknots')
+    u_extent_h = gdp.attribute('geo:prim', 'geo:ubasisextent')
+    v_extent_h = gdp.attribute('geo:prim', 'geo:vbasisextent')
+    rowcol_h = gdp.attribute('geo:prim', 'geo:primrowcol')
+
+    for prim_num in xrange(num_prims):
+        nurbs_paramset = copy.copy(paramset)
+
+        rowcol = gdp.value(rowcol_h, prim_num)
+        u_order = gdp.value(u_order_h, prim_num)
+        v_order = gdp.value(v_order_h, prim_num)
+        u_knots = gdp.value(u_knots_h, prim_num)
+        v_knots = gdp.value(v_knots_h, prim_num)
+
+        nurbs_paramset.add(PBRTParam('integer', 'nu', rowcol[1]))
+        nurbs_paramset.add(PBRTParam('integer', 'nv', rowcol[0]))
+        nurbs_paramset.add(PBRTParam('integer', 'uorder', u_order))
+        nurbs_paramset.add(PBRTParam('integer', 'vorder', v_order))
+        nurbs_paramset.add(PBRTParam('float', 'uknots', u_knots))
+        nurbs_paramset.add(PBRTParam('float', 'vknots', v_knots))
+        nurbs_paramset.add(PBRTParam('float', 'u0', 0))
+        nurbs_paramset.add(PBRTParam('float', 'v0', 0))
+        nurbs_paramset.add(PBRTParam('float', 'u1', 1))
+        nurbs_paramset.add(PBRTParam('float', 'v1', 1))
+
+        P = pt2vtx_attrib_gen(gdp, P_attrib_h)
+        if Pw_attrib_h < 0:
+            nurbs_paramset.add(PBRTParam('point', 'P', P))
+        else:
+            # TODO: While the pbrt scene file looks right, the render
+            #       is a bit odd. Scaled up geo? Not what I was expecting.
+            #       Perhaps compare to RMan.
+            w = pt2vtx_attrib_gen(gdp, Pw_attrib_h)
+            Pw = itertools.izip(P,w)
+            nurbs_paramset.add(PBRTParam('float', 'Pw', Pw))
+
+        api.Shape('nurbs', nurbs_paramset)
+
+
 shape_wranglers = { 'Sphere': sphere_wrangler,
                     'Circle' : disk_wrangler,
                     'Tube' : tube_wrangler,
@@ -499,6 +586,7 @@ shape_wranglers = { 'Sphere': sphere_wrangler,
                     'Mesh' : mesh_wrangler,
                     'PolySoup' : mesh_wrangler,
                     'MetaBall' : mesh_wrangler,
+                    'NURBMesh' : nurbs_wrangler,
                     'Volume' : volume_wrangler,
                   }
 
@@ -516,6 +604,10 @@ def save_geo(soppath, now, properties=None):
     # split by material
         # split by material override #
             # split by geo type
+    # NOTE: We won't be splitting based on medium interior/exterior
+    #       those will be left as a object level assignment only.
+    #       Note, that in the case of Houdini Volumes they will look
+    #       for the appropriate medium parameters as prim vars
 
     if properties is None:
         properties = {}
