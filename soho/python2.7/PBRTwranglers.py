@@ -435,9 +435,6 @@ def wrangle_light(light, wrangler, now):
         paramset.add(PBRTParam('rgb', 'L', parms['light_color'].Value))
         paramset.add(PBRTParam('bool', 'twosided', [not single_sided]))
 
-        # This is a mess and needs to be recitified
-        # * the Transform crashes despite not having a scale
-
         xform_to_api_srt(xform, scale=False)
 
         api.AreaLightSource(light_name, paramset)
@@ -545,8 +542,11 @@ def wrangle_geo(obj, wrangler, now):
         'pbrt_rendersubd' : SohoPBRT('pbrt_rendersubd', 'bool', [False], False),
         'pbrt_subdlevels' : SohoPBRT('pbrt_subdlevels', 'integer', [3], False, key='levels'),
         'pbrt_computeN' : SohoPBRT('pbrt_computeN', 'bool', [True], False),
-        'pbrt_interior' : SohoPBRT('pbrt_interior', 'string', [''], False),
-        'pbrt_exterior' : SohoPBRT('pbrt_exterior', 'string', [''], False),
+        'pbrt_interior' : SohoPBRT('pbrt_interior', 'string', [''], True),
+        'pbrt_exterior' : SohoPBRT('pbrt_exterior', 'string', [''], True),
+        'pbrt_splitdepth' : SohoPBRT('pbrt_splitdepth', 'integer', [3], True, key='splitdepth'),
+        # We don't use the key=type since its a bit too generic of a name
+        'pbrt_curvetype' : SohoPBRT('pbrt_curvetype', 'string', ["flat"], True),
     }
     properties = obj.evaluate(parm_selection, now)
 

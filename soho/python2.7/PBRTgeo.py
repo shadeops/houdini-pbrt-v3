@@ -1,4 +1,3 @@
-import copy
 import itertools
 
 import hou
@@ -62,9 +61,6 @@ def tube_wrangler(gdp, paramset=None, properties=None):
     if properties is None:
         properties = {}
 
-    if paramset is None:
-        paramset = ParamSet()
-
     num_prims = gdp.globalValue('geo:primcount')[0]
     prim_xform_h = gdp.attribute('geo:prim', 'geo:primtransform')
     # SOHO BUG
@@ -75,7 +71,8 @@ def tube_wrangler(gdp, paramset=None, properties=None):
     prim_h = gdp.attribute('geo:prim', 'geo:number')
 
     for prim_num in xrange(num_prims):
-        shape_paramset = copy.copy(paramset)
+        shape_paramset = ParamSet(paramset)
+
         with api.TransformBlock():
             xform = gdp.value(prim_xform_h, prim_num)
             taper = gdp.value(taper_h, prim_num)[0]
@@ -108,7 +105,7 @@ def tube_wrangler(gdp, paramset=None, properties=None):
                 api.Shape(shape, shape_paramset)
 
             if closed:
-                disk_paramset = copy.copy(paramset)
+                disk_paramset = ParamSet(paramset)
                 if shape == 'cylinder':
                     disk_paramset.add(PBRTParam('float', 'height', 0.5))
                     api.Shape('disk', disk_paramset)
@@ -149,6 +146,16 @@ def pt2vtx_attrib_gen(gdp, attrib):
             ptnum = gdp.value(p_ref_attrib, (prim,vtx))[0]
             yield gdp.value(attrib, ptnum)
 
+def prim_pt2vtx_attrib_gen(gdp, attrib, prim):
+    """ per vertex fetching point values
+    """
+    vtx_count_h = gdp.attribute('geo:prim', 'geo:vertexcount')
+    p_ref_attrib = gdp.attribute('geo:vertex', 'geo:pointref')
+    num_vtx = gdp.value(vtx_count_h, prim)[0]
+    for vtx in xrange(num_vtx):
+        ptnum = gdp.value(p_ref_attrib, (prim,vtx))[0]
+        yield gdp.value(attrib, ptnum)
+
 def linear_vtx_gen(gdp):
     """ generate the linearvertex
 
@@ -184,10 +191,7 @@ def mesh_wrangler(gdp, paramset=None, properties=None):
     if properties is None:
         properties = {}
 
-    if paramset is None:
-        mesh_paramset = ParamSet()
-    else:
-        mesh_paramset = copy.copy(paramset)
+    mesh_paramset = ParamSet(paramset)
 
     # Triangle Meshes in PBRT uses "verticies" to denote positions.
     # These are similar to Houdini "points". Since the PBRT verts
@@ -451,15 +455,14 @@ def smoke_wrangler(gdp, paramset=None, properties=None):
 
     # TODO: Not all samplers support heterogeneous volumes. Determine which
     #       ones do, (and verify this is accurate).
-    if paramset is None:
-        paramset = ParamSet()
     num_prims = gdp.globalValue('geo:primcount')[0]
     prim_xform_h = gdp.attribute('geo:prim', 'geo:primtransform')
     prim_bounds_h = gdp.attribute('geo:prim', 'intrinsic:bounds')
     voxeldata_h = gdp.attribute('geo:prim', 'intrinsic:voxeldata')
     resolution_h = gdp.attribute('geo:prim', 'intrinsic:voxelresolution')
     for prim_num in xrange(num_prims):
-        smoke_paramset = copy.copy(paramset)
+        smoke_paramset = ParamSet(paramset)
+
         # FIXME: Get real prim_num, not partitioned one
         name = '%s[%i]' % (gdp.globalValue('geo:soppath')[0], prim_num)
         resolution = gdp.value(resolution_h, prim_num)
@@ -485,8 +488,6 @@ def smoke_wrangler(gdp, paramset=None, properties=None):
             bounds_to_api_box([-1,1,-1,1,-1,1])
 
 def heightfield_wrangler(gdp, paramset=None, properties=None):
-    if paramset is None:
-        paramset = ParamSet()
     num_prims = gdp.globalValue('geo:primcount')[0]
     prim_xform_h = gdp.attribute('geo:prim', 'geo:primtransform')
     resolution_h = gdp.attribute('geo:prim', 'intrinsic:voxelresolution')
@@ -496,8 +497,8 @@ def heightfield_wrangler(gdp, paramset=None, properties=None):
         # If the z resolution is not 1 then this really isn't a heightfield
         if resolution[2] != 1:
             continue
+        hf_paramset = ParamSet(paramset)
         voxeldata = gdp.value(voxeldata_h, prim_num)
-        hf_paramset = copy.copy(paramset)
         with api.TransformBlock():
 
             xform = gdp.value(prim_xform_h, prim_num)
@@ -526,14 +527,10 @@ def heightfield_wrangler(gdp, paramset=None, properties=None):
 
             api.Shape('heightfield', hf_paramset)
 
+# TODO: While over all this works, there is an issue where pbrt will crash
+#       with prims 12,29-32 of a NURBS teapot. (Plantoic solids)
 def nurbs_wrangler(gdp, paramset=None, properties=None):
-    if paramset is None:
-        paramset = ParamSet()
     num_prims = gdp.globalValue('geo:primcount')[0]
-    num_pts = gdp.globalValue('geo:pointcount')[0]
-
-    vtx_count_h = gdp.attribute('geo:prim', 'geo:vertexcount')
-    pointref_h = gdp.attribute('geo:vertex', 'geo:pointref')
 
     P_attrib_h = gdp.attribute('geo:point', 'P')
     Pw_attrib_h = gdp.attribute('geo:point', 'Pw')
@@ -546,37 +543,144 @@ def nurbs_wrangler(gdp, paramset=None, properties=None):
     rowcol_h = gdp.attribute('geo:prim', 'geo:primrowcol')
 
     for prim_num in xrange(num_prims):
-        nurbs_paramset = copy.copy(paramset)
+        nurbs_paramset = ParamSet(paramset)
 
         rowcol = gdp.value(rowcol_h, prim_num)
         u_order = gdp.value(u_order_h, prim_num)
         v_order = gdp.value(v_order_h, prim_num)
         u_knots = gdp.value(u_knots_h, prim_num)
         v_knots = gdp.value(v_knots_h, prim_num)
-
+        u_extent = gdp.value(u_extent_h, prim_num)
+        v_extent = gdp.value(v_extent_h, prim_num)
         nurbs_paramset.add(PBRTParam('integer', 'nu', rowcol[1]))
         nurbs_paramset.add(PBRTParam('integer', 'nv', rowcol[0]))
         nurbs_paramset.add(PBRTParam('integer', 'uorder', u_order))
         nurbs_paramset.add(PBRTParam('integer', 'vorder', v_order))
         nurbs_paramset.add(PBRTParam('float', 'uknots', u_knots))
         nurbs_paramset.add(PBRTParam('float', 'vknots', v_knots))
-        nurbs_paramset.add(PBRTParam('float', 'u0', 0))
-        nurbs_paramset.add(PBRTParam('float', 'v0', 0))
-        nurbs_paramset.add(PBRTParam('float', 'u1', 1))
-        nurbs_paramset.add(PBRTParam('float', 'v1', 1))
+        # NOTE: Currently not sure how these are set within Houdini
+        #       but they are queryable
+        #       The Platonic SOP, Teapot -> Convert to NURBS can make these.
+        nurbs_paramset.add(PBRTParam('float', 'u0', u_extent[0]))
+        nurbs_paramset.add(PBRTParam('float', 'v0', v_extent[0]))
+        nurbs_paramset.add(PBRTParam('float', 'u1', u_extent[1]))
+        nurbs_paramset.add(PBRTParam('float', 'v1', v_extent[1]))
 
-        P = pt2vtx_attrib_gen(gdp, P_attrib_h)
+        P = prim_pt2vtx_attrib_gen(gdp, P_attrib_h, prim_num)
         if Pw_attrib_h < 0:
             nurbs_paramset.add(PBRTParam('point', 'P', P))
         else:
             # TODO: While the pbrt scene file looks right, the render
             #       is a bit odd. Scaled up geo? Not what I was expecting.
             #       Perhaps compare to RMan.
-            w = pt2vtx_attrib_gen(gdp, Pw_attrib_h)
+            w = prim_pt2vtx_attrib_gen(gdp, Pw_attrib_h, prim_num)
             Pw = itertools.izip(P,w)
             nurbs_paramset.add(PBRTParam('float', 'Pw', Pw))
 
         api.Shape('nurbs', nurbs_paramset)
+
+def curve_wrangler(gdp, paramset=None, properties=None):
+    if paramset is None:
+        paramset = ParamSet()
+
+    curve_type = None
+    if 'pbrt_curvetype' in properties:
+        curve_type = properties['pbrt_curvetype'].Value[0]
+        paramset.add(PBRTParam('string', 'type', curve_type))
+    if 'splitdepth' in properties:
+        paramset.add(properties['splitdepth'].to_pbrt())
+
+    num_prims = gdp.globalValue('geo:primcount')[0]
+    vtx_count_h = gdp.attribute('geo:prim', 'geo:vertexcount')
+
+    P_attrib_h = gdp.attribute('geo:point', 'P')
+    type_attrib_h = gdp.attribute('geo:prim', 'curvetype')
+    order_h = gdp.attribute('geo:prim', 'geo:primorder')
+    prim_name_h = gdp.attribute('geo:prim','intrinsic:typename')
+    pointref_attrib_h = gdp.attribute('geo:vertex', 'geo:pointref')
+
+    width_vtx_h = gdp.attribute('geo:vertex', 'width')
+    width_pt_h = gdp.attribute('geo:point', 'width')
+    width_prim_h = gdp.attribute('geo:prim', 'width')
+
+    curvetype_h = gdp.attribute('geo:prim', 'curvetype')
+
+    N_vtx_attrib_h = gdp.attribute('geo:vertex', 'N')
+    N_pt_attrib_h = gdp.attribute('geo:point', 'N')
+
+    for prim_num in xrange(num_prims):
+        curve_paramset = ParamSet()
+        prim_curve_type = curve_type
+
+        order = gdp.value(order_h, prim_num)[0]
+        degree = order - 1
+        # PBRT only supports degree 2 or 3 curves
+        # TODO: We could possibly convert the curves to a format that
+        #       pbrt supports but for now we'll expect the user to have
+        #       a curve basis which is supported
+        # https://www.codeproject.com/Articles/996281/NURBS-crve-made-easy
+        if degree not in ( 2,3 ):
+            continue
+        curve_paramset.add(PBRTParam('integer', 'degree', degree))
+
+        if gdp.value(prim_name_h, prim_num)[0] == 'BezierCurve':
+            basis = 'bezier'
+        else:
+            basis = 'bspline'
+        curve_paramset.add(PBRTParam('string', 'basis', [basis]))
+
+        num_vtx = gdp.value(vtx_count_h, prim_num)[0]
+        P = []
+        for vtx in xrange(num_vtx):
+            pointref = gdp.vertex(pointref_attrib_h, prim_num, vtx)[0]
+            P.append(gdp.value(P_attrib_h, pointref))
+        curve_paramset.add(PBRTParam('point', 'P', P))
+        if curvetype_h >= 0:
+            prim_curve_type = gdp.value(curvetype_h, prim_num)[0]
+        if prim_curve_type is not None:
+            curve_paramset.add(PBRTParam('string', 'type', [prim_curve_type]))
+
+        if prim_curve_type == 'ribbon':
+            if N_vtx_attrib_h >= 0:
+                N_01 = ( gdp.vertex(N_vtx_attrib_h, prim_num, 0),
+                         gdp.vertex(N_vtx_attrib_h, prim_num, num_vtx-1) )
+            elif N_pt_attrib_h >= 0:
+                pointref_0 = gdp.vertex(pointref_attrib_h, prim_num, 0)
+                pointref_1 = gdp.vertex(pointref_attrib_h, prim_num, num_vtx-1)
+                N_01 = ( gdp.value(N_pt_attrib_h, pointref_0),
+                         gdp.value(N_pt_attrib_h, pointref_1) )
+            else:
+                N_01 = None
+            if N_01 is not None:
+                curve_paramset.add(PBRTParam('normal', 'N', N_01))
+
+        if width_vtx_h >= 0:
+            curve_paramset.add(PBRTParam('float',
+                                         'width0',
+                                         gdp.vertex(width_vtx_h, prim_num, 0)))
+            curve_paramset.add(PBRTParam('float',
+                                         'width1',
+                                         gdp.vertex(width_vtx_h, prim_num, num-vtx-1)))
+        elif width_pt_h >= 0:
+            pointref_0 = gdp.vertex(pointref_attrib_h, prim_num, 0)
+            curve_paramset.add(PBRTParam('float',
+                                         'width0',
+                                         gdp.value(width_pt_h, pointref_0)))
+            pointref_1 = gdp.vertex(pointref_attrib_h, prim_num, num_vtx-1)
+            curve_paramset.add(PBRTParam('float',
+                                         'width1',
+                                         gdp.value(width_pt_h, pointref_1)))
+        elif width_prim_h >= 0:
+            curve_paramset.add(PBRTParam('float',
+                                         'width',
+                                         gdp.value(width_prim_h, prim_num)))
+        else:
+            curve_paramset.add(PBRTParam('float',
+                                         'width',
+                                         0.1))
+
+        curve_paramset |= paramset
+        api.Shape('curve', curve_paramset)
 
 
 shape_wranglers = { 'Sphere': sphere_wrangler,
@@ -587,6 +691,8 @@ shape_wranglers = { 'Sphere': sphere_wrangler,
                     'PolySoup' : mesh_wrangler,
                     'MetaBall' : mesh_wrangler,
                     'NURBMesh' : nurbs_wrangler,
+                    'BezierCurve' : curve_wrangler,
+                    'NURBCurve' : curve_wrangler,
                     'Volume' : volume_wrangler,
                   }
 
@@ -612,7 +718,11 @@ def save_geo(soppath, now, properties=None):
     if properties is None:
         properties = {}
 
-    paramset = ParamSet()
+    # PBRT allows setting Material parameters on the Shapes in order to
+    #       override a material's settings.  (Shapes get checked first)
+    #       This paramset will be for holding those overrides and passing
+    #       them down to the actual shape api calls.
+    material_paramset = ParamSet()
 
     gdp = SohoGeometry(soppath, now)
 
@@ -653,16 +763,16 @@ def save_geo(soppath, now, properties=None):
             shape_gdps = override_gdp.partition('geo:partlist',
                                                 shape_splits(override_gdp))
             for shape in shape_gdps:
-                paramset = ParamSet()
+                material_paramset = ParamSet()
 
                 if override and material:
-                    paramset.update(override_to_paramset(material, override))
+                    material_paramset.update(override_to_paramset(material, override))
 
                 shape_gdp = shape_gdps[shape]
 
                 shape_wrangler = shape_wranglers.get(shape)
                 if shape_wrangler:
-                    shape_wrangler(shape_gdp, paramset, properties)
+                    shape_wrangler(shape_gdp, material_paramset, properties)
 
         if material:
             api.AttributeEnd()
