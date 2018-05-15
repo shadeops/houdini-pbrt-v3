@@ -193,7 +193,7 @@ def mesh_wrangler(gdp, paramset=None, properties=None):
 
     mesh_paramset = ParamSet(paramset)
 
-    # Triangle Meshes in PBRT uses "verticies" to denote positions.
+    # Triangle Meshes in PBRT uses "vertices" to denote positions.
     # These are similar to Houdini "points". Since the PBRT verts
     # are shared between primitives if hard edges or "vertex normals"
     # (Houdini-ese) are required then need to unique the points so
@@ -347,7 +347,6 @@ def loopsubdiv_params(mesh_gdp):
     mesh_paramset = ParamSet()
     num_pts = mesh_gdp.globalValue('geo:pointcount')[0]
 
-    # Required
     P_attrib = mesh_gdp.attribute('geo:point', 'P')
     pointref_attrib = mesh_gdp.attribute('geo:vertex', 'geo:pointref')
 

@@ -346,9 +346,6 @@ class MaterialNode(BaseNode):
         params = super(MaterialNode, self).paramset
         # Materials might have a bumpmap input
         # which doesn't exist as a parameter
-        # TODO, another approach is to actually
-        # add the parameter but always make it
-        # invisible so it gets passed over
         bump_coshaders = self.node.coshaderNodes('bumpmap')
         if bump_coshaders:
             params.replace(PBRTParam('texture', 'bumpmap',
