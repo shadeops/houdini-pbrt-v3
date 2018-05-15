@@ -6,26 +6,26 @@ import soho
 PBRT_COMMENT = '#'
 
 # Identity
-def _api_call(api_call):
+def _api_call(directive):
     soho.indent()
-    print(api_call)
+    print(directive)
 
 # Translate x y z
-def _api_call_with_args(api_call, *args):
+def _api_call_with_args(directive, *args):
     soho.indent()
-    print(api_call, end='')
+    print(directive, end='')
     soho.printArray(' ', args, '\n')
 
 # Transform [ 0 1 2 3 4 5 ... 13 14 15 ]
-def _api_call_with_iter(api_call, args):
+def _api_call_with_iter(directive, args):
     soho.indent()
-    print(api_call, end='')
+    print(directive, end='')
     soho.printArray(' [ ', args, ' ]\n')
 
 # Film "image" "string filename" [ "pbrt.exr" ]
-def _api_plugin_call(api_call, plugin, paramset=None):
+def _api_dtype_call(directive, dtype, paramset=None):
     soho.indent()
-    print(api_call, ' "', plugin, '"', sep='', end='')
+    print(directive, ' "', dtype, '"', sep='', end='')
     if paramset:
         for param in paramset:
             print(' ', sep='', end='')
@@ -33,20 +33,20 @@ def _api_plugin_call(api_call, plugin, paramset=None):
     print()
 
 # MakeNamedMaterial "myplastic" "string type" "plastic" "float roughness"
-# Texture "name" "texture|spectrum" "plugin" parmlist
-def _api_named_plugin_call(api_call, name, output, plugin, paramset=None):
+# Texture "name" "texture|spectrum" "dtype" parmlist
+def _api_named_dtype_call(directive, name, output, dtype, paramset=None):
     soho.indent()
-    print(api_call, '"{name}" "{output}" "{plugin}"'.format(name=name,
+    print(directive, '"{name}" "{output}" "{dtype}"'.format(name=name,
                                                             output=output,
-                                                            plugin=plugin),
+                                                            dtype=dtype),
                     end='')
     if paramset:
         for param in paramset:
             print(' ', param.as_str(), sep='', end='')
     print()
 
-def _api_geo_handler(plugin, paramset=None):
-    _api_plugin_call('Shape', plugin, paramset)
+def _api_geo_handler(dtype, paramset=None):
+    _api_dtype_call('Shape', dtype, paramset)
 
 def Include(path):
     _api_call_with_args('Include', path)
@@ -55,23 +55,23 @@ def Comment(msg):
     soho.indent()
     print('# ', msg)
 
-def Film(plugin, paramset=()):
-    _api_plugin_call('Film', plugin, paramset)
+def Film(dtype, paramset=()):
+    _api_dtype_call('Film', dtype, paramset)
 
-def Filter(plugin, paramset=()):
-    _api_plugin_call('PixelFilter', plugin, paramset)
+def Filter(dtype, paramset=()):
+    _api_dtype_call('PixelFilter', dtype, paramset)
 
-def Sampler(plugin, paramset=()):
-    _api_plugin_call('Sampler', plugin, paramset)
+def Sampler(dtype, paramset=()):
+    _api_dtype_call('Sampler', dtype, paramset)
 
-def Integrator(plugin, paramset=()):
-    _api_plugin_call('Integrator', plugin, paramset)
+def Integrator(dtype, paramset=()):
+    _api_dtype_call('Integrator', dtype, paramset)
 
-def Accelerator(plugin, paramset=()):
-    _api_plugin_call('Accelerator', plugin, paramset)
+def Accelerator(dtype, paramset=()):
+    _api_dtype_call('Accelerator', dtype, paramset)
 
-def Camera(plugin, paramset=()):
-    _api_plugin_call('Camera', plugin, paramset)
+def Camera(dtype, paramset=()):
+    _api_dtype_call('Camera', dtype, paramset)
 
 def Identity():
     _api_call('Identity')
@@ -140,32 +140,32 @@ def WorldBegin():
 def WorldEnd():
     soho.indent(-1, 'WorldEnd', PBRT_COMMENT)
 
-def Material(plugin, paramset=()):
-    _api_plugin_call('Material', plugin, paramset)
+def Material(dtype, paramset=()):
+    _api_dtype_call('Material', dtype, paramset)
 
-def MakeNamedMaterial(name, output, plugin, paramset=()):
-    _api_named_plugin_call('MakeNamedMaterial', name, output, plugin, paramset)
+def MakeNamedMaterial(name, output, dtype, paramset=()):
+    _api_named_dtype_call('MakeNamedMaterial', name, output, dtype, paramset)
 
 def NamedMaterial(name):
     _api_call_with_args('NamedMaterial', name)
 
-def Texture(name, output, plugin, paramset=()):
-    _api_named_plugin_call('Texture', name, output, plugin, paramset)
+def Texture(name, output, dtype, paramset=()):
+    _api_named_dtype_call('Texture', name, output, dtype, paramset)
 
-def MakeNamedMedium(name, plugin, paramset=()):
-    _api_named_plugin_call('MakeNamedMedium', name, 'string type', plugin, paramset)
+def MakeNamedMedium(name, dtype, paramset=()):
+    _api_named_dtype_call('MakeNamedMedium', name, 'string type', dtype, paramset)
 
 def MediumInterface(interior, exterior):
     _api_call_with_args('MediumInterface', interior, exterior)
 
-def LightSource(plugin, paramset=()):
-    _api_plugin_call('LightSource', plugin, paramset)
+def LightSource(dtype, paramset=()):
+    _api_dtype_call('LightSource', dtype, paramset)
 
-def AreaLightSource(plugin, paramset=()):
-    _api_plugin_call('AreaLightSource', plugin, paramset)
+def AreaLightSource(dtype, paramset=()):
+    _api_dtype_call('AreaLightSource', dtype, paramset)
 
-def Shape(plugin, paramset=()):
-    _api_geo_handler(plugin, paramset)
+def Shape(dtype, paramset=()):
+    _api_geo_handler(dtype, paramset)
 
 @contextmanager
 def WorldBlock():

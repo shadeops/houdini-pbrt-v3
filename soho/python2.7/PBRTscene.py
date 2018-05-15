@@ -7,7 +7,7 @@ from sohog import SohoGeometry
 
 import PBRTapi as api
 from PBRTwranglers import *
-from PBRTplugins import PBRTParam, MaterialNode, TextureNode
+from PBRTplugins import PBRTParam, BaseNode, MaterialNode, TextureNode
 
 shading_nodes = set()
 
@@ -18,30 +18,29 @@ def output_shading_network(node_path):
     if node_path in shading_nodes:
         return
 
-    node = hou.node(node_path)
+    hnode = hou.node(node_path)
     shading_nodes.add(node_path)
 
     # Material or Texture?
-    if 'struct_PBRTMaterial' in node.outputDataTypes():
-        plugin = MaterialNode(node)
+    node = BaseNode.from_node(hnode)
+    if node.directive == 'material':
         api_call = api.MakeNamedMaterial
-    else:
-        # TODO: Don't assume any other node is a texture
-        #       pbrt_medium / pbrt_spectrum / other *op
-        plugin = TextureNode(node)
+    elif node.directive == 'texture':
         api_call = api.Texture
+    else:
+        return
 
-    for plugin_input in plugin.inputs():
-        output_shading_network(plugin_input)
+    for node_input in node.inputs():
+        output_shading_network(node_input)
 
-    coord_sys = plugin.coord_sys
+    coord_sys = node.coord_sys
     if coord_sys:
         api.TransformBegin()
         api.Transform(coord_sys)
-    api_call(plugin.name,
-             plugin.output_type,
-             plugin.plugin_class,
-             plugin.paramset)
+    api_call(node.name,
+             node.output_type,
+             node.directive_type,
+             node.paramset)
     if coord_sys:
         api.TransformEnd()
     if api_call == api.MakeNamedMaterial:

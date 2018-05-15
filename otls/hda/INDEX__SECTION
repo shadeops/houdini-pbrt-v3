@@ -19,12 +19,12 @@ Icon:         opdef:/Vop/pbrt_spectrum?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "spectrum", "directive": "soho_helper"}
 Inputs:       0 to 0
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:37:14 2018
+Modified:     Tue May 15 00:01:03 2018
 
 Operator:     pbrt_camera_environment
 Label:        PBRT EnvironmentCamera
@@ -33,12 +33,12 @@ Icon:         opdef:/Vop/pbrt_camera_environment?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "environment", "directive": "camera"}
 Inputs:       0 to 0
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Wed May  9 18:56:30 2018
+Modified:     Tue May 15 00:01:03 2018
 
 Operator:     pbrt_camera_perspective
 Label:        PBRT PerspectiveCamera
@@ -47,12 +47,12 @@ Icon:         opdef:/Vop/pbrt_camera_perspective?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "perspective", "directive": "camera"}
 Inputs:       0 to 0
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Wed May  9 18:58:07 2018
+Modified:     Tue May 15 00:01:03 2018
 
 Operator:     pbrt_camera_orthographic
 Label:        PBRT OrthographicCamera
@@ -61,12 +61,12 @@ Icon:         opdef:/Vop/pbrt_camera_orthographic?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "orthographic", "directive": "camera"}
 Inputs:       0 to 0
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Wed May  9 18:57:05 2018
+Modified:     Tue May 15 00:01:03 2018
 
 Operator:     pbrt_camera_realistic
 Label:        PBRT RealisticCamera
@@ -75,12 +75,12 @@ Icon:         opdef:/Vop/pbrt_camera_realistic?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "realistic", "directive": "camera"}
 Inputs:       0 to 0
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Wed May  9 18:58:52 2018
+Modified:     Tue May 15 00:01:03 2018
 
 Operator:     pbrt_sampler_02sequence
 Label:        PBRT ZeroTwoSequenceSampler
@@ -89,12 +89,12 @@ Icon:         opdef:/Vop/pbrt_sampler_02sequence?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "02sequence", "directive": "sampler"}
 Inputs:       0 to 0
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Wed May  9 18:48:04 2018
+Modified:     Tue May 15 00:01:03 2018
 
 Operator:     pbrt_sampler_halton
 Label:        PBRT HaltonSampler
@@ -103,12 +103,12 @@ Icon:         opdef:/Vop/pbrt_sampler_halton?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "halton", "directive": "sampler"}
 Inputs:       0 to 0
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Wed May  9 18:46:21 2018
+Modified:     Tue May 15 00:01:03 2018
 
 Operator:     pbrt_sampler_maxmindist
 Label:        PBRT MaxMinDistSampler
@@ -117,12 +117,12 @@ Icon:         opdef:/Vop/pbrt_sampler_maxmindist?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "maxmindist", "directive": "sampler"}
 Inputs:       0 to 0
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Wed May  9 18:46:57 2018
+Modified:     Tue May 15 00:01:04 2018
 
 Operator:     pbrt_sampler_random
 Label:        PBRT RandomSampler
@@ -131,12 +131,12 @@ Icon:         opdef:/Vop/pbrt_sampler_random?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "random", "directive": "sampler"}
 Inputs:       0 to 0
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Wed May  9 18:47:19 2018
+Modified:     Tue May 15 00:01:04 2018
 
 Operator:     pbrt_sampler_sobol
 Label:        PBRT SobolSampler
@@ -145,12 +145,12 @@ Icon:         opdef:/Vop/pbrt_sampler_sobol?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "sobol", "directive": "sampler"}
 Inputs:       0 to 0
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:37:58 2018
+Modified:     Tue May 15 00:01:04 2018
 
 Operator:     pbrt_sampler_stratified
 Label:        PBRT StratifiedSampler
@@ -159,12 +159,12 @@ Icon:         opdef:/Vop/pbrt_sampler_stratified?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "stratified", "directive": "sampler"}
 Inputs:       0 to 0
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:35:54 2018
+Modified:     Tue May 15 00:01:04 2018
 
 Operator:     pbrt_film_image
 Label:        PBRT ImageFilm
@@ -173,12 +173,12 @@ Icon:         opdef:/Vop/pbrt_film_image?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "image", "directive": "film"}
 Inputs:       0 to 0
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:36:58 2018
+Modified:     Tue May 15 00:01:04 2018
 
 Operator:     pbrt_filter_box
 Label:        PBRT BoxFilter
@@ -187,12 +187,12 @@ Icon:         opdef:/Vop/pbrt_filter_box?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "box", "directive": "filter"}
 Inputs:       0 to 0
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:36:33 2018
+Modified:     Tue May 15 00:01:04 2018
 
 Operator:     pbrt_filter_gaussian
 Label:        PBRT GaussianFilter
@@ -201,12 +201,12 @@ Icon:         opdef:/Vop/pbrt_filter_gaussian?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "gaussian", "directive": "filter"}
 Inputs:       0 to 0
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:36:38 2018
+Modified:     Tue May 15 00:01:04 2018
 
 Operator:     pbrt_filter_triangle
 Label:        PBRT TriangleFilter
@@ -215,12 +215,12 @@ Icon:         opdef:/Vop/pbrt_filter_triangle?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "triangle", "directive": "filter"}
 Inputs:       0 to 0
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:36:50 2018
+Modified:     Tue May 15 00:01:04 2018
 
 Operator:     pbrt_filter_mitchell
 Label:        PBRT MitchellFilter
@@ -229,12 +229,12 @@ Icon:         opdef:/Vop/pbrt_filter_mitchell?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "mitchell", "directive": "filter"}
 Inputs:       0 to 0
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:36:46 2018
+Modified:     Tue May 15 00:01:04 2018
 
 Operator:     pbrt_filter_sinc
 Label:        PBRT LanczosSincFilter
@@ -243,12 +243,12 @@ Icon:         opdef:/Vop/pbrt_filter_sinc?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "sinc", "directive": "filter"}
 Inputs:       0 to 0
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Wed May  9 18:59:45 2018
+Modified:     Tue May 15 00:01:04 2018
 
 Operator:     pbrt_integrator_path
 Label:        PBRT PathIntegrator
@@ -257,12 +257,12 @@ Icon:         opdef:/Vop/pbrt_integrator_path?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "path", "directive": "integrator"}
 Inputs:       0 to 0
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:34:46 2018
+Modified:     Tue May 15 00:01:04 2018
 
 Operator:     pbrt_integrator_directlighting
 Label:        PBRT DirectLightingIntegrator
@@ -271,12 +271,12 @@ Icon:         opdef:/Vop/pbrt_integrator_directlighting?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "directlighting", "directive": "integrator"}
 Inputs:       0 to 0
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:34:38 2018
+Modified:     Tue May 15 00:01:04 2018
 
 Operator:     pbrt_integrator_bdpt
 Label:        PBRT BDPTIntegrator
@@ -285,12 +285,12 @@ Icon:         opdef:/Vop/pbrt_integrator_bdpt?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "bdpt", "directive": "integrator"}
 Inputs:       0 to 0
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:35:19 2018
+Modified:     Tue May 15 00:01:04 2018
 
 Operator:     pbrt_integrator_mlt
 Label:        PBRT MLTIntegrator
@@ -299,12 +299,12 @@ Icon:         opdef:/Vop/pbrt_integrator_mlt?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "mlt", "directive": "integrator"}
 Inputs:       0 to 0
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:34:42 2018
+Modified:     Tue May 15 00:01:04 2018
 
 Operator:     pbrt_integrator_sppm
 Label:        PBRT SPPMIntegrator
@@ -313,12 +313,12 @@ Icon:         opdef:/Vop/pbrt_integrator_sppm?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "sppm", "directive": "integrator"}
 Inputs:       0 to 0
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:34:51 2018
+Modified:     Tue May 15 00:01:04 2018
 
 Operator:     pbrt_integrator_whitted
 Label:        PBRT WhittedIntegrator
@@ -327,12 +327,12 @@ Icon:         opdef:/Vop/pbrt_integrator_whitted?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "whitted", "directive": "integrator"}
 Inputs:       0 to 0
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:35:01 2018
+Modified:     Tue May 15 00:01:04 2018
 
 Operator:     pbrt_integrator_ao
 Label:        PBRT AOIntegrator
@@ -341,12 +341,12 @@ Icon:         opdef:/Vop/pbrt_integrator_ao?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "ao", "directive": "integrator"}
 Inputs:       0 to 0
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:34:56 2018
+Modified:     Tue May 15 00:01:05 2018
 
 Operator:     pbrt_integrator_volpath
 Label:        PBRT VolPathIntegrator
@@ -355,12 +355,12 @@ Icon:         opdef:/Vop/pbrt_integrator_volpath?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "volpath", "directive": "integrator"}
 Inputs:       0 to 0
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:35:15 2018
+Modified:     Tue May 15 00:01:05 2018
 
 Operator:     pbrt_accelerator_bvh
 Label:        PBRT BVHAccel
@@ -369,12 +369,12 @@ Icon:         opdef:/Vop/pbrt_accelerator_bvh?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "bvh", "directive": "accelerator"}
 Inputs:       0 to 0
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:34:24 2018
+Modified:     Tue May 15 00:01:05 2018
 
 Operator:     pbrt_accelerator_kdtree
 Label:        PBRT KdTreeAccel
@@ -383,12 +383,12 @@ Icon:         opdef:/Vop/pbrt_accelerator_kdtree?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "kdtree", "directive": "accelerator"}
 Inputs:       0 to 0
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Wed May  9 18:52:37 2018
+Modified:     Tue May 15 00:01:05 2018
 
 Operator:     pbrt_light_distant
 Label:        PBRT DistantLight
@@ -397,12 +397,12 @@ Icon:         opdef:/Vop/pbrt_light_distant?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "distant", "directive": "light"}
 Inputs:       0 to 2
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:33:43 2018
+Modified:     Tue May 15 00:01:05 2018
 
 Operator:     pbrt_light_goniometric
 Label:        PBRT GonioPhotometricLight
@@ -411,12 +411,12 @@ Icon:         opdef:/Vop/pbrt_light_goniometric?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "goniometric", "directive": "light"}
 Inputs:       0 to 2
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:33:48 2018
+Modified:     Tue May 15 00:01:05 2018
 
 Operator:     pbrt_light_infinite
 Label:        PBRT InfiniteAreaLight
@@ -425,12 +425,12 @@ Icon:         opdef:/Vop/pbrt_light_infinite?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "infinite", "directive": "light"}
 Inputs:       0 to 2
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:33:52 2018
+Modified:     Tue May 15 00:01:05 2018
 
 Operator:     pbrt_light_point
 Label:        PBRT PointLight
@@ -439,12 +439,12 @@ Icon:         opdef:/Vop/pbrt_light_point?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "point", "directive": "light"}
 Inputs:       0 to 2
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:33:56 2018
+Modified:     Tue May 15 00:01:05 2018
 
 Operator:     pbrt_light_projection
 Label:        PBRT ProjectionLight
@@ -453,12 +453,12 @@ Icon:         opdef:/Vop/pbrt_light_projection?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "projection", "directive": "light"}
 Inputs:       0 to 2
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:34:00 2018
+Modified:     Tue May 15 00:01:05 2018
 
 Operator:     pbrt_light_spot
 Label:        PBRT SpotLight
@@ -467,12 +467,12 @@ Icon:         opdef:/Vop/pbrt_light_spot?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "spot", "directive": "light"}
 Inputs:       0 to 2
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:34:06 2018
+Modified:     Tue May 15 00:01:05 2018
 
 Operator:     pbrt_arealight_diffuse
 Label:        PBRT DiffuseAreaLight
@@ -481,12 +481,12 @@ Icon:         opdef:/Vop/pbrt_arealight_diffuse?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "diffuse", "directive": "arealight"}
 Inputs:       0 to 2
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:34:10 2018
+Modified:     Tue May 15 00:01:05 2018
 
 Operator:     pbrt_material_fourier
 Label:        PBRT FourierMaterial
@@ -495,12 +495,12 @@ Icon:         opdef:/Vop/pbrt_material_fourier?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "fourier", "directive": "material"}
 Inputs:       0 to 1
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:31:20 2018
+Modified:     Tue May 15 00:01:05 2018
 
 Operator:     pbrt_material_disney
 Label:        PBRT DisneyMaterial
@@ -509,12 +509,12 @@ Icon:         opdef:/Vop/pbrt_material_disney?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "disney", "directive": "material"}
 Inputs:       0 to 15
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:31:24 2018
+Modified:     Tue May 15 00:01:05 2018
 
 Operator:     pbrt_material_glass
 Label:        PBRT GlassMaterial
@@ -523,12 +523,12 @@ Icon:         opdef:/Vop/pbrt_material_glass?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "glass", "directive": "material"}
 Inputs:       0 to 6
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:31:28 2018
+Modified:     Tue May 15 00:01:05 2018
 
 Operator:     pbrt_material_hair
 Label:        PBRT HairMaterial
@@ -537,12 +537,12 @@ Icon:         opdef:/Vop/pbrt_material_hair?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "hair", "directive": "material"}
 Inputs:       0 to 9
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:31:33 2018
+Modified:     Tue May 15 00:01:05 2018
 
 Operator:     pbrt_material_translucent
 Label:        PBRT TranslucentMaterial
@@ -551,12 +551,12 @@ Icon:         opdef:/Vop/pbrt_material_translucent?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "translucent", "directive": "material"}
 Inputs:       0 to 6
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:31:47 2018
+Modified:     Tue May 15 00:01:05 2018
 
 Operator:     pbrt_material_substrate
 Label:        PBRT SubstrateMaterial
@@ -565,12 +565,12 @@ Icon:         opdef:/Vop/pbrt_material_substrate?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "substrate", "directive": "material"}
 Inputs:       0 to 5
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:32:01 2018
+Modified:     Tue May 15 00:01:06 2018
 
 Operator:     pbrt_material_plastic
 Label:        PBRT PlasticMaterial
@@ -579,12 +579,12 @@ Icon:         opdef:/Vop/pbrt_material_plastic?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "plastic", "directive": "material"}
 Inputs:       0 to 4
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:31:56 2018
+Modified:     Tue May 15 00:01:06 2018
 
 Operator:     pbrt_material_metal
 Label:        PBRT MetalMaterial
@@ -593,12 +593,12 @@ Icon:         opdef:/Vop/pbrt_material_metal?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "metal", "directive": "material"}
 Inputs:       0 to 6
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:31:51 2018
+Modified:     Tue May 15 00:01:06 2018
 
 Operator:     pbrt_material_uber
 Label:        PBRT UberMaterial
@@ -607,12 +607,12 @@ Icon:         opdef:/Vop/pbrt_material_uber?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "uber", "directive": "material"}
 Inputs:       0 to 10
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:31:37 2018
+Modified:     Tue May 15 00:01:06 2018
 
 Operator:     pbrt_material_mix
 Label:        PBRT MixMaterial
@@ -621,12 +621,12 @@ Icon:         opdef:/Vop/pbrt_material_mix?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "mix", "directive": "material"}
 Inputs:       0 to 3
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:32:07 2018
+Modified:     Tue May 15 00:01:06 2018
 
 Operator:     pbrt_material_mirror
 Label:        PBRT MirrorMaterial
@@ -635,12 +635,12 @@ Icon:         opdef:/Vop/pbrt_material_mirror?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "mirror", "directive": "material"}
 Inputs:       0 to 2
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:32:12 2018
+Modified:     Tue May 15 00:01:06 2018
 
 Operator:     pbrt_material_matte
 Label:        PBRT MatteMaterial
@@ -649,12 +649,12 @@ Icon:         opdef:/Vop/pbrt_material_matte?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "matte", "directive": "material"}
 Inputs:       0 to 3
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:32:18 2018
+Modified:     Tue May 15 00:01:06 2018
 
 Operator:     pbrt_material_subsurface
 Label:        PBRT SubsurfaceMaterial
@@ -663,12 +663,12 @@ Icon:         opdef:/Vop/pbrt_material_subsurface?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "subsurface", "directive": "material"}
 Inputs:       0 to 8
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Wed May  9 19:49:55 2018
+Modified:     Tue May 15 00:01:06 2018
 
 Operator:     pbrt_material_kdsubsurface
 Label:        PBRT KdSubsurfaceMaterial
@@ -677,12 +677,12 @@ Icon:         opdef:/Vop/pbrt_material_kdsubsurface?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "kdsubsurface", "directive": "material"}
 Inputs:       0 to 8
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Wed May  9 19:49:46 2018
+Modified:     Tue May 15 00:01:06 2018
 
 Operator:     pbrt_texture_constant
 Label:        PBRT ConstantTexture
@@ -691,12 +691,12 @@ Icon:         opdef:/Vop/pbrt_texture_constant?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "constant", "directive": "texture"}
 Inputs:       0 to 1
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:31:01 2018
+Modified:     Tue May 15 00:01:06 2018
 
 Operator:     pbrt_texture_scale
 Label:        PBRT ScaleTexture
@@ -705,12 +705,12 @@ Icon:         opdef:/Vop/pbrt_texture_scale?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "scale", "directive": "texture"}
 Inputs:       0 to 2
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:30:56 2018
+Modified:     Tue May 15 00:01:06 2018
 
 Operator:     pbrt_texture_mix
 Label:        PBRT MixTexture
@@ -719,12 +719,12 @@ Icon:         opdef:/Vop/pbrt_texture_mix?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "mix", "directive": "texture"}
 Inputs:       0 to 3
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:30:51 2018
+Modified:     Tue May 15 00:01:06 2018
 
 Operator:     pbrt_texture_bilerp
 Label:        PBRT BilerpTexture
@@ -733,12 +733,12 @@ Icon:         opdef:/Vop/pbrt_texture_bilerp?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "bilerp", "directive": "texture"}
 Inputs:       0 to 4
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:30:47 2018
+Modified:     Tue May 15 00:01:06 2018
 
 Operator:     pbrt_texture_imagemap
 Label:        PBRT ImageTexture
@@ -747,12 +747,12 @@ Icon:         opdef:/Vop/pbrt_texture_imagemap?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "imagemap", "directive": "texture"}
 Inputs:       0 to 0
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:30:42 2018
+Modified:     Tue May 15 00:01:06 2018
 
 Operator:     pbrt_texture_uv
 Label:        PBRT UVTexture
@@ -761,12 +761,12 @@ Icon:         opdef:/Vop/pbrt_texture_uv?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "uv", "directive": "texture"}
 Inputs:       0 to 0
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:30:36 2018
+Modified:     Tue May 15 00:01:06 2018
 
 Operator:     pbrt_texture_dots
 Label:        PBRT DotsTexture
@@ -775,12 +775,12 @@ Icon:         opdef:/Vop/pbrt_texture_dots?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "dots", "directive": "texture"}
 Inputs:       0 to 2
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:30:31 2018
+Modified:     Tue May 15 00:01:06 2018
 
 Operator:     pbrt_texture_checkerboard
 Label:        PBRT CheckerboardTexture
@@ -789,12 +789,12 @@ Icon:         opdef:/Vop/pbrt_texture_checkerboard?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "checkerboard", "directive": "texture"}
 Inputs:       0 to 2
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:30:26 2018
+Modified:     Tue May 15 00:01:07 2018
 
 Operator:     pbrt_texture_fbm
 Label:        PBRT FBmTexture
@@ -803,12 +803,12 @@ Icon:         opdef:/Vop/pbrt_texture_fbm?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "fbm", "directive": "texture"}
 Inputs:       0 to 0
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:30:20 2018
+Modified:     Tue May 15 00:01:07 2018
 
 Operator:     pbrt_texture_wrinkled
 Label:        PBRT WrinkledTexture
@@ -817,12 +817,12 @@ Icon:         opdef:/Vop/pbrt_texture_wrinkled?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "wrinkled", "directive": "texture"}
 Inputs:       0 to 0
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:30:15 2018
+Modified:     Tue May 15 00:01:07 2018
 
 Operator:     pbrt_texture_windy
 Label:        PBRT WindyTexture
@@ -831,12 +831,12 @@ Icon:         opdef:/Vop/pbrt_texture_windy?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "windy", "directive": "texture"}
 Inputs:       0 to 0
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:30:09 2018
+Modified:     Tue May 15 00:01:07 2018
 
 Operator:     pbrt_texture_marble
 Label:        PBRT MarbleTexture
@@ -845,12 +845,12 @@ Icon:         opdef:/Vop/pbrt_texture_marble?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "marble", "directive": "texture"}
 Inputs:       0 to 0
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:23:34 2018
+Modified:     Tue May 15 00:01:07 2018
 
 Operator:     pbrt_texture_ptex
 Label:        PBRT PtexTexture
@@ -859,12 +859,12 @@ Icon:         opdef:/Vop/pbrt_texture_ptex?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "ptex", "directive": "texture"}
 Inputs:       0 to 0
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sat Apr 28 21:21:58 2018
+Modified:     Tue May 15 00:01:07 2018
 
 Operator:     pbrt_medium
 Label:        PBRT Medium
@@ -873,10 +873,10 @@ Icon:         opdef:/Vop/pbrt_medium?IconImage
 Table:        Vop
 License:      
 Extra:        
-User:         
+User:         {"dtype": "medium", "directive": "soho_helper"}
 Inputs:       0 to 2
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Wed May  9 19:43:42 2018
+Modified:     Tue May 15 00:01:07 2018
 

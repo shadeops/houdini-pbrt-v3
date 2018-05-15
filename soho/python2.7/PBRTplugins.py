@@ -1,3 +1,4 @@
+import json
 import types
 import collections
 
@@ -74,7 +75,7 @@ def _hou_parm_to_pbrt_param(parm, parm_name=None):
     parm_tmpl = parm.parmTemplate()
     parm_type = parm_tmpl.type()
     parm_scheme = parm_tmpl.namingScheme()
-    # Assuming there will only be a single coshader "plugin"
+    # Assuming there will only be a single coshader "node"
     # per parameter.
     coshaders = parm.node().coshaderNodes(parm_name)
     if coshaders:
@@ -245,7 +246,57 @@ class ParamSet(collections.MutableSet):
         for o in other:
             self.replace(o)
 
+
+def get_directive_from_nodetype(node_type):
+
+    directive = None
+
+    user_data_str = node_type.definition().userInfo()
+    if user_data_str:
+        user_data = json.loads(user_data_str)
+        directive = user_data.get('directive')
+
+    if directive:
+        return directive.lower()
+
+    typename_tokens = node_type.nameComponents()[2].lower().split('_')
+
+    if typename_tokens[0] != 'pbrt':
+        return None
+
+    try:
+        if len(typename_tokens) == 2:
+            directive == 'soho_helper'
+        elif len(typename_tokens) == 3:
+            directive = typename_tokens[1]
+    except IndexError:
+        return None
+
+    return directive
+
+
 class BaseNode(object):
+
+    @staticmethod
+    def from_node(node, ignore_defaults=True):
+        if isinstance(node, basestring):
+            node = hou.node(node)
+
+        if isinstance(node, hou.VopNode):
+            node = node
+        else:
+            raise hou.TypeError('%s is unknown type' % node)
+
+        directive = get_directive_from_nodetype(node.type())
+
+        if directive is None:
+            return None
+
+        if directive == 'material':
+            return MaterialNode(node, ignore_defaults)
+        elif directive == 'texture':
+            return TextureNode(node, ignore_defaults)
+        return BaseNode(node, ignore_defaults)
 
     def __init__(self, node, ignore_defaults=True):
 
@@ -256,22 +307,29 @@ class BaseNode(object):
             self.node = node
         else:
             raise hou.TypeError('%s is unknown type' % node)
+
         self.ignore_defaults = ignore_defaults
+        self.directive = get_directive_from_nodetype(node.type())
 
     @property
-    def plugin_class(self):
-        # FIXME
-        # This returns op:_auto_/{node.path()}
+    def directive_type(self):
+        # NOTE
+        # return self.node.shaderName()
+        #
+        # The above returns op:_auto_/{node.path()}
         # when the node has inputs. The PxrNodes do not have this issue
         # I'm not sure why that is the case but I suspect its due to the
         # shopclerk althought further experiments are needed.
-        # For now we'll bruteforce it
-        # return self.node.shaderName()
+        # For now we'll brute force it
         return self.node.type().definition().sections()['FunctionName'].contents()
 
     @property
     def name(self):
         return self.node.path()
+
+    @property
+    def coord_sys(self):
+        return None
 
     def get_used_parms(self):
         parms = {}
@@ -306,10 +364,6 @@ class BaseNode(object):
         return parms
 
     @property
-    def coord_sys(self):
-        return None
-
-    @property
     def paramset(self):
         params = ParamSet()
         hou_parms = self.get_used_parms()
@@ -330,10 +384,7 @@ class MaterialNode(BaseNode):
         for input_node in self.node.inputs():
             if input_node is None:
                 continue
-            node_type = input_node.type().nameComponents()[2]
-            # TODO: Don't hard code these, instead add userData to
-            #       to the definitions and skip that way.
-            if node_type in ('pbrt_spectrum','pbrt_medium'):
+            if self.directive in ('soho_helper', None):
                 continue
             yield input_node.path()
 
@@ -356,7 +407,7 @@ class MaterialNode(BaseNode):
 class TextureNode(MaterialNode):
 
     def get_used_parms(self):
-        # Special handling for Texture plugins as they have a signature parm
+        # Special handling for Texture nodes as they have a signature parm
 
         # Start off with the base filtering, we can do this because
         # so far this filters away everything we don't care about.

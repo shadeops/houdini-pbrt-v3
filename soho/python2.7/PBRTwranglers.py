@@ -75,7 +75,7 @@ def get_wrangler(obj, now, style):
         wrangler = None
     return wrangler
 
-def wrangle_plugin_parm(obj, parm_name, now):
+def wrangle_node_parm(obj, parm_name, now):
 
     parm_selection = {
         parm_name : SohoPBRT(parm_name, 'string', [''], False)
@@ -83,17 +83,17 @@ def wrangle_plugin_parm(obj, parm_name, now):
     parms = obj.evaluate(parm_selection, now)
     if not parms:
         return None
-    plugin_path = parms[parm_name].Value[0]
-    if not plugin_path:
+    node_path = parms[parm_name].Value[0]
+    if not node_path:
         return None
-    plugin = BaseNode(plugin_path)
-    return plugin.plugin_class, plugin.paramset
+    node = BaseNode(node_path)
+    return node.node_class, node.paramset
 
 def wrangle_film(obj, wrangler, now):
 
-    plug_nfo = wrangle_plugin_parm(obj, 'film_plugin', now)
-    if plug_nfo is not None:
-        return plug_nfo
+    node_nfo = wrangle_node_parm(obj, 'film_node', now)
+    if node_nfo is not None:
+        return node_nfo
 
     paramset = ParamSet()
 
@@ -121,9 +121,9 @@ def wrangle_film(obj, wrangler, now):
 
 def wrangle_filter(obj, wrangler, now):
 
-    plug_nfo = wrangle_plugin_parm(obj, 'filter_plugin', now)
-    if plug_nfo is not None:
-        return plug_nfo
+    node_nfo = wrangle_node_parm(obj, 'filter_node', now)
+    if node_nfo is not None:
+        return node_nfo
 
     parm_selection = {
         'filter' : SohoPBRT('filter', 'string', ['gaussian'], False),
@@ -154,9 +154,9 @@ def wrangle_filter(obj, wrangler, now):
 
 def wrangle_sampler(obj, wrangler, now):
 
-    plug_nfo = wrangle_plugin_parm(obj, 'sampler_plugin', now)
-    if plug_nfo is not None:
-        return plug_nfo
+    node_nfo = wrangle_node_parm(obj, 'sampler_node', now)
+    if node_nfo is not None:
+        return node_nfo
 
     parm_selection = {
         'sampler' : SohoPBRT('sampler', 'string', ['halton'], False),
@@ -184,9 +184,9 @@ def wrangle_sampler(obj, wrangler, now):
 
 def wrangle_integrator(obj, wrangler, now):
 
-    plug_nfo = wrangle_plugin_parm(obj, 'integrator_plugin', now)
-    if plug_nfo is not None:
-        return plug_nfo
+    node_nfo = wrangle_node_parm(obj, 'integrator_node', now)
+    if node_nfo is not None:
+        return node_nfo
 
     parm_selection = {
         'integrator' : SohoPBRT('integrator', 'string', ['path'], False),
@@ -250,9 +250,9 @@ def wrangle_integrator(obj, wrangler, now):
 
 def wrangle_accelerator(obj, wrangler, now):
 
-    plug_nfo = wrangle_plugin_parm(obj, 'accelerator_plugin', now)
-    if plug_nfo is not None:
-        return plug_nfo
+    node_nfo = wrangle_node_parm(obj, 'accelerator_node', now)
+    if node_nfo is not None:
+        return node_nfo
 
     parm_selection = {
         'accelerator' : SohoPBRT('accelerator', 'string', ['bvh'], False),
@@ -305,10 +305,10 @@ def output_xform(obj, now):
 
 def wrangle_camera(obj, wrangler, now):
 
-    plug_nfo = wrangle_plugin_parm(obj, 'camera_plugin', now)
-    if plug_nfo is not None:
-        output_cam_xform(obj, plug_nfo[0], now)
-        return plug_nfo
+    node_nfo = wrangle_node_parm(obj, 'camera_node', now)
+    if node_nfo is not None:
+        output_cam_xform(obj, node_nfo[0], now)
+        return node_nfo
 
     paramset = ParamSet()
 
@@ -386,10 +386,10 @@ def _to_light_scale(parms):
 
 def wrangle_light(light, wrangler, now):
 
-    plug_nfo = wrangle_plugin_parm(light, 'light_plugin', now)
-    if plug_nfo is not None:
+    node_nfo = wrangle_node_parm(light, 'light_node', now)
+    if node_nfo is not None:
         output_xform(light, now)
-        return plug_nfo
+        return node_nfo
 
     parm_selection = {
         'light_wrangler' : SohoPBRT('light_wrangler', 'string', [''], False),
