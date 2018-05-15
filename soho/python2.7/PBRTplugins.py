@@ -245,7 +245,7 @@ class ParamSet(collections.MutableSet):
         for o in other:
             self.replace(o)
 
-class BasePlugin(object):
+class BaseNode(object):
 
     def __init__(self, node, ignore_defaults=True):
 
@@ -319,7 +319,7 @@ class BasePlugin(object):
             params.add(param)
         return params
 
-class MaterialPlugin(BasePlugin):
+class MaterialNode(BaseNode):
 
     # Can be a Material or Texture or a Spectrum Helper
     # spectrum helpers will be ignored as they are just
@@ -343,7 +343,7 @@ class MaterialPlugin(BasePlugin):
 
     @property
     def paramset(self):
-        params = super(MaterialPlugin, self).paramset
+        params = super(MaterialNode, self).paramset
         # Materials might have a bumpmap input
         # which doesn't exist as a parameter
         # TODO, another approach is to actually
@@ -356,7 +356,7 @@ class MaterialPlugin(BasePlugin):
         return params
 
 
-class TexturePlugin(MaterialPlugin):
+class TextureNode(MaterialNode):
 
     def get_used_parms(self):
         # Special handling for Texture plugins as they have a signature parm
@@ -364,7 +364,7 @@ class TexturePlugin(MaterialPlugin):
         # Start off with the base filtering, we can do this because
         # so far this filters away everything we don't care about.
         # (Parms belonging to the other signature are hidden)
-        parms = super(TexturePlugin, self).get_used_parms()
+        parms = super(TextureNode, self).get_used_parms()
 
         # If the signature is the default then it means
         # parms won't have a suffix so we are done.

@@ -5,7 +5,7 @@ import soho
 
 import PBRTapi as api
 import PBRTgeo as Geo
-from PBRTplugins import PBRTParam, ParamSet, BasePlugin
+from PBRTplugins import PBRTParam, ParamSet, BaseNode
 
 __all__ = ['wrangle_film', 'wrangle_sampler', 'wrangle_accelerator',
            'wrangle_integrator', 'wrangle_filter', 'wrangle_camera',
@@ -86,7 +86,7 @@ def wrangle_plugin_parm(obj, parm_name, now):
     plugin_path = parms[parm_name].Value[0]
     if not plugin_path:
         return None
-    plugin = BasePlugin(plugin_path)
+    plugin = BaseNode(plugin_path)
     return plugin.plugin_class, plugin.paramset
 
 def wrangle_film(obj, wrangler, now):
@@ -547,6 +547,7 @@ def wrangle_geo(obj, wrangler, now):
         'pbrt_splitdepth' : SohoPBRT('pbrt_splitdepth', 'integer', [3], True, key='splitdepth'),
         # We don't use the key=type since its a bit too generic of a name
         'pbrt_curvetype' : SohoPBRT('pbrt_curvetype', 'string', ["flat"], True),
+        # TODO, Tesselation options?
     }
     properties = obj.evaluate(parm_selection, now)
 

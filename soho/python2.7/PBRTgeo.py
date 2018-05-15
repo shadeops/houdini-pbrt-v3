@@ -7,7 +7,7 @@ import sohog
 from sohog import SohoGeometry
 
 import PBRTapi as api
-from PBRTplugins import PBRTParam, ParamSet, BasePlugin, pbrt_param_from_ref
+from PBRTplugins import PBRTParam, ParamSet, pbrt_param_from_ref
 
 def override_to_paramset(material, override_str):
     override = eval(override_str)
@@ -683,17 +683,38 @@ def curve_wrangler(gdp, paramset=None, properties=None):
         api.Shape('curve', curve_paramset)
 
 
+def tesselated_wrangler(gdp, paramset=None, properties=None):
+    prim_name_h = gdp.attribute('geo:prim','intrinsic:typename')
+    prim_name = gdp.value(prim_name_h, 0)[0]
+    api.Comment('%s prims is are not directly supported, they will be tesselated' %
+                    prim_name)
+    mesh_wrangler(gdp, paramset, properties)
+
+def not_supported(gdp, paramset=None, properties=None):
+    num_prims = gdp.globalValue('geo:primcount')[0]
+    prim_name_h = gdp.attribute('geo:prim','intrinsic:typename')
+    prim_name = gdp.value(prim_name_h, 0)[0]
+    api.Comment('Ignoring %i prims, %s is not supported' % (
+                    num_prims, prim_name))
+
 shape_wranglers = { 'Sphere': sphere_wrangler,
                     'Circle' : disk_wrangler,
                     'Tube' : tube_wrangler,
                     'Poly' : mesh_wrangler,
                     'Mesh' : mesh_wrangler,
                     'PolySoup' : mesh_wrangler,
-                    'MetaBall' : mesh_wrangler,
                     'NURBMesh' : nurbs_wrangler,
                     'BezierCurve' : curve_wrangler,
                     'NURBCurve' : curve_wrangler,
                     'Volume' : volume_wrangler,
+                    'TriFan' : tesselated_wrangler,
+                    'TriStrip' : tesselated_wrangler,
+                    'TriBezier' : tesselated_wrangler,
+                    'BezierMesh' : tesselated_wrangler,
+                    'PasteSurf' : tesselated_wrangler,
+                    'MetaBall' : tesselated_wrangler,
+                    'MetaSQuad' : tesselated_wrangler,
+                    'Tetrahedron' : tesselated_wrangler,
                   }
 
 def shape_splits(gdp):
@@ -770,7 +791,7 @@ def save_geo(soppath, now, properties=None):
 
                 shape_gdp = shape_gdps[shape]
 
-                shape_wrangler = shape_wranglers.get(shape)
+                shape_wrangler = shape_wranglers.get(shape, not_supported)
                 if shape_wrangler:
                     shape_wrangler(shape_gdp, material_paramset, properties)
 

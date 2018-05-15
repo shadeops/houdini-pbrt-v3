@@ -7,7 +7,7 @@ from sohog import SohoGeometry
 
 import PBRTapi as api
 from PBRTwranglers import *
-from PBRTplugins import PBRTParam, MaterialPlugin, TexturePlugin
+from PBRTplugins import PBRTParam, MaterialNode, TextureNode
 
 shading_nodes = set()
 
@@ -23,12 +23,12 @@ def output_shading_network(node_path):
 
     # Material or Texture?
     if 'struct_PBRTMaterial' in node.outputDataTypes():
-        plugin = MaterialPlugin(node)
+        plugin = MaterialNode(node)
         api_call = api.MakeNamedMaterial
     else:
         # TODO: Don't assume any other node is a texture
         #       pbrt_medium / pbrt_spectrum / other *op
-        plugin = TexturePlugin(node)
+        plugin = TextureNode(node)
         api_call = api.Texture
 
     for plugin_input in plugin.inputs():
@@ -99,7 +99,7 @@ def render(cam, now):
 
     print()
 
-    api.Comment('==========================')
+    api.Comment('='*50)
     api.Comment('Light Definitions')
     print()
     for light in soho.objectList('objlist:light'):
@@ -108,16 +108,21 @@ def render(cam, now):
             wrangle_light(light, wrangler, now)
         print()
 
+    print()
+
     # Output Materials
-    api.Comment('==========================')
+    api.Comment('='*50)
     api.Comment('NamedMaterial Definitions')
     for obj in soho.objectList('objlist:instance'):
         output_materials(obj, wrangler, now)
 
+    print()
+
     # Output Geometry
-    api.Comment('==========================')
+    api.Comment('='*50)
     api.Comment('Geometry Definitions')
     for obj in soho.objectList('objlist:instance'):
+        api.Comment('-'*50)
         api.Comment(obj.getName())
         with api.AttributeBlock():
             wrangle_geo(obj, wrangler, now)
