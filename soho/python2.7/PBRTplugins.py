@@ -79,10 +79,9 @@ def _hou_parm_to_pbrt_param(parm, parm_name=None):
     # per parameter.
     coshaders = parm.node().coshaderNodes(parm_name)
     if coshaders:
-        coshader = coshaders[0]
+        coshader = BaseNode.from_node(coshaders[0])
     else:
         coshader = None
-    #print parm, parm_type
     # PBRT: bool
     if parm_type == hou.parmTemplateType.Toggle:
         pbrt_type = 'bool'
@@ -104,17 +103,23 @@ def _hou_parm_to_pbrt_param(parm, parm_name=None):
         if coshader is None:
             pbrt_type = 'rgb'
             pbrt_value = parm.eval()
-        elif coshader.type().nameComponents()[2] == 'pbrt_spectrum':
-            # FIXME, implement wrangle_spectrum
-            pbrt_type, pbrt_value = wrangle_spectrum(coshader)
-        else:
+        elif coshader.directive_type == 'pbrt_spectrum':
+            # If the coshader is a spectrum node then it will
+            # only have one param in the paramset
+            spectrum_parm = coshader.paramset.pop()
+            pbrt_type = spectrum_parm.type
+            pbrt_value = spectrum_parm.value
+        elif coshader.directive == 'texture':
             pbrt_type = 'texture'
-            pbrt_value = coshader.path()
+            pbrt_value = coshader.path
+        else:
+            raise hou.ValueError('Can\'t convert %s to pbrt type' % (parm))
     # PBRT: float texture
     elif ( parm_type == hou.parmTemplateType.Float and
-            coshader is not None ):
+            coshader is not None and
+            coshader.directive == 'texture' ):
         pbrt_type = 'texture'
-        pbrt_value = coshader.path()
+        pbrt_value = coshader.path
     # PBRT: point*/vector*/normal
     elif ( parm_type == hou.parmTemplateType.Float and
             'pbrt.type' in parm_tmpl.tags() ):
@@ -292,10 +297,14 @@ class BaseNode(object):
         if directive is None:
             return None
 
+        dtype = node.type().definition().sections()['FunctionName'].contents()
+
         if directive == 'material':
             return MaterialNode(node, ignore_defaults)
         elif directive == 'texture':
             return TextureNode(node, ignore_defaults)
+        elif dtype == 'pbrt_spectrum':
+            return SpectrumNode(node)
         return BaseNode(node, ignore_defaults)
 
     def __init__(self, node, ignore_defaults=True):
@@ -325,6 +334,10 @@ class BaseNode(object):
 
     @property
     def name(self):
+        return self.path
+
+    @property
+    def path(self):
         return self.node.path()
 
     @property
@@ -373,6 +386,42 @@ class BaseNode(object):
             params.add(param)
         return params
 
+class SpectrumNode(BaseNode):
+    @property
+    def paramset(self):
+        params = ParamSet()
+
+        spectrum_type = self.node.parm('type').evalAsString()
+        values = self.node.parmTuple(spectrum_type).eval()
+        if spectrum_type == 'ramp':
+            ramp = values[0]
+            samples = self.node.parm('ramp_samples').eval()
+            ramp_range = self.node.parmTuple('ramp_range').eval()
+            sample_step = 1.0/samples
+            values = [ ( hou.hmath.fit01(sample_step*x,
+                                         ramp_range[0],
+                                         ramp_range[1]),
+                          ramp.lookup(sample_step*x)
+                        )
+                        for x in xrange(samples+1) ]
+        elif spectrum_type == 'spd':
+            # TODO: Houdini bug? key/value pairs return None
+            #       when evaluated as a parmTuple, so we'll
+            #       reevaluate as a parm
+            spd = self.node.parm('spd').eval()
+            values = []
+            for spec in sorted(spd, key=lambda x: float(x)):
+                values.append(float(spec))
+                values.append(float(spd[spec]))
+        if spectrum_type in ('file','spd','ramp'):
+            spectrum_type = 'spectrum'
+        params.add(PBRTParam(spectrum_type, None, values))
+        return params
+
+    @property
+    def get_used_parms(self):
+        return None
+
 class MaterialNode(BaseNode):
 
     # Can be a Material or Texture or a Spectrum Helper
@@ -384,7 +433,8 @@ class MaterialNode(BaseNode):
         for input_node in self.node.inputs():
             if input_node is None:
                 continue
-            if self.directive in ('soho_helper', None):
+            directive = get_directive_from_nodetype(input_node.type())
+            if directive not in ('material','texture'):
                 continue
             yield input_node.path()
 
