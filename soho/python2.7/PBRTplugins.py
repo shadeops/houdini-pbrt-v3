@@ -107,7 +107,7 @@ def _hou_parm_to_pbrt_param(parm, parm_name=None):
             # If the coshader is a spectrum node then it will
             # only have one param in the paramset
             spectrum_parm = coshader.paramset.pop()
-            pbrt_type = spectrum_parm.type
+            pbrt_type = spectrum_parm.param_type
             pbrt_value = spectrum_parm.value
         elif coshader.directive == 'texture':
             pbrt_type = 'texture'
@@ -153,14 +153,19 @@ class PBRTParam(object):
                      'vector' : 'vector3',
                      'color' : 'rgb',
                      }
+    spectrum_types = set(['color','rgb','blackbody','xyz','spectrum'])
 
-    def __init__(self, param_type, param_name, param_value):
+    def __init__(self, param_type, param_name, param_value=None):
         param_type = self.type_synonyms.get(param_type, param_type)
         if param_type not in self.pbrt_types:
             raise TypeError('%s not a known PBRT type' % param_type)
-        self.type = param_type
+        if param_type in self.spectrum_types:
+            self.type = 'spectrum'
+        else:
+            self.type = param_type
+        self.param_type = param_type
         self.name = param_name
-        self._value = param_value
+        self._value = param_value if param_value is not None else []
 
     def __str__(self):
         if isinstance(self.value, types.GeneratorType):
@@ -201,7 +206,7 @@ class PBRTParam(object):
 
     @property
     def type_name(self):
-        return '%s %s' % (self.type, self.name)
+        return '%s %s' % (self.param_type, self.name)
 
     def as_str(self):
         return soho.arrayToString('"%s" [ ' % self.type_name, self.value, ' ]')
@@ -242,15 +247,15 @@ class ParamSet(collections.MutableSet):
         self.add(param)
 
     def find_param(self, ptype, name):
+        param_to_find = PBRTParam(ptype, name)
         for p in self._data:
-            if p.type == ptype and p.name == name:
+            if p == param_to_find:
                 return p
         return None
 
     def update(self, other):
         for o in other:
             self.replace(o)
-
 
 def get_directive_from_nodetype(node_type):
 
@@ -450,7 +455,7 @@ class MaterialNode(BaseNode):
         bump_coshaders = self.node.coshaderNodes('bumpmap')
         if bump_coshaders:
             params.replace(PBRTParam('texture', 'bumpmap',
-                                 bump_coshaders[0].path()))
+                                      bump_coshaders[0].path()))
         return params
 
 
