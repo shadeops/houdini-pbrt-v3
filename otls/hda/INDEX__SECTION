@@ -878,5 +878,19 @@ Inputs:       0 to 2
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Tue May 15 00:01:07 2018
+Modified:     Wed May 16 22:28:00 2018
+
+Operator:     pbrt_material_none
+Label:        PBRT NoneMaterial
+Path:         oplib:/Vop/pbrt_material_none?Vop/pbrt_material_none
+Icon:         opdef:/Vop/pbrt_material_none?IconImage
+Table:        Vop
+License:      
+Extra:        
+User:         {"dtype": "none", "directive": "material"}
+Inputs:       0 to 3
+Subnet:       false
+Python:       false
+Empty:        false
+Modified:     Wed May 16 22:27:42 2018
 
