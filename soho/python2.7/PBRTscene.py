@@ -9,17 +9,17 @@ import PBRTapi as api
 from PBRTwranglers import *
 from PBRTplugins import BaseNode
 
-shading_nodes = set()
+from PBRTstate import scene_state
 
 def output_shading_network(node_path):
     # Depth first, as textures/materials need to be
     # defined before they are referenced
 
-    if node_path in shading_nodes:
+    if node_path in scene_state.shading_nodes:
         return
 
     hnode = hou.node(node_path)
-    shading_nodes.add(node_path)
+    scene_state.shading_nodes.add(node_path)
 
     # Material or Texture?
     node = BaseNode.from_node(hnode)
@@ -72,7 +72,7 @@ def output_materials(obj, wrangler, now):
 
 def render(cam, now):
 
-    shading_nodes.clear()
+    scene_state.reset()
 
     # For now we will not be using wranglers
     wrangler = None

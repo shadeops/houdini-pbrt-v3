@@ -10,6 +10,8 @@ from sohog import SohoGeometry
 
 import PBRTapi
 reload(PBRTapi)
+import PBRTstate
+reload(PBRTstate)
 import PBRTplugins
 reload(PBRTplugins)
 import PBRTgeo
