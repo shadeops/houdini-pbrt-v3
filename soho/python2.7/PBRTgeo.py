@@ -31,8 +31,6 @@ def override_to_paramset(material, override_str):
     return paramset
 
 def sphere_wrangler(gdp, paramset=None, properties=None):
-    if properties is None:
-        properties = {}
 
     num_prims = gdp.globalValue('geo:primcount')[0]
     prim_xform_h = gdp.attribute('geo:prim', 'geo:primtransform')
@@ -43,8 +41,6 @@ def sphere_wrangler(gdp, paramset=None, properties=None):
             api.Shape('sphere', paramset)
 
 def disk_wrangler(gdp, paramset=None, properties=None):
-    if properties is None:
-        properties = {}
 
     # NOTE: PBRT's and Houdini's parameteric UVs are different
     # so when using textures this will need to be fixed on the
@@ -58,8 +54,6 @@ def disk_wrangler(gdp, paramset=None, properties=None):
             api.Shape('disk', paramset)
 
 def tube_wrangler(gdp, paramset=None, properties=None):
-    if properties is None:
-        properties = {}
 
     num_prims = gdp.globalValue('geo:primcount')[0]
     prim_xform_h = gdp.attribute('geo:prim', 'geo:primtransform')
@@ -446,6 +440,11 @@ def bounds_to_api_box(b):
 #   How to apply heterogeneous mediums to shapes?
 #
 
+# NOTE: In pbrt the medium interface and shading parameters
+#       are strongly coupled unlike in Houdini/Mantra where
+#       the volume shaders define the volume properties and
+#       and the volume primitives only define grids.
+#
 def smoke_wrangler(gdp, paramset=None, properties=None):
     # TODO: Overlapping heterogeneous volumes don't currently
     #       appear to be supported, although this may be an issue
@@ -454,6 +453,14 @@ def smoke_wrangler(gdp, paramset=None, properties=None):
 
     # TODO: Not all samplers support heterogeneous volumes. Determine which
     #       ones do, (and verify this is accurate).
+    if properties is None:
+        properties = {}
+
+    if ( 'pbrt_ignorevolumes' in properties and 
+            properties['pbrt_ignorevolumes'].Value[0]):
+        api.Comment('Ignoring volumes because pbrt_ignorevolumes is enabled')
+        return
+
     num_prims = gdp.globalValue('geo:primcount')[0]
     prim_xform_h = gdp.attribute('geo:prim', 'geo:primtransform')
     prim_bounds_h = gdp.attribute('geo:prim', 'intrinsic:bounds')
@@ -476,7 +483,7 @@ def smoke_wrangler(gdp, paramset=None, properties=None):
         smoke_paramset.add(PBRTParam('float','density', voxels))
         # These must be uniform
         smoke_paramset.add(PBRTParam('color','sigma_a',[1, 1, 1]))
-        smoke_paramset.add(PBRTParam('color','sigma_s',[9, 9, 9]))
+        smoke_paramset.add(PBRTParam('color','sigma_s',[1, 1, 1]))
         with api.AttributeBlock():
             xform = gdp.value(prim_xform_h, prim_num)
             api.ConcatTransform(xform)
@@ -581,6 +588,9 @@ def nurbs_wrangler(gdp, paramset=None, properties=None):
 def curve_wrangler(gdp, paramset=None, properties=None):
     if paramset is None:
         paramset = ParamSet()
+
+    if properties is None:
+        properties = {}
 
     curve_type = None
     if 'pbrt_curvetype' in properties:

@@ -542,6 +542,7 @@ def wrangle_geo(obj, wrangler, now):
         'pbrt_rendersubd' : SohoPBRT('pbrt_rendersubd', 'bool', [False], False),
         'pbrt_subdlevels' : SohoPBRT('pbrt_subdlevels', 'integer', [3], False, key='levels'),
         'pbrt_computeN' : SohoPBRT('pbrt_computeN', 'bool', [True], False),
+        'pbrt_ignorevolumes' : SohoPBRT('pbrt_ignorevolumes', 'bool', [False], True),
         'pbrt_interior' : SohoPBRT('pbrt_interior', 'string', [''], True),
         'pbrt_exterior' : SohoPBRT('pbrt_exterior', 'string', [''], True),
         'pbrt_splitdepth' : SohoPBRT('pbrt_splitdepth', 'integer', [3], True, key='splitdepth'),
