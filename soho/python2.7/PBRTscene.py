@@ -7,7 +7,7 @@ from sohog import SohoGeometry
 
 import PBRTapi as api
 from PBRTwranglers import *
-from PBRTplugins import PBRTParam, BaseNode, MaterialNode, TextureNode
+from PBRTplugins import BaseNode
 
 shading_nodes = set()
 
