@@ -10,13 +10,13 @@ import PBRTapi as api
 from PBRTplugins import PBRTParam, ParamSet, pbrt_param_from_ref
 
 def override_to_paramset(material, override_str):
+    paramset = ParamSet()
     override = eval(override_str)
     if not override or not material:
-        return
+        return paramset
     node = hou.node(material)
     if not node:
-        return
-    paramset = ParamSet()
+        return paramset
     processed_parms = set()
     for parm_name in override:
         parm = node.parm(parm_name)
@@ -488,7 +488,7 @@ def smoke_wrangler(gdp, paramset=None, properties=None):
             xform = gdp.value(prim_xform_h, prim_num)
             api.ConcatTransform(xform)
             api.MakeNamedMedium(name, 'heterogeneous', smoke_paramset)
-            api.Material('')
+            api.Material('none')
             api.MediumInterface(name, '')
             # Pad this slightly?
             bounds_to_api_box([-1,1,-1,1,-1,1])

@@ -254,6 +254,8 @@ class ParamSet(collections.MutableSet):
         return None
 
     def update(self, other):
+        if not other:
+            return
         for o in other:
             self.replace(o)
 
