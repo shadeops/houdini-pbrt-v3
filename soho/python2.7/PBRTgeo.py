@@ -1,4 +1,5 @@
 import itertools
+import collections
 
 import hou
 import soho
@@ -30,31 +31,32 @@ def override_to_paramset(material, override_str):
         paramset.add(pbrt_param)
     return paramset
 
-def sphere_wrangler(gdp, paramset=None, properties=None):
+def prim_transform(prim):
+    rot_mat = hou.Matrix3(prim.intrinsicValue('transform'))
+    vtx = prim.vertex(0)
+    pt = vtx.point()
+    pos = pt.position()
+    xlate = hou.hmath.buildTranslate(pos)
+    return (hou.Matrix4(rot_mat) * xlate).asTuple()
 
-    num_prims = gdp.globalValue('geo:primcount')[0]
-    prim_xform_h = gdp.attribute('geo:prim', 'geo:primtransform')
-    for prim_num in xrange(num_prims):
+def sphere_wrangler(gdp, paramset=None, properties=None):
+    for prim in gdp.prims():
         with api.TransformBlock():
-            xform = gdp.value(prim_xform_h, prim_num)
+            xform = prim_transform(prim)
             api.ConcatTransform(xform)
             api.Shape('sphere', paramset)
 
 def disk_wrangler(gdp, paramset=None, properties=None):
-
     # NOTE: PBRT's and Houdini's parameteric UVs are different
     # so when using textures this will need to be fixed on the
     # texture/material side as its not resolvable within Soho.
-    num_prims = gdp.globalValue('geo:primcount')[0]
-    prim_xform_h = gdp.attribute('geo:prim', 'geo:primtransform')
-    for prim_num in xrange(num_prims):
+    for prim in gdp.prims():
         with api.TransformBlock():
-            xform = gdp.value(prim_xform_h, prim_num)
+            xform = prim_transform(prim)
             api.ConcatTransform(xform)
             api.Shape('disk', paramset)
 
 def tube_wrangler(gdp, paramset=None, properties=None):
-
     num_prims = gdp.globalValue('geo:primcount')[0]
     prim_xform_h = gdp.attribute('geo:prim', 'geo:primtransform')
     # SOHO BUG
@@ -736,6 +738,35 @@ def shape_splits(gdp):
         prim_name = gdp.value(prim_name_h, prim_num)[0]
         yield prim_name
 
+def partition_by_type(input_gdp):
+    # Not sure about a set operation on prims
+    prim_types = collections.defaultdict(set)
+    for prim in input_gdp.prims():
+        prim_types[prim.intrinsicValue('typename')].add(prim.number())
+
+    split_gdps = {}
+    all_prims = set(range(len(input_gdp.prims())))
+    for prim_type in prim_types:
+        gdp = hou.Geometry()
+        gdp.merge(input_gdp)
+        keep_prims = prim_types[prim_type]
+        remove_prims = all_prims - keep_prims
+        cull_list = [ gdp.primIter()[p] for p in remove_prims ]
+        gdp.deletePrims(cull_list)
+        split_gdps[prim_type] = gdp
+
+    return split_gdps
+
+def partition_by_attrib(input_gdp, attrib):
+    split_gdps = {}
+    for attrib_val in attrib.strings():
+        gdp = hou.Geometry()
+        gdp.merge(input_gdp)
+        prims = gdp.globPrims('@%s!=%s' % (attrib.name(), attrib_val))
+        gdp.deletePrims(prims)
+        split_gdps[attrib_val] = gdp
+    return split_gdps
+
 def save_geo(soppath, now, properties=None):
     # split by material
         # split by material override #
@@ -754,26 +785,33 @@ def save_geo(soppath, now, properties=None):
     #       them down to the actual shape api calls.
     material_paramset = ParamSet()
 
-    gdp = SohoGeometry(soppath, now)
+    node = hou.node(soppath)
+    if node is None:
+        return
+    #gdp = hou.Geometry().merge(node.geometry().freeze())
+    input_gdp = node.geometry().freeze()
+    gdp = hou.Geometry()
+    gdp.merge(input_gdp)
 
     # Partition based on materials
-    global_material = gdp.globalValue('shop_materialpath')
-    if global_material is not None:
-        global_material = global_material[0]
+    try:
+        global_material = gdp.stringAttribValue('shop_materialpath')
+    except hou.OperationFailed:
+        global_material = None
 
-    attrib_h = gdp.attribute('geo:prim', 'shop_materialpath')
-    if attrib_h >= 0:
-        material_gdps = gdp.partition('geo:partattrib',
-                                      'shop_materialpath')
+    attrib_h = gdp.findPrimAttrib('shop_materialpath')
+    if attrib_h is not None:
+        material_gdps = partition_by_attrib(gdp, attrib_h)
     else:
         material_gdps = {global_material : gdp}
 
-    global_override = gdp.globalValue('material_override')
-    if global_override is not None:
-        global_override = global_override[0]
+    try:
+        global_override = gdp.stringAttribValue('material_override')
+    except hou.OperationFailed:
+        global_override = None
 
     # Further partition based on material overrides
-    attrib_h = gdp.attribute('geo:prim', 'material_override')
+    has_prim_overrides = False if gdp.findPrimAttrib('material_override') is None else True
     for material in material_gdps:
 
         if material:
@@ -782,16 +820,19 @@ def save_geo(soppath, now, properties=None):
 
         material_gdp = material_gdps[material]
 
-        if attrib_h >= 0:
-            override_gdps = material_gdp.partition('geo:partattrib',
-                                                   'material_override')
+        if has_prim_overrides:
+            attrib_h = material_gdp.findPrimAttrib('material_override')
+            override_gdps = partition_by_attrib(material_gdp, attrib_h)
+            # Clean up post partition
+            material_gdp.clear()
         else:
             override_gdps = {global_override: material_gdp}
 
         for override in override_gdps:
             override_gdp = override_gdps[override]
-            shape_gdps = override_gdp.partition('geo:partlist',
-                                                shape_splits(override_gdp))
+            shape_gdps = partition_by_type(override_gdp)
+            override_gdp.clear()
+
             for shape in shape_gdps:
                 material_paramset = ParamSet()
 
@@ -803,8 +844,8 @@ def save_geo(soppath, now, properties=None):
                 shape_wrangler = shape_wranglers.get(shape, not_supported)
                 if shape_wrangler:
                     shape_wrangler(shape_gdp, material_paramset, properties)
+                shape_gdp.clear()
 
         if material:
             api.AttributeEnd()
-
 
