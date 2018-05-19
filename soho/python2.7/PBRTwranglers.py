@@ -7,6 +7,8 @@ import PBRTapi as api
 import PBRTgeo as Geo
 from PBRTplugins import PBRTParam, ParamSet, BaseNode
 
+from PBRTstate import scene_state
+
 __all__ = ['wrangle_film', 'wrangle_sampler', 'wrangle_accelerator',
            'wrangle_integrator', 'wrangle_filter', 'wrangle_camera',
            'wrangle_light', 'wrangle_geo']
@@ -542,15 +544,29 @@ def wrangle_geo(obj, wrangler, now):
         'pbrt_rendersubd' : SohoPBRT('pbrt_rendersubd', 'bool', [False], False),
         'pbrt_subdlevels' : SohoPBRT('pbrt_subdlevels', 'integer', [3], False, key='levels'),
         'pbrt_computeN' : SohoPBRT('pbrt_computeN', 'bool', [True], False),
-        'pbrt_ignorevolumes' : SohoPBRT('pbrt_ignorevolumes', 'bool', [False], True),
         'pbrt_interior' : SohoPBRT('pbrt_interior', 'string', [''], True),
         'pbrt_exterior' : SohoPBRT('pbrt_exterior', 'string', [''], True),
+        'pbrt_ignorevolumes' : SohoPBRT('pbrt_ignorevolumes', 'bool', [False], True),
         'pbrt_splitdepth' : SohoPBRT('pbrt_splitdepth', 'integer', [3], True, key='splitdepth'),
         # We don't use the key=type since its a bit too generic of a name
         'pbrt_curvetype' : SohoPBRT('pbrt_curvetype', 'string', ["flat"], True),
         # TODO, Tesselation options?
     }
     properties = obj.evaluate(parm_selection, now)
+
+    interior = None
+    exterior = None
+    if 'pbrt_interior' in properties:
+        interior = properties['pbrt_interior'].Value[0]
+    if 'pbrt_exterior' in properties:
+        exterior = properties['pbrt_exterior'].Value[0]
+    else:
+        exterior = scene_state.exterior
+
+    if interior or exterior:
+        interior = '' if interior is None else interior
+        exterior = '' if exterior is None else exterior
+        api.MediumInterface(interior, exterior)
 
     Geo.save_geo(soppath[0], now, properties)
 

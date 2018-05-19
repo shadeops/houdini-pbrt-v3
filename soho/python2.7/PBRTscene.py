@@ -70,6 +70,33 @@ def output_materials(obj, wrangler, now):
             output_shading_network(shop)
     return
 
+def output_medium(medium):
+    if not medium:
+        return None
+    if medium in scene_state.medium_nodes:
+        return None
+    scene_state.medium_nodes.add(medium)
+
+    medium_vop = BaseNode.from_node(medium)
+    if medium_vop is None:
+        return None
+    if medium_vop.directive_type != 'pbrt_medium':
+        return None
+
+    api.MakeNamedMedium(medium_vop.name, 'homogeneous', medium_vop.paramset)
+    return medium_vop.name
+
+
+def output_mediums(obj, wrangler, now):
+    exterior = obj.wrangleString(wrangler, 'pbrt_exterior', now, [''])[0]
+    interior = obj.wrangleString(wrangler, 'pbrt_interior', now, [''])[0]
+
+    exterior = output_medium(exterior)
+    interior = output_medium(interior)
+
+    return interior, exterior
+
+
 def render(cam, now):
 
     scene_state.reset()
@@ -94,6 +121,12 @@ def render(cam, now):
 
     print()
 
+    interior,exterior = output_mediums(cam, wrangler, now)
+    if exterior:
+        api.MediumInterface('', exterior)
+        scene_state.exterior = exterior
+        print()
+
     api.WorldBegin()
 
     print()
@@ -114,6 +147,14 @@ def render(cam, now):
     api.Comment('NamedMaterial Definitions')
     for obj in soho.objectList('objlist:instance'):
         output_materials(obj, wrangler, now)
+
+    print()
+
+    # Output NamedMediums
+    api.Comment('='*50)
+    api.Comment('NamedMedium Definitions')
+    for obj in soho.objectList('objlist:instance'):
+        output_mediums(obj, wrangler, now)
 
     print()
 
