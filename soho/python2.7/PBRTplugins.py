@@ -1,5 +1,6 @@
 import json
 import types
+import array
 import collections
 
 import hou
@@ -196,7 +197,7 @@ class PBRTParam(object):
     def value(self):
         if isinstance(self._value, types.GeneratorType):
             v = self._value
-        elif not isinstance(self._value, (list, tuple)):
+        elif not isinstance(self._value, (list, tuple, array.array)):
             v = [self._value,]
         else:
             v = self._value[:]
@@ -297,7 +298,7 @@ class BaseNode(object):
         if isinstance(node, hou.VopNode):
             node = node
         else:
-            raise hou.TypeError('%s is unknown type' % node)
+            return None
 
         directive = get_directive_from_nodetype(node.type())
 
