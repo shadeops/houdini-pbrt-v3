@@ -99,8 +99,6 @@ def output_mediums(obj, wrangler, now):
 
 def render(cam, now):
 
-    scene_state.reset()
-
     # For now we will not be using wranglers
     wrangler = None
 

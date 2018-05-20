@@ -21,6 +21,8 @@ reload(PBRTwranglers)
 import PBRTscene
 reload(PBRTscene)
 
+from PBRTstate import scene_state
+
 clockstart = time.time()
 
 control_parms = {
@@ -85,6 +87,6 @@ soho.lockObjects(now)
 
 clockstart = time.time()
 
-PBRTscene.render(cam, now)
-
+with scene_state, hou.undos.disabler():
+    PBRTscene.render(cam, now)
 
