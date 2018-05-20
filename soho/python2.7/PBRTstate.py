@@ -14,6 +14,10 @@ if gdp is not None:
     def __init__(self):
         self.shading_nodes = set()
         self.medium_nodes = set()
+        # We do not interior/exterior these directly but are handy as
+        # a quick way of seeing if they are set at the camera/rop
+        # level
+        self.interior = None
         self.exterior = None
         self.tesselator = None
 
@@ -27,6 +31,7 @@ if gdp is not None:
     def reset(self):
         self.shading_nodes.clear()
         self.medium_nodes.clear()
+        self.interior = None
         self.exterior = None
         self.remove_tesselator()
 

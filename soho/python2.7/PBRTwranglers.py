@@ -544,8 +544,13 @@ def wrangle_geo(obj, wrangler, now):
         'pbrt_rendersubd' : SohoPBRT('pbrt_rendersubd', 'bool', [False], False),
         'pbrt_subdlevels' : SohoPBRT('pbrt_subdlevels', 'integer', [3], False, key='levels'),
         'pbrt_computeN' : SohoPBRT('pbrt_computeN', 'bool', [True], False),
-        'pbrt_interior' : SohoPBRT('pbrt_interior', 'string', [''], True),
-        'pbrt_exterior' : SohoPBRT('pbrt_exterior', 'string', [''], True),
+        # The combination of None as a default as well as ignore defaults being False is
+        # important. 'None' implying the parm is missing and not available, and '' meaning
+        # a vacuum medium.
+        # We can't ignore defaults since a default might be the only way to set a medium
+        # back to a vacuum.
+        'pbrt_interior' : SohoPBRT('pbrt_interior', 'string', [None], False),
+        'pbrt_exterior' : SohoPBRT('pbrt_exterior', 'string', [None], False),
         'pbrt_ignorevolumes' : SohoPBRT('pbrt_ignorevolumes', 'bool', [False], True),
         'pbrt_splitdepth' : SohoPBRT('pbrt_splitdepth', 'integer', [3], True, key='splitdepth'),
         # We don't use the key=type since its a bit too generic of a name
@@ -558,12 +563,12 @@ def wrangle_geo(obj, wrangler, now):
     exterior = None
     if 'pbrt_interior' in properties:
         interior = properties['pbrt_interior'].Value[0]
+
     if 'pbrt_exterior' in properties:
         exterior = properties['pbrt_exterior'].Value[0]
-    else:
-        exterior = scene_state.exterior
 
-    if interior or exterior:
+    # We only output a MediumInterface if one or both of the parms exist
+    if interior is not None or exterior is not None:
         interior = '' if interior is None else interior
         exterior = '' if exterior is None else exterior
         api.MediumInterface(interior, exterior)

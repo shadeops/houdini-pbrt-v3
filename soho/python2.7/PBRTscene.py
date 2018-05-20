@@ -88,8 +88,8 @@ def output_medium(medium):
 
 
 def output_mediums(obj, wrangler, now):
-    exterior = obj.wrangleString(wrangler, 'pbrt_exterior', now, [''])[0]
-    interior = obj.wrangleString(wrangler, 'pbrt_interior', now, [''])[0]
+    exterior = obj.wrangleString(wrangler, 'pbrt_exterior', now, [None])[0]
+    interior = obj.wrangleString(wrangler, 'pbrt_interior', now, [None])[0]
 
     exterior = output_medium(exterior)
     interior = output_medium(interior)
@@ -120,9 +120,10 @@ def render(cam, now):
     print()
 
     interior,exterior = output_mediums(cam, wrangler, now)
+    scene_state.exterior = exterior
+    scene_state.interior = interior
     if exterior:
         api.MediumInterface('', exterior)
-        scene_state.exterior = exterior
         print()
 
     api.WorldBegin()
