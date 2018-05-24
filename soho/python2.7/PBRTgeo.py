@@ -3,13 +3,9 @@ import itertools
 import collections
 
 import hou
-import soho
-import sohog
-
-from sohog import SohoGeometry
 
 import PBRTapi as api
-from PBRTplugins import PBRTParam, ParamSet, pbrt_param_from_ref
+from PBRTplugins import BaseNode, PBRTParam, ParamSet, pbrt_param_from_ref
 
 from PBRTstate import scene_state
 
@@ -419,6 +415,63 @@ def bounds_to_api_box(b):
 #       the volume shaders define the volume properties and
 #       and the volume primitives only define grids.
 #
+
+def medium_prim_paramset(prim, paramset=None):
+
+    medium_paramset = ParamSet(paramset)
+
+    # NOTE:
+    # Testing for prim attribs on each prim is a bit redudant but
+    # in general its not an issue as you won't have huge numbers of
+    # volumes. If this does become an issue, attribs can be stored in
+    # a dict and searched from there. (This includes evaluating the
+    # pbrt_interior node.
+
+    # Initialize with the interior shader on the prim, if it exists.
+    try:
+        interior = prim.stringAttribValue('pbrt_interior')
+        interior = BaseNode.from_node(interior)
+    except hou.OperationFailed:
+        interior = None
+
+    if interior and interior.directive == 'medium':
+        medium_paramset |= interior.paramset
+
+    try:
+        preset_value = prim.stringAttribValue('preset')
+        if preset_value:
+            medium_paramset.update(PBRTParam('string','preset',preset_value))
+    except hou.OperationFailed:
+        pass
+
+    try:
+        g_value = prim.floatAttribValue('g')
+        medium_paramset.update(PBRTParam('float','g',g_value))
+    except hou.OperationFailed:
+        pass
+
+    try:
+        scale_value = prim.floatAttribValue('scale')
+        medium_paramset.update(PBRTParam('float','scale',g_value))
+    except hou.OperationFailed:
+        pass
+
+    try:
+        sigma_a_value = prim.floatListAttribValue('sigma_a')
+        if len(sigma_a) == 3:
+            medium_paramset.update(PBRTParam('rgb', 'sigma_a', sigma_a_value))
+    except hou.OperationFailed:
+        pass
+
+    try:
+        sigma_s_value = prim.floatListAttribValue('sigma_s')
+        if len(sigma_s) == 3:
+            medium_paramset.update(PBRTParam('rgb', 'sigma_s', sigma_s_value))
+    except hou.OperationFailed:
+        pass
+
+    return medium_paramset
+
 def smoke_prim_wrangler(prims, paramset=None, properties=None):
     # TODO: Overlapping heterogeneous volumes don't currently
     #       appear to be supported, although this may be an issue
@@ -435,6 +488,17 @@ def smoke_prim_wrangler(prims, paramset=None, properties=None):
         api.Comment('Ignoring volumes because pbrt_ignorevolumes is enabled')
         return
 
+    medium_paramset = ParamSet()
+    if 'pbrt_interior' in properties:
+        interior = BaseNode.from_node(properties['pbrt_interior'])
+        if interior is not None and interior.directive == 'medium':
+            medium_paramset |= interior.paramset
+
+    exterior = None
+    if 'pbrt_exterior' in properties:
+        exterior = properties['pbrt_exterior'].Value[0]
+    exterior = '' if exterior is None else exterior
+
     for prim in prims:
         smoke_paramset = ParamSet(paramset)
 
@@ -449,14 +513,19 @@ def smoke_prim_wrangler(prims, paramset=None, properties=None):
         smoke_paramset.add(PBRTParam('point','p0', [-1,-1,-1]))
         smoke_paramset.add(PBRTParam('point','p1', [1,1,1]))
         smoke_paramset.add(PBRTParam('float','density', voxeldata))
+        # By default we'll set a sigma_a and sigma_s
+        # however the object's pbrt_interior, or prim's pbrt_interior
+        # or prim attribs will override these.
         smoke_paramset.add(PBRTParam('color','sigma_a',[1, 1, 1]))
         smoke_paramset.add(PBRTParam('color','sigma_s',[1, 1, 1]))
+        medium_prim_overrides = medium_prim_paramset(prim, medium_paramset)
+        smoke_paramset.update(medium_prim_overrides)
         with api.AttributeBlock():
             xform = prim_transform(prim)
             api.ConcatTransform(xform)
             api.MakeNamedMedium(name, 'heterogeneous', smoke_paramset)
             api.Material('none')
-            api.MediumInterface(name, '')
+            api.MediumInterface(name, exterior)
             # Pad this slightly?
             bounds_to_api_box([-1,1,-1,1,-1,1])
 
