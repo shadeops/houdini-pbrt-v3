@@ -1,3 +1,5 @@
+from __future__ import print_function, division, absolute_import
+
 import math
 
 import hou
@@ -5,13 +7,14 @@ import soho
 
 import PBRTapi as api
 import PBRTgeo as Geo
+import PBRTinstancing as Instancing
 from PBRTplugins import PBRTParam, ParamSet, BaseNode
 
 from PBRTstate import scene_state
 
 __all__ = ['wrangle_film', 'wrangle_sampler', 'wrangle_accelerator',
            'wrangle_integrator', 'wrangle_filter', 'wrangle_camera',
-           'wrangle_light', 'wrangle_geo']
+           'wrangle_light', 'wrangle_geo', 'wrangle_obj']
 
 def _apiclosure(api_call, *args, **kwargs):
     def api_func():
@@ -528,17 +531,31 @@ def wrangle_light(light, wrangler, now):
 
     return
 
-def wrangle_geo(obj, wrangler, now):
+
+def wrangle_obj(obj, wrangler, now):
+
     output_xform(obj, now)
 
-    shop = obj.wrangleString(wrangler, 'shop_materialpath', now, [''])[0]
-    if shop:
-        api.NamedMaterial(shop)
+    ptinstance = []
+    has_ptinstance = obj.evalInt('ptinstance', now, ptinstance)
+
+    if has_ptinstance and ptinstance[0] == 2:
+        Instancing.wrangle_instances(obj, now)
+        return
+
+    wrangle_geo(obj, wrangler, now)
+
+
+def wrangle_geo(obj, wrangler, now):
 
     soppath = []
     if not obj.evalString('object:soppath', now, soppath):
         api.Comment('Can not find soppath for object')
         return
+
+    shop = obj.wrangleString(wrangler, 'shop_materialpath', now, [''])[0]
+    if shop:
+        api.NamedMaterial(shop)
 
     parm_selection = {
         'pbrt_rendersubd' : SohoPBRT('pbrt_rendersubd', 'bool', [False], False),

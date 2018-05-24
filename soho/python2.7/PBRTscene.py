@@ -1,4 +1,4 @@
-from __future__ import print_function
+from __future__ import print_function, division, absolute_import
 
 import hou
 import soho
@@ -8,6 +8,7 @@ from sohog import SohoGeometry
 import PBRTapi as api
 from PBRTwranglers import *
 from PBRTplugins import BaseNode
+from PBRTinstancing import list_instances
 
 from PBRTstate import scene_state
 
@@ -97,6 +98,26 @@ def output_mediums(obj, wrangler, now):
     return interior, exterior
 
 
+def output_instances(obj, wrangler, now):
+    instances = list_instances(obj)
+    for instance in instances:
+        if instance in scene_state.instanced_geo:
+            continue
+        scene_state.instanced_geo.add(instance)
+
+        # Since a referenced geo might not be displayed, output its
+        # mediums if any.
+        # TODO this works but is a bit magic, rethink this and see if there
+        # is a better approach.
+        instance_obj = soho.getObject(instance)
+        output_materials(instance_obj, wrangler, now)
+        output_mediums(instance_obj, wrangler, now)
+
+        with api.ObjectBlock(instance), api.AttributeBlock():
+            soho_obj = soho.getObject(instance)
+            wrangle_geo(soho_obj, wrangler, now)
+        print()
+
 def render(cam, now):
 
     # For now we will not be using wranglers
@@ -157,6 +178,14 @@ def render(cam, now):
 
     print()
 
+    # Output Object Instances
+    api.Comment('='*50)
+    api.Comment('Object Instance Definitions')
+    for obj in soho.objectList('objlist:instance'):
+        output_instances(obj, wrangler, now)
+
+    print()
+
     # Output Geometry
     api.Comment('='*50)
     api.Comment('Geometry Definitions')
@@ -164,7 +193,7 @@ def render(cam, now):
         api.Comment('-'*50)
         api.Comment(obj.getName())
         with api.AttributeBlock():
-            wrangle_geo(obj, wrangler, now)
+            wrangle_obj(obj, wrangler, now)
         print()
 
     print()

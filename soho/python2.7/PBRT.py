@@ -1,3 +1,5 @@
+from __future__ import print_function, division, absolute_import
+
 import sys
 import time
 
@@ -14,6 +16,8 @@ import PBRTstate
 reload(PBRTstate)
 import PBRTplugins
 reload(PBRTplugins)
+import PBRTinstancing
+reload(PBRTinstancing)
 import PBRTgeo
 reload(PBRTgeo)
 import PBRTwranglers
