@@ -1,4 +1,4 @@
-from __future__ import print_function
+from __future__ import print_function, division, absolute_import
 from contextlib import contextmanager
 
 import soho
@@ -122,8 +122,8 @@ def AttributeBegin():
 def AttributeEnd():
     soho.indent(-1, 'AttributeEnd', PBRT_COMMENT)
 
-def ObjectBegin():
-    soho.indent(1, 'ObjectBegin', PBRT_COMMENT)
+def ObjectBegin(name):
+    soho.indent(1, 'ObjectBegin "%s"' % name, PBRT_COMMENT)
 
 def ObjectEnd():
     soho.indent(-1, 'ObjectEnd', PBRT_COMMENT)
@@ -186,8 +186,8 @@ def TransformBlock():
     TransformEnd()
 
 @contextmanager
-def ObjectBlock():
-    ObjectBegin()
+def ObjectBlock(name):
+    ObjectBegin(name)
     yield
     ObjectEnd()
 
