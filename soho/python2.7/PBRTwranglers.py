@@ -534,12 +534,11 @@ def wrangle_light(light, wrangler, now):
 
 def wrangle_obj(obj, wrangler, now):
 
-    output_xform(obj, now)
-
     ptinstance = []
     has_ptinstance = obj.evalInt('ptinstance', now, ptinstance)
 
     if has_ptinstance and ptinstance[0] == 2:
+        output_xform(obj, now)
         Instancing.wrangle_instances(obj, now)
         return
 
@@ -547,6 +546,8 @@ def wrangle_obj(obj, wrangler, now):
 
 
 def wrangle_geo(obj, wrangler, now):
+
+    output_xform(obj, now)
 
     soppath = []
     if not obj.evalString('object:soppath', now, soppath):
