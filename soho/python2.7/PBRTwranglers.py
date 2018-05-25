@@ -628,7 +628,6 @@ def wrangle_geo(obj, wrangler, now):
         shop = properties['shop_materialpath'].Value[0]
 
     if shop:
-        wrangle_shading_network(shop, saved_nodes=set())
         api.NamedMaterial(shop)
 
     interior = None

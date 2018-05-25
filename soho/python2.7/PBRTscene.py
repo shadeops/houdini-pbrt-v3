@@ -14,7 +14,11 @@ from PBRTstate import scene_state
 
 
 def output_materials(obj, wrangler, now):
-    shop = obj.wrangleString(wrangler, 'shop_materialpath', now, [''])[0]
+    parms = [ soho.SohoParm('shop_materialpath', 'shaderhandle', skipdefault=False)]
+    eval_parms = obj.evaluate(parms, now)
+    if eval_parms:
+        shop = eval_parms[0].Value[0]
+
     if shop:
         wrangle_shading_network(shop)
 
