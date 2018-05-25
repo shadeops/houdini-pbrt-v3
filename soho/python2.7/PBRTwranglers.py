@@ -14,7 +14,8 @@ from PBRTstate import scene_state
 
 __all__ = ['wrangle_film', 'wrangle_sampler', 'wrangle_accelerator',
            'wrangle_integrator', 'wrangle_filter', 'wrangle_camera',
-           'wrangle_light', 'wrangle_geo', 'wrangle_obj']
+           'wrangle_light', 'wrangle_geo', 'wrangle_obj',
+           'wrangle_shading_network']
 
 def _apiclosure(api_call, *args, **kwargs):
     def api_func():
@@ -93,6 +94,50 @@ def wrangle_node_parm(obj, parm_name, now):
         return None
     node = BaseNode(node_path)
     return node.node_class, node.paramset
+
+def wrangle_shading_network(node_path, name_prefix='', saved_nodes=None):
+    # Depth first, as textures/materials need to be
+    # defined before they are referenced
+
+    # Use this to track if a node has been output or not.
+    # if the saved_nodes is None, we use the global scene_state
+    # otherwise we use the one passed in.
+    if saved_nodes is None:
+        saved_nodes = scene_state.shading_nodes
+
+    if node_path in saved_nodes:
+        return
+
+    saved_nodes.add(node_path)
+
+    hnode = hou.node(node_path)
+
+    # Material or Texture?
+    node = BaseNode.from_node(hnode)
+    if node.directive == 'material':
+        api_call = api.MakeNamedMaterial
+    elif node.directive == 'texture':
+        api_call = api.Texture
+    else:
+        return
+
+    for node_input in node.inputs():
+        wrangle_shading_network(node_input, saved_nodes=saved_nodes)
+
+    coord_sys = node.coord_sys
+    if coord_sys:
+        api.TransformBegin()
+        api.Transform(coord_sys)
+    api_call(name_prefix + node.name,
+             node.output_type,
+             node.directive_type,
+             node.paramset)
+    if coord_sys:
+        api.TransformEnd()
+    if api_call == api.MakeNamedMaterial:
+        print()
+    return
+
 
 def wrangle_film(obj, wrangler, now):
 
@@ -554,11 +599,11 @@ def wrangle_geo(obj, wrangler, now):
         api.Comment('Can not find soppath for object')
         return
 
-    shop = obj.wrangleString(wrangler, 'shop_materialpath', now, [''])[0]
-    if shop:
-        api.NamedMaterial(shop)
-
     parm_selection = {
+        # NOTE: In order for shop_materialpath to evaluate correctly when using (full) instancing
+        #       shop_materialpath needs to be a 'shaderhandle' and not a 'string'
+        # TODO: However this does not seem to apply to shop_materialpaths on the instance points.
+        'shop_materialpath' : SohoPBRT('shop_materialpath', 'shaderhandle', skipdefault=False),
         'pbrt_rendersubd' : SohoPBRT('pbrt_rendersubd', 'bool', [False], False),
         'pbrt_subdlevels' : SohoPBRT('pbrt_subdlevels', 'integer', [3], False, key='levels'),
         'pbrt_computeN' : SohoPBRT('pbrt_computeN', 'bool', [True], False),
@@ -576,6 +621,15 @@ def wrangle_geo(obj, wrangler, now):
         # TODO, Tesselation options?
     }
     properties = obj.evaluate(parm_selection, now)
+
+    if 'shop_materialpath' not in properties:
+        shop = ''
+    else:
+        shop = properties['shop_materialpath'].Value[0]
+
+    if shop:
+        wrangle_shading_network(shop, saved_nodes=set())
+        api.NamedMaterial(shop)
 
     interior = None
     exterior = None

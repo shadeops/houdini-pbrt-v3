@@ -12,47 +12,11 @@ from PBRTinstancing import list_instances
 
 from PBRTstate import scene_state
 
-def output_shading_network(node_path):
-    # Depth first, as textures/materials need to be
-    # defined before they are referenced
-
-    if node_path in scene_state.shading_nodes:
-        return
-
-    hnode = hou.node(node_path)
-    scene_state.shading_nodes.add(node_path)
-
-    # Material or Texture?
-    node = BaseNode.from_node(hnode)
-    if node.directive == 'material':
-        api_call = api.MakeNamedMaterial
-    elif node.directive == 'texture':
-        api_call = api.Texture
-    else:
-        return
-
-    for node_input in node.inputs():
-        output_shading_network(node_input)
-
-    coord_sys = node.coord_sys
-    if coord_sys:
-        api.TransformBegin()
-        api.Transform(coord_sys)
-    api_call(node.name,
-             node.output_type,
-             node.directive_type,
-             node.paramset)
-    if coord_sys:
-        api.TransformEnd()
-    if api_call == api.MakeNamedMaterial:
-        print()
-    return
-
 
 def output_materials(obj, wrangler, now):
     shop = obj.wrangleString(wrangler, 'shop_materialpath', now, [''])[0]
     if shop:
-        output_shading_network(shop)
+        wrangle_shading_network(shop)
 
     soppath = []
     if not obj.evalString('object:soppath', now, soppath):
@@ -62,13 +26,13 @@ def output_materials(obj, wrangler, now):
     gdp = SohoGeometry(soppath, now)
     global_material = gdp.globalValue('shop_materialpath')
     if global_material is not None:
-        output_shading_network(global_material[0])
+        wrangle_shading_network(global_material[0])
 
     attrib_h = gdp.attribute('geo:prim', 'shop_materialpath')
     if attrib_h >= 0:
         shop_materialpaths = gdp.attribProperty(attrib_h, 'geo:allstrings')
         for shop in shop_materialpaths:
-            output_shading_network(shop)
+            wrangle_shading_network(shop)
     return
 
 def output_medium(medium):
@@ -100,6 +64,9 @@ def output_mediums(obj, wrangler, now):
 
 def output_instances(obj, wrangler, now):
     instances = list_instances(obj)
+    if not instances:
+        return
+
     for instance in instances:
         if instance in scene_state.instanced_geo:
             continue

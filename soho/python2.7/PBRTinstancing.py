@@ -39,6 +39,12 @@ def wrangle_instances(obj, now):
 
     # We need hou.Node handles so we can resolve relative paths
     # since soho does not do this.
+    # NOTE: the above isn't true, some cleverness from RIBsettings shows
+                # if len(shop_path) > 0:
+                #   if not posixpath.isabs(shop_path):
+                #     # make the shop_path absolute
+                #     obj_path = obj.getDefaultedString("object:name", now, [''])[0]
+                #     shop_path = posixpath.normpath(posixpath.join(obj_path, shop_path))
     soppath = []
     if not obj.evalString('object:soppath', now, soppath):
         api.Comment('Can not find soppath for object')

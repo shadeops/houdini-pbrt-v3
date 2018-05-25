@@ -143,6 +143,7 @@ def WorldEnd():
 def Material(dtype, paramset=()):
     _api_dtype_call('Material', dtype, paramset)
 
+# NOTE: Named materials are obey AttributeBegin/End blocks as well
 def MakeNamedMaterial(name, output, dtype, paramset=()):
     _api_named_dtype_call('MakeNamedMaterial', name, output, dtype, paramset)
 
