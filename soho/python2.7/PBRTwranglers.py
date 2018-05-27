@@ -411,12 +411,14 @@ def wrangle_camera(obj, wrangler, now):
     parm_selection = {
         'projection' : SohoPBRT('projection', 'string', ['perspective'], False),
         'focal' : SohoPBRT('focal', 'float', [50], False),
+        'focalunits' : SohoPBRT('focalunits', 'string', ['mm'], False),
         'aperture' : SohoPBRT('aperture', 'float', [41.4214], False),
         'orthowidth' : SohoPBRT('orthowidth', 'float', [2], False),
         'res' : SohoPBRT('res', 'integer', [1280, 720], False),
         'aspect' : SohoPBRT('aspect', 'float', [1], False),
-        #'fstop' : SohoPBRT('fstop', 'float', [5.6], True),
-        #'focus' : SohoPBRT('focus', 'float', [5], True),
+        'fstop' : SohoPBRT('fstop', 'float', [5.6], False),
+        'focaldistance' : SohoPBRT('focus', 'float', [5], False, key='focaldistance'),
+        'pbrt_dof' : SohoPBRT('pbrt_dof', 'integer', [0], False),
     }
 
     parms = obj.evaluate(parm_selection, now)
@@ -424,6 +426,18 @@ def wrangle_camera(obj, wrangler, now):
     aspectfix = aspect * float(parms['res'].Value[0]) / float(parms['res'].Value[1])
 
     projection = parms['projection'].Value[0]
+
+    if parms['pbrt_dof'].Value[0]:
+        paramset.add(parms['focaldistance'].to_pbrt())
+        # to convert from f-stop to lens radius
+        # FStop = FocalLength / (Radius * 2)
+        # Radius = FocalLength/(FStop * 2)
+        focal = parms['focal'].Value[0]
+        fstop = parms['fstop'].Value[0]
+        units = parms['focalunits'].Value[0]
+        focal = soho.houdiniUnitLength(focal, units)
+        lens_radius = focal/(fstop*2.0)
+        paramset.add(PBRTParam('float','lensradius',lens_radius))
 
     if projection == 'perspective':
         projection_name = 'perspective'

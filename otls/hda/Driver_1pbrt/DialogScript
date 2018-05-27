@@ -622,6 +622,34 @@
             }
         }
 
+        parm {
+            name    "pbrt_dof"
+            label   "Allow Depth of Field"
+            type    toggle
+            default { "0" }
+            help    "None"
+            disablewhen "{ camera_plugin != \"\" }"
+            parmtag { "spare_category" "Camera" }
+        }
+        parm {
+            name    "allowmotionblur"
+            label   "Allow Motion Blur"
+            type    toggle
+            default { "0" }
+            help    "None"
+            parmtag { "spare_category" "Motion Blur" }
+        }
+        parm {
+            name    "shutteroffset"
+            label   "Shutter Offset"
+            type    float
+            default { "1" }
+            help    "Shifts the shutter center opening. 0 is motion blur around the current frame; -1 samples the motion blur from shutter time prior to current frame, up to the current frame; and 1 samples the motion blur for the shutter time starting from the current frame."
+            disablewhen "{ allowmotionblur == 0 }"
+            hidewhen "{ allowmotionblur == 0 }"
+            range   { -1 1 }
+            parmtag { "spare_category" "Motion Blur" }
+        }
         groupsimple {
             name    "film_group"
             label   "Film"

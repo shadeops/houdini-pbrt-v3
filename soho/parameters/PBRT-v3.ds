@@ -9,6 +9,7 @@
     parmtag     { spare_classtags "render" } 
 
 #include "$HFS/houdini/soho/parameters/CommonControl.ds"
+#include "$HFS/houdini/soho/parameters/CommonView.ds"
 #include "$HFS/houdini/soho/parameters/Instance.ds"
 
     parm {
