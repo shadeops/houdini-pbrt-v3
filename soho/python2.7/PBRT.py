@@ -89,8 +89,6 @@ soho.removeObjects(now, excludeobject, excludelights, '')
 # Lock off the objects we've selected
 soho.lockObjects(now)
 
-clockstart = time.time()
-
 with scene_state, hou.undos.disabler():
     PBRTscene.render(cam, now)
 
