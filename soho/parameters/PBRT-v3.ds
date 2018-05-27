@@ -12,6 +12,9 @@
 #include "$HFS/houdini/soho/parameters/Instance.ds"
 
     parm {
+        SOHO_TOGGLE(pbrt_dof, "Allow Depth of Field", "Camera", 0)
+    }
+    parm {
         SOHO_TOGGLE(allowmotionblur, "Allow Motion Blur", "Motion Blur", 0)
     }
     parm {
@@ -22,10 +25,6 @@
             "centered"        "Frame Centered Blur"
             "trailing"        "Trailing Blur"
         }
-    }
-    parm {
-        SOHO_FLOAT(shutter, "Shutter Time", "Motion Blur", 0.5)
-        range        { 0 1 }
     }
     parm {
         SOHO_FLOAT(shutter, "Shutter Time", "Motion Blur", 0.5)
