@@ -1,5 +1,7 @@
 from __future__ import print_function, division, absolute_import
 
+import time
+
 import hou
 import soho
 
@@ -89,12 +91,25 @@ def output_instances(obj, wrangler, now):
             wrangle_geo(soho_obj, wrangler, now)
         print()
 
+def header():
+    if scene_state.ver is not None:
+        api.Comment('Houdini Version %s' % scene_state.ver)
+    api.Comment('Generation Time: %s' % time.strftime("%b %d, %Y at %H:%M:%S"))
+    if scene_state.hip and scene_state.hipname:
+        api.Comment('Hip File: %s.%s' % (scene_state.hip, scene_state.hipname))
+    if scene_state.rop is not None:
+        api.Comment('Output Driver: %s' % scene_state.rop)
+    if scene_state.now is not None:
+        api.Comment('Output Time: %s' % scene_state.now)
+    if scene_state.fps:
+        api.Comment('Output FPS: %s' % scene_state.fps)
+
 def render(cam, now):
 
     # For now we will not be using wranglers
     wrangler = None
 
-    api.Comment('Rendering %s' % soho.getOutputDriver().getName())
+    header()
     print()
 
     api.Film(*wrangle_film(cam, wrangler, now))
