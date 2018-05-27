@@ -20,9 +20,8 @@ def output_materials(obj, wrangler, now):
     eval_parms = obj.evaluate(parms, now)
     if eval_parms:
         shop = eval_parms[0].Value[0]
-
-    if shop:
-        wrangle_shading_network(shop)
+        if shop:
+            wrangle_shading_network(shop)
 
     soppath = []
     if not obj.evalString('object:soppath', now, soppath):
