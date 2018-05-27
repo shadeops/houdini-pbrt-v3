@@ -588,15 +588,19 @@ def nurbs_wrangler(gdp, paramset=None, properties=None):
 
         nurbs_paramset = ParamSet(paramset)
 
-        # FIXME: This is wrong for torii
         row = prim.intrinsicValue('nu')
         col = prim.intrinsicValue('nv')
         u_order = prim.intrinsicValue('uorder')
         v_order = prim.intrinsicValue('vorder')
+        u_wrap = prim.intrinsicValue('uwrap')
+        v_wrap = prim.intrinsicValue('vwrap')
         u_knots = prim.intrinsicValue('uknots')
         v_knots = prim.intrinsicValue('vknots')
-        #u_extent = prim.intrinsicValue('u_extent')
-        #v_extent = prim.intrinsicValue('v_extent')
+
+        if u_wrap:
+            row += u_order-1
+        if v_wrap:
+            col += v_order-1
         nurbs_paramset.add(PBRTParam('integer', 'nu', row))
         nurbs_paramset.add(PBRTParam('integer', 'nv', col))
         nurbs_paramset.add(PBRTParam('integer', 'uorder', u_order))
@@ -611,7 +615,18 @@ def nurbs_wrangler(gdp, paramset=None, properties=None):
         #nurbs_paramset.add(PBRTParam('float', 'u1', u_extent[1]))
         #nurbs_paramset.add(PBRTParam('float', 'v1', v_extent[1]))
 
-        P = prim_pt2vtx_attrib_gen(prim)
+        #if row + u_order != len(u_knots):
+        #    api.Comment('Invalid U')
+        #if col + v_order != len(v_knots):
+        #    api.Comment('Invalid V')
+
+        P = []
+        for v in xrange(col):
+            for u in xrange(row):
+                vtx = prim.vertex(u % prim.numCols(),
+                                  v % prim.numRows())
+                pt = vtx.point()
+                P.append(pt.attribValue('P'))
         if not has_Pw:
             nurbs_paramset.add(PBRTParam('point', 'P', P))
         else:
