@@ -11,6 +11,42 @@
 #include "$HFS/houdini/soho/parameters/CommonControl.ds"
 #include "$HFS/houdini/soho/parameters/Instance.ds"
 
+    parm {
+        SOHO_TOGGLE(allowmotionblur, "Allow Motion Blur", "Motion Blur", 0)
+    }
+    parm {
+        SOHO_PARM(motionstyle, "Motion Blur Style", "Motion Blur",
+                  string, 1, "trailing")
+        menu {
+            "leading"         "Leading Blur"
+            "centered"        "Frame Centered Blur"
+            "trailing"        "Trailing Blur"
+        }
+    }
+    parm {
+        SOHO_FLOAT(shutter, "Shutter Time", "Motion Blur", 0.5)
+        range        { 0 1 }
+    }
+    parm {
+        SOHO_FLOAT(shutter, "Shutter Time", "Motion Blur", 0.5)
+        range        { 0 1 }
+    }
+    parm {
+        SOHO_FLOAT(shutteroffset, "Shutter Offset", "Motion Blur", 1.0)
+        disablewhen     "{ allowmotionblur == 0 }"
+        range        { -1 1 }
+        help         "Shifts the shutter center opening. 0 is motion blur around the current frame; -1 samples the motion blur from shutter time prior to current frame, up to the current frame; and 1 samples the motion blur for the shutter time starting from the current frame."
+    }
+    parm {
+        name        pbrt_motionwindow
+        label       "Motion Window"
+        parmtag     { spare_category "Motion Blur" }
+        disablewhen   "{ allowmotionblur == 0 }"
+        type        float
+        size        2
+        help        "What range within the ActiveTransform StartTime/EndTime in which the motion occurs."
+        default     { 0 1 }
+    }
     collection {
         name    pbrt_subdivision
         label   "PBRT Subdivision Parameters"
@@ -21,6 +57,7 @@
         }
         parm {
             SOHO_INT(pbrt_subdlevels, "Subvision Levels", "Geometry", 3)
+            disablewhen  "{ pbrt_subdivision == 0 }"
             range { 1 5 }
         }
     }
