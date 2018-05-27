@@ -123,7 +123,8 @@ def wrangle_shading_network(node_path, name_prefix='', saved_nodes=None):
 
     # Use this to track if a node has been output or not.
     # if the saved_nodes is None, we use the global scene_state
-    # otherwise we use the one passed in.
+    # otherwise we use the one passed in. This is useful for outputing
+    # named materials within a nested Attribute Block.
     if saved_nodes is None:
         saved_nodes = scene_state.shading_nodes
 
@@ -136,6 +137,9 @@ def wrangle_shading_network(node_path, name_prefix='', saved_nodes=None):
 
     # Material or Texture?
     node = BaseNode.from_node(hnode)
+    if node is None:
+        return
+
     if node.directive == 'material':
         api_call = api.MakeNamedMaterial
     elif node.directive == 'texture':
@@ -686,7 +690,7 @@ def wrangle_geo(obj, wrangler, now):
     else:
         shop = properties['shop_materialpath'].Value[0]
 
-    if shop:
+    if shop and shop in scene_state.shading_nodes:
         api.NamedMaterial(shop)
 
     interior = None
