@@ -28,9 +28,11 @@ def list_instances(obj):
                 instance_geos.add(instance_obj.path())
 
     # Get the object's instancepath as well
-    instance_obj = obj_node.parm('instancepath').evalAsNode()
-    if instance_obj:
-        instance_geos.add(instance_obj.path())
+    instancepath_parm = obj_node.parm('instancepath')
+    if instancepath_parm:
+        instance_obj = instancepath_parm.evalAsNode()
+        if instance_obj:
+            instance_geos.add(instance_obj.path())
 
     return list(instance_geos)
 
