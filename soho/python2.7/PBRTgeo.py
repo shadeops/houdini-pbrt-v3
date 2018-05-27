@@ -588,8 +588,9 @@ def nurbs_wrangler(gdp, paramset=None, properties=None):
 
         nurbs_paramset = ParamSet(paramset)
 
-        row = prim.intrinsicValue('nv')
-        col = prim.intrinsicValue('nu')
+        # FIXME: This is wrong for torii
+        row = prim.intrinsicValue('nu')
+        col = prim.intrinsicValue('nv')
         u_order = prim.intrinsicValue('uorder')
         v_order = prim.intrinsicValue('vorder')
         u_knots = prim.intrinsicValue('uknots')
