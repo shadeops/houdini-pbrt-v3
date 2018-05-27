@@ -16,6 +16,12 @@ def _api_call_with_args(directive, *args):
     print(directive, end='')
     soho.printArray(' ', args, '\n')
 
+# ActiveTransform StartTime
+def _api_call_with_cmds(directive, *args):
+    soho.indent()
+    print(directive, end='')
+    soho.printArray(' ', args, '\n',  False)
+
 # Transform [ 0 1 2 3 4 5 ... 13 14 15 ]
 def _api_call_with_iter(directive, args):
     soho.indent()
@@ -107,8 +113,10 @@ def ConcatTransform(matrix):
 def TransformTimes(start, end):
     _api_call_with_args('TransfomTimes', start, end)
 
-def ActiveTransform(time):
-    _api_call_with_args('ActiveTransform', time)
+def ActiveTransform(xform_time):
+    if xform_time not in ('StartTime', 'EndTime', 'All'):
+        raise ValueError('%s is an invalid ActiveTransform time' % xform_time)
+    _api_call_with_cmds('ActiveTransform', xform_time)
 
 def TransformBegin():
     soho.indent(1, 'TransformBegin', PBRT_COMMENT)
