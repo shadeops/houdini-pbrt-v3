@@ -103,6 +103,16 @@ def header():
     if scene_state.fps:
         api.Comment('Output FPS: %s' % scene_state.fps)
 
+def output_transform_times(cam, now):
+    do_mb = cam.getDefaultedInt('allowmotionblur', now, [0])
+    if not do_mb[0]:
+        return
+    window = cam.getDefaultedFloat('pbrt_motionwindow', now, [None])
+    if window[0] is None:
+        return
+    api.TransformTimes(window[0], window[1])
+    print()
+
 def render(cam, now):
 
     # For now we will not be using wranglers
@@ -124,6 +134,8 @@ def render(cam, now):
     api.Camera(*wrangle_camera(cam, wrangler, now))
 
     print()
+
+    output_transform_times(cam, now)
 
     interior,exterior = output_mediums(cam, wrangler, now)
     scene_state.exterior = exterior
