@@ -1,5 +1,7 @@
 from __future__ import print_function, division, absolute_import
 
+import collections
+
 import math
 
 import hou
@@ -17,10 +19,53 @@ __all__ = ['wrangle_film', 'wrangle_sampler', 'wrangle_accelerator',
            'wrangle_light', 'wrangle_geo', 'wrangle_obj',
            'wrangle_shading_network']
 
+ShutterRange = collections.namedtuple('ShutterRange', ['open', 'close'])
+
 def _apiclosure(api_call, *args, **kwargs):
     def api_func():
         return api_call(*args, **kwargs)
     return api_func
+
+class SohoPBRT(soho.SohoParm):
+    def to_pbrt(self, pbrt_type=None):
+        # bounds not supported
+        # shader not supported
+        if pbrt_type is None:
+            to_pbrt_type = {'real' : 'float',
+                            'fpreal' : 'float',
+                            'int' : 'integer'}
+            pbrt_type = to_pbrt_type.get(self.Type, self.Type)
+        pbrt_name = self.Key
+        return PBRTParam(pbrt_type, pbrt_name, self.Value)
+
+def get_wrangler(obj, now, style):
+    wrangler = obj.getDefaultedString(style, now, [''])[0]
+    wrangler = '%s-PBRT' % wrangler
+    if style == 'light_wrangler':
+        wrangler = soho.LightWranglers.get(wrangler, None)
+    elif style == 'camera_wrangler':
+        wrangler = soho.CameraWranglers.get(wrangler, None)
+    elif style == 'object_wrangler':
+         wrangler = soho.ObjectWranglers.get(wrangler, None)
+    else:
+        wrangler = None  # Not supported at the current time
+
+    if wrangler:
+        wrangler = wrangler(obj, now, 'PBRT')
+    else:
+        wrangler = None
+    return wrangler
+
+def get_transform(obj, now, invert=False, flipz=False):
+    xform = []
+    if not obj.evalFloat('space:world', now, xform):
+        return None
+    xform = hou.Matrix4(xform)
+    if invert:
+        xform = xform.inverted()
+    if flipz:
+        xform = xform*hou.hmath.buildScale(1,1,-1)
+    return list(xform.asTuple())
 
 def xform_to_api_srt(xform, scale=True, rotate=True, trans=True):
     xform = hou.Matrix4(xform)
@@ -40,46 +85,23 @@ def xform_to_api_srt(xform, scale=True, rotate=True, trans=True):
         api.Scale(*srt['scale'])
     return
 
-class SohoPBRT(soho.SohoParm):
-    def to_pbrt(self, pbrt_type=None):
-        # bounds not supported
-        # shader not supported
-        if pbrt_type is None:
-            to_pbrt_type = {'real' : 'float',
-                            'fpreal' : 'float',
-                            'int' : 'integer'}
-            pbrt_type = to_pbrt_type.get(self.Type, self.Type)
-        pbrt_name = self.Key
-        return PBRTParam(pbrt_type, pbrt_name, self.Value)
-
-def get_transform(obj, now, invert=False, flipz=False):
-    xform = []
-    if not obj.evalFloat('space:world', now, xform):
-        return None
-    xform = hou.Matrix4(xform)
-    if invert:
-        xform = xform.inverted()
-    if flipz:
-        xform = xform*hou.hmath.buildScale(1,1,-1)
-    return list(xform.asTuple())
-
-def get_wrangler(obj, now, style):
-    wrangler = obj.getDefaultedString(style, now, [''])[0]
-    wrangler = '%s-PBRT' % wrangler
-    if style == 'light_wrangler':
-        wrangler = soho.LightWranglers.get(wrangler, None)
-    elif style == 'camera_wrangler':
-        wrangler = soho.CameraWranglers.get(wrangler, None)
-    elif style == 'object_wrangler':
-         wrangler = soho.ObjectWranglers.get(wrangler, None)
+def output_xform(obj, now, no_motionblur=False, invert=False, flipz=False):
+    if no_motionblur:
+        shutter_range = None
     else:
-        wrangler = None  # Not supported at the current time
-
-    if wrangler:
-        wrangler = wrangler(obj, now, 'PBRT')
-    else:
-        wrangler = None
-    return wrangler
+        shutter_range = wrangle_motionblur(obj, now)
+    if shutter_range is None:
+        xform = get_transform(obj, now, invert=invert, flipz=flipz)
+        api.Transform(xform)
+        return
+    api.ActiveTransform('StartTime')
+    xform = get_transform(obj, shutter_range.open, invert=invert, flipz=flipz)
+    api.Transform(xform)
+    api.ActiveTransform('EndTime')
+    xform = get_transform(obj, shutter_range.close, invert=invert, flipz=flipz)
+    api.Transform(xform)
+    api.ActiveTransform('All')
+    return
 
 def wrangle_node_parm(obj, parm_name, now):
 
@@ -138,6 +160,33 @@ def wrangle_shading_network(node_path, name_prefix='', saved_nodes=None):
         print()
     return
 
+
+def wrangle_motionblur(obj, now):
+    mb_parms = [ soho.SohoParm('allowmotionblur', 'int', [0], False),
+                 soho.SohoParm('shutter', 'float', [0.5], False),
+                 soho.SohoParm('shutteroffset', 'float',  [None], False),
+                 soho.SohoParm('motionstyle', 'string', ['trailing'], False),
+               ]
+    eval_mb_parms = obj.evaluate(mb_parms, now)
+    if not eval_mb_parms[0].Value[0]:
+        return None
+    shutter = eval_mb_parms[1].Value[0] * scene_state.inv_fps
+    offset = eval_mb_parms[2].Value[0]
+    style = eval_mb_parms[3].Value[0]
+    # This logic is in part from RIBmisc.py
+    # NOTE: For pbrt output we will keep this limited to just shutter and
+    #       shutteroffset, if the need arises we can add in the various
+    #       scaling options etc.
+    if style == 'centered':
+        delta = shutter * 0.5
+    elif style == 'leading':
+        delta = shutter
+    else: # trailing
+        delta = 0.0
+    delta -= (offset-1.0) * 0.5 * shutter
+    start_time = now - delta
+    end_time = start_time + shutter
+    return ShutterRange(start_time, end_time)
 
 def wrangle_film(obj, wrangler, now):
 
@@ -339,18 +388,14 @@ def wrangle_accelerator(obj, wrangler, now):
     return (accelerator_name, paramset)
 
 def output_cam_xform(obj, projection, now):
+    # TODO: Initial tests show pbrt has problems when motion blur xforms
+    #       are applied to the camera (outside the World block)
     if projection in ('perspective','orthographic','realistic'):
-        xform = get_transform(obj, now, invert=True, flipz=True)
-        api.Transform(xform)
+        output_xform(obj, now, no_motionblur=True, invert=True, flipz=True)
     elif projection in ('environment',):
-        xform = get_transform(obj, now, invert=True, flipz=False)
+        output_xform(obj, now, no_motionblur=True, invert=True, flipz=False)
         api.Transform(xform)
         api.Rotate(180,0,1,0)
-    return
-
-def output_xform(obj, now):
-    xform = get_transform(obj, now, invert=False, flipz=False)
-    api.Transform(xform)
     return
 
 def wrangle_camera(obj, wrangler, now):
@@ -436,9 +481,12 @@ def _to_light_scale(parms):
 
 def wrangle_light(light, wrangler, now):
 
+    # NOTE: Lights do not support motion blur so we disable it when
+    #       output the xforms
+
     node_nfo = wrangle_node_parm(light, 'light_node', now)
     if node_nfo is not None:
-        output_xform(light, now)
+        output_xform(light, now, no_motionblur=True)
         return node_nfo
 
     parm_selection = {
@@ -450,8 +498,6 @@ def wrangle_light(light, wrangler, now):
     parms = light.evaluate(parm_selection, now)
     light_wrangler = parms['light_wrangler'].Value[0]
 
-    xform = get_transform(light, now)
-
     paramset = ParamSet()
     paramset.add(_to_light_scale(parms))
 
@@ -460,7 +506,7 @@ def wrangle_light(light, wrangler, now):
         paramset.add(PBRTParam('rgb','L',parms['light_color'].Value))
         if light.evalString('env_map', now, env_map):
             paramset.add(PBRTParam('string','mapname', env_map))
-        api.Transform(xform)
+        output_xform(light, now, no_motionblur=True)
         api.Scale(1,1,-1)
         api.Rotate(90, 0, 0, 1)
         api.Rotate(90, 0, 1, 0)
@@ -471,8 +517,6 @@ def wrangle_light(light, wrangler, now):
         return
 
     # We are dealing with a standard HoudiniLight type.
-
-    xform = get_transform(light, now)
 
     light_type = light.wrangleString(wrangler, 'light_type', now, ['point'])[0]
 
@@ -485,6 +529,7 @@ def wrangle_light(light, wrangler, now):
         paramset.add(PBRTParam('rgb', 'L', parms['light_color'].Value))
         paramset.add(PBRTParam('bool', 'twosided', [not single_sided]))
 
+        xform = get_transform(light, now)
         xform_to_api_srt(xform, scale=False)
 
         api.AreaLightSource(light_name, paramset)
@@ -535,7 +580,7 @@ def wrangle_light(light, wrangler, now):
     areamap = light.wrangleString(wrangler, 'areamap', now, [''])[0]
 
     api_calls = []
-    api_calls.append(_apiclosure(api.Transform, xform))
+    api_calls.append(_apiclosure(output_xform, light, now, no_motionblur=True))
     api_calls.append(_apiclosure(api.Scale, 1,1,-1))
     api_calls.append(_apiclosure(api.Scale, 1,-1,1))
 
@@ -545,7 +590,7 @@ def wrangle_light(light, wrangler, now):
             light_name = 'goniometric'
             paramset.add(PBRTParam('string','mapname',[areamap]))
             api_calls = []
-            api_calls.append(_apiclosure(api.Transform, xform))
+            api_calls.append(_apiclosure(output_xform, light, now, no_motionblur=True))
             api_calls.append(_apiclosure(api.Scale, 1,-1,1))
             api_calls.append(_apiclosure(api.Rotate, 90, 0,1,0))
         elif not cone_enable:
