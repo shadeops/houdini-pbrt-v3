@@ -41,7 +41,6 @@ def prim_transform(prim):
     return (hou.Matrix4(rot_mat) * xlate).asTuple()
 
 def sphere_wrangler(gdp, paramset=None, properties=None):
-    # TODO: Invert to match Houdini UVs
     for prim in gdp.prims():
         with api.TransformBlock():
             xform = prim_transform(prim)
@@ -475,12 +474,12 @@ def medium_prim_paramset(prim, paramset=None):
     return medium_paramset
 
 def smoke_prim_wrangler(prims, paramset=None, properties=None):
-    # TODO: Overlapping heterogeneous volumes don't currently
+    # NOTE: Overlapping heterogeneous volumes don't currently
     #       appear to be supported, although this may be an issue
     #       with the Medium interface order? Visually it appears one
     #       object is blocking the other.
 
-    # TODO: Not all samplers support heterogeneous volumes. Determine which
+    # NOTE: Not all samplers support heterogeneous volumes. Determine which
     #       ones do, (and verify this is accurate).
     if properties is None:
         properties = {}

@@ -82,12 +82,9 @@ def wrangle_instances(obj, now):
                   # 'material_override',
                  )
 
-    # TODO: Homogenous volumes work when applied to a ObjectBegin/End however
-    #       Heterogenous volumes do not. Currently I'm not sure why this is
-    #       the case. Possibly the p0 p1 params aren't being transformed properly
-    #       by the instance's CTM.
-    #       This is pretty much confirmed by testing, will need to verify in the
-    #       pbrt src.
+    # NOTE: Homogenous volumes work when applied to a ObjectBegin/End however
+    #       Heterogenous volumes do not. The p0 p1 params aren't being 
+    #       transformed properly by the instance's CTM.
 
     pt_attrib_map = {}
     for attrib in pt_attribs:

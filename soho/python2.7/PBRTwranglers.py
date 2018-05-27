@@ -73,7 +73,7 @@ def xform_to_api_srt(xform, scale=True, rotate=True, trans=True):
     if trans:
         api.Translate(*srt['translate'])
     if rotate:
-        # TODO, be wary of -180 to 180 flips
+        # NOTE, be wary of -180 to 180 flips
         rot = srt['rotate']
         if rot.z():
             api.Rotate(rot[2],0,0,1)
@@ -392,7 +392,7 @@ def wrangle_accelerator(obj, wrangler, now):
     return (accelerator_name, paramset)
 
 def output_cam_xform(obj, projection, now):
-    # TODO: Initial tests show pbrt has problems when motion blur xforms
+    # NOTE: Initial tests show pbrt has problems when motion blur xforms
     #       are applied to the camera (outside the World block)
     if projection in ('perspective','orthographic','realistic'):
         output_xform(obj, now, no_motionblur=True, invert=True, flipz=True)

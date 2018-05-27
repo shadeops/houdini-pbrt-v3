@@ -205,6 +205,3 @@ def ObjectBlock(name):
 def NullBlock():
     yield
 
-# TODO: Verify
-# Default material can be changed via  MakeNamedMaterial "" ...
-# Default medium as well?
