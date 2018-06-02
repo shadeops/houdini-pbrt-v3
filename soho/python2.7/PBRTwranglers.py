@@ -669,6 +669,7 @@ def wrangle_geo(obj, wrangler, now):
         'pbrt_interior' : SohoPBRT('pbrt_interior', 'string', [None], False),
         'pbrt_exterior' : SohoPBRT('pbrt_exterior', 'string', [None], False),
         'pbrt_ignorevolumes' : SohoPBRT('pbrt_ignorevolumes', 'bool', [False], True),
+        'pbrt_ignorematerials' : SohoPBRT('pbrt_ignorematerials', 'bool', [False], True),
         'pbrt_splitdepth' : SohoPBRT('pbrt_splitdepth', 'integer', [3], True, key='splitdepth'),
         # We don't use the key=type since its a bit too generic of a name
         'pbrt_curvetype' : SohoPBRT('pbrt_curvetype', 'string', ["flat"], True),
