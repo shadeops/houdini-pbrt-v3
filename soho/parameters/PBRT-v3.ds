@@ -69,6 +69,9 @@
         help "Skip output of Volumes in objects, useful for defining mediums manually"
     }
     parm {
+        SOHO_TOGGLE(pbrt_ignorematerials, "Ignore Material Attributes", "Geometry", 0)
+    }
+    parm {
         SOHO_INT(pbrt_splitdepth, "Curve Split Depth", "Geometry", 3)
         help "Number of times the curve is split in half into sub-curves at startup time. Splitting curves increases memory use but can improve ray intersection performance, as the sub-curves generally have tighter bounding boxes than the entire curve extent."
         range { 1 10 }

@@ -797,6 +797,10 @@ def save_geo(soppath, now, properties=None):
     if properties is None:
         properties = {}
 
+    ignore_materials = False
+    if 'pbrt_ignorematerials' in properties:
+        ignore_materials = properties[ignore_materials].Value[0]
+
     # PBRT allows setting Material parameters on the Shapes in order to
     #       override a material's settings.  (Shapes get checked first)
     #       This paramset will be for holding those overrides and passing
@@ -807,37 +811,44 @@ def save_geo(soppath, now, properties=None):
     # hou.Geometry() we'll lose the original sop connection so we need
     # to stash it here.
 
-    properties.update( {'soppath' : soppath} )
-
     node = hou.node(soppath)
-    if node is None:
+    if node is None or node.type().category() != hou.sopNodeTypeCategory():
         return
 
-    input_gdp = node.geometry().freeze()
+    input_gdp = node.geometry()
+    if input_gdp is None:
+        return
     gdp = hou.Geometry()
-    gdp.merge(input_gdp)
+    gdp.merge(input_gdp.freeze())
 
     # Partition based on materials
-    try:
-        global_material = gdp.stringAttribValue('shop_materialpath')
-    except hou.OperationFailed:
-        global_material = None
+    global_material = None
+    if not ignore_materials:
+        try:
+            global_material = gdp.stringAttribValue('shop_materialpath')
+        except hou.OperationFailed:
+            pass
 
     attrib_h = gdp.findPrimAttrib('shop_materialpath')
-    if attrib_h is not None:
+    if attrib_h is not None and not ignore_materials:
         material_gdps = partition_by_attrib(gdp, attrib_h)
     else:
         material_gdps = {global_material : gdp}
 
-    try:
-        global_override = gdp.stringAttribValue('material_override')
-    except hou.OperationFailed:
-        global_override = None
+    global_override = None
+    if not ignore_materials:
+        try:
+            global_override = gdp.stringAttribValue('material_override')
+        except hou.OperationFailed:
+            pass
 
     # Further partition based on material overrides
-    has_prim_overrides = False if gdp.findPrimAttrib('material_override') is None else True
-    for material in material_gdps:
+    if not ignore_materials and gdp.findPrimAttrib('material_override') is not None:
+        has_prim_overrides = True
+    else:
+        has_prim_overrides = False
 
+    for material in material_gdps:
         if material:
             api.AttributeBegin()
             api.NamedMaterial(material)
