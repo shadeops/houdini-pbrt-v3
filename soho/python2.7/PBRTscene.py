@@ -1,5 +1,6 @@
 from __future__ import print_function, division, absolute_import
 
+import os
 import time
 
 import hou
@@ -91,6 +92,9 @@ def output_instances(obj, wrangler, now):
         print()
 
 def header():
+    # Disable the header in the event we want to diff files for testing.
+    if 'SOHO_PBRT_NO_HEADER' in os.environ:
+        return
     if scene_state.ver is not None:
         api.Comment('Houdini Version %s' % scene_state.ver)
     api.Comment('Generation Time: %s' % time.strftime("%b %d, %Y at %H:%M:%S"))
@@ -102,6 +106,7 @@ def header():
         api.Comment('Output Time: %s' % scene_state.now)
     if scene_state.fps:
         api.Comment('Output FPS: %s' % scene_state.fps)
+    print()
 
 def output_transform_times(cam, now):
     do_mb = cam.getDefaultedInt('allowmotionblur', now, [0])
@@ -119,7 +124,6 @@ def render(cam, now):
     wrangler = None
 
     header()
-    print()
 
     api.Film(*wrangle_film(cam, wrangler, now))
     api.Filter(*wrangle_filter(cam, wrangler, now))
