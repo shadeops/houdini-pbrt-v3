@@ -503,7 +503,7 @@ def smoke_prim_wrangler(prims, paramset=None, properties=None):
     for prim in prims:
         smoke_paramset = ParamSet(paramset)
 
-        name = '%s[%i]' % (properties.get('soppath',''), prim.number())
+        name = '%s[%i]' % (properties['object:soppath'].Value[0], prim.number())
         resolution = prim.resolution()
         # TODO: Benchmark this vs other methods like fetching volumeSlices
         voxeldata = array.array('f')

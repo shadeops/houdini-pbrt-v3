@@ -648,12 +648,9 @@ def wrangle_geo(obj, wrangler, now):
 
     output_xform(obj, now)
 
-    soppath = []
-    if not obj.evalString('object:soppath', now, soppath):
-        api.Comment('Can not find soppath for object')
-        return
 
     parm_selection = {
+        'object:soppath' : SohoPBRT('object:soppath', 'string', [''], skipdefault=False),
         # NOTE: In order for shop_materialpath to evaluate correctly when using (full) instancing
         #       shop_materialpath needs to be a 'shaderhandle' and not a 'string'
         # TODO: However this does not seem to apply to shop_materialpaths on the instance points.
@@ -677,6 +674,12 @@ def wrangle_geo(obj, wrangler, now):
     }
     properties = obj.evaluate(parm_selection, now)
 
+    soppath = properties['object:soppath'].Value[0]
+
+    if not soppath:
+        api.Comment('Can not find soppath for object')
+        return
+
     if 'shop_materialpath' not in properties:
         shop = ''
     else:
@@ -699,5 +702,5 @@ def wrangle_geo(obj, wrangler, now):
         exterior = '' if exterior is None else exterior
         api.MediumInterface(interior, exterior)
 
-    Geo.save_geo(soppath[0], now, properties)
+    Geo.save_geo(soppath, now, properties)
 
