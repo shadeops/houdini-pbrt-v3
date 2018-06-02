@@ -7,12 +7,15 @@ import math
 import hou
 import soho
 
+from PBRTsoho import SohoPBRT, SohoOverrideBlock
 import PBRTapi as api
-import PBRTgeo as Geo
-import PBRTinstancing as Instancing
-from PBRTplugins import PBRTParam, ParamSet, BaseNode
 
 from PBRTstate import scene_state
+from PBRTplugins import PBRTParam, ParamSet, BaseNode
+
+import PBRTgeo as Geo
+import PBRTinstancing as Instancing
+
 
 __all__ = ['wrangle_film', 'wrangle_sampler', 'wrangle_accelerator',
            'wrangle_integrator', 'wrangle_filter', 'wrangle_camera',
@@ -25,18 +28,6 @@ def _apiclosure(api_call, *args, **kwargs):
     def api_func():
         return api_call(*args, **kwargs)
     return api_func
-
-class SohoPBRT(soho.SohoParm):
-    def to_pbrt(self, pbrt_type=None):
-        # bounds not supported
-        # shader not supported
-        if pbrt_type is None:
-            to_pbrt_type = {'real' : 'float',
-                            'fpreal' : 'float',
-                            'int' : 'integer'}
-            pbrt_type = to_pbrt_type.get(self.Type, self.Type)
-        pbrt_name = self.Key
-        return PBRTParam(pbrt_type, pbrt_name, self.Value)
 
 def get_wrangler(obj, now, style):
     wrangler = obj.getDefaultedString(style, now, [''])[0]

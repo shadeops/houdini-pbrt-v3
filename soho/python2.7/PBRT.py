@@ -16,6 +16,8 @@ import PBRTstate
 reload(PBRTstate)
 import PBRTplugins
 reload(PBRTplugins)
+import PBRTsoho
+reload(PBRTsoho)
 import PBRTinstancing
 reload(PBRTinstancing)
 import PBRTgeo
