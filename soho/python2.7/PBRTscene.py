@@ -88,7 +88,7 @@ def output_instances(obj, wrangler, now):
 
         with api.ObjectBlock(instance), api.AttributeBlock():
             soho_obj = soho.getObject(instance)
-            wrangle_geo(soho_obj, wrangler, now)
+            wrangle_obj(soho_obj, wrangler, now)
         print()
 
 def header():

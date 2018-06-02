@@ -529,7 +529,7 @@ def wrangle_light(light, wrangler, now):
 
     light_type = light.wrangleString(wrangler, 'light_type', now, ['point'])[0]
 
-    if light_type in ('sphere','disk','grid','tube','geometry'):
+    if light_type in ('sphere','disk','grid','tube','geo'):
         light_name = 'diffuse'
 
         single_sided = light.wrangleInt(wrangler, 'singlesided', now, [0])[0]
@@ -577,8 +577,18 @@ def wrangle_light(light, wrangler, now):
                                                                 0.5, -0.5, 0,
                                                                 -0.5, 0.5, 0,
                                                                 0.5, 0.5, 0])])
-        elif light_type == 'geometry':
-            api.Comment('TODO')
+        elif light_type == 'geo':
+            areageo_parm = hou.node(light.getName()).parm('areageometry')
+            if not areageo_parm:
+                api.Comment('No "areageometry" parm on light')
+                return
+            area_geo_node = areageo_parm.evalAsNode()
+            if not area_geo_node:
+                api.Comment('Skipping, no geometry object specified')
+                return
+            obj = soho.getObject(area_geo_node.path())
+            api.Comment('Light geo from %s' % obj.getName())
+            wrangle_obj(obj, None, now, ignore_xform=True)
 
         api.AttributeEnd()
 
@@ -631,23 +641,22 @@ def wrangle_light(light, wrangler, now):
     return
 
 
-def wrangle_obj(obj, wrangler, now):
+def wrangle_obj(obj, wrangler, now, ignore_xform=False):
 
     ptinstance = []
     has_ptinstance = obj.evalInt('ptinstance', now, ptinstance)
 
-    if has_ptinstance and ptinstance[0] == 2:
+    if not ignore_xform:
         output_xform(obj, now)
+
+    if has_ptinstance and ptinstance[0] == 2:
         Instancing.wrangle_instances(obj, now)
         return
 
     wrangle_geo(obj, wrangler, now)
-
+    return
 
 def wrangle_geo(obj, wrangler, now):
-
-    output_xform(obj, now)
-
 
     parm_selection = {
         'object:soppath' : SohoPBRT('object:soppath', 'string', [''], skipdefault=False),
