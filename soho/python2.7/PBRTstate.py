@@ -4,7 +4,13 @@ import hou
 import soho
 
 class PBRTState(object):
+    """Holds the global state of the render session.
 
+    This class can also act as a context, which will create helper networks
+    and destory them on exit.
+    """
+
+    # TODO replace the cachedUserData workflow with a hou.Geometry parm
     _tesslate_py = """
 node = hou.pwd()
 geo = node.geometry()
@@ -33,8 +39,10 @@ if gdp is not None:
         self.now = None
 
         self.inv_fps = None
+        return
 
     def init_state(self):
+        """Queries Soho to initialize the attributes of the class"""
         state_parms = {
             'rop'     : soho.SohoParm('object:name',  'string', key='rop'),
             'hip'     : soho.SohoParm('$HIP',         'string', key='hip'),
@@ -50,16 +58,20 @@ if gdp is not None:
         if not self.fps:
             self.fps = 24.0
         self.inv_fps = 1.0/self.fps
+        return
 
     def __enter__(self):
         self.reset()
         self.init_state()
         self.create_tesselator()
+        return
 
     def __exit__(self, *args):
         self.reset()
+        return
 
     def reset(self):
+        """Resets the class attributes back to their default state"""
         self.rop = None
         self.hip = None
         self.hipname = None
@@ -73,8 +85,11 @@ if gdp is not None:
         self.interior = None
         self.exterior = None
         self.remove_tesselator()
+        return
 
     def tesselate_geo(self, geo, compute_N=False):
+        """Takes an hou.Geometry and returns a tesselated version"""
+
         if self.tesselator is None:
             raise TypeError('Tesselator is None')
         self.tesselator.setCachedUserData('gdp', geo)
@@ -83,6 +98,9 @@ if gdp is not None:
         return gdp
 
     def create_tesselator(self):
+        """Builds a SOP network for the tesselating geometry"""
+        # A network is created instead of a chain of Verbs because currently
+        # the Convert SOP doesn't exist in Verb form.
         sopnet = hou.node('/out').createNode('sopnet')
 
         py_node = sopnet.createNode('python', node_name='python', run_init_scripts=False)
@@ -102,12 +120,16 @@ if gdp is not None:
         divide_node.setFirstInput(convert_node)
 
         self.tesselator = sopnet
+        return
 
     def remove_tesselator(self):
+        """Tear down the previously created tesselator network"""
         if self.tesselator is None:
             return
         self.tesselator.destroyCachedUserData('gdp')
         self.tesselator.destroy()
         self.tesselator = None
+        return
 
+# Module global to hold the overall state of the export
 scene_state = PBRTState()

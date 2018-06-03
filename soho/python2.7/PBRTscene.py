@@ -5,18 +5,23 @@ import time
 
 import hou
 import soho
-
 from sohog import SohoGeometry
 
 import PBRTapi as api
 from PBRTwranglers import *
 from PBRTplugins import BaseNode
 from PBRTinstancing import list_instances
-
 from PBRTstate import scene_state
 
 
 def output_materials(obj, wrangler, now):
+    """Output Materials for an object
+
+    The shop_materialpath parameter and shop_materialpath prim attribute
+    are both checked for output.
+    """
+    # We use a shaderhandle instead of a string so Soho instances are properly
+    # resolved when Full Instancing is used.
     parms = [ soho.SohoParm('shop_materialpath', 'shaderhandle', skipdefault=False)]
     eval_parms = obj.evaluate(parms, now)
     if eval_parms:
@@ -42,6 +47,7 @@ def output_materials(obj, wrangler, now):
     return
 
 def output_medium(medium):
+    """Output a NamedMedium from the input oppath"""
     if not medium:
         return None
     if medium in scene_state.medium_nodes:
@@ -59,6 +65,7 @@ def output_medium(medium):
 
 
 def output_mediums(obj, wrangler, now):
+    """Output the any mediums associated with the Soho Object"""
     exterior = obj.wrangleString(wrangler, 'pbrt_exterior', now, [None])[0]
     interior = obj.wrangleString(wrangler, 'pbrt_interior', now, [None])[0]
 
@@ -69,6 +76,12 @@ def output_mediums(obj, wrangler, now):
 
 
 def output_instances(obj, wrangler, now):
+    """Define any instances referenced by the Soho Object
+
+    This method takes an object and based on its parms and point attributes
+    will iterate over any found instances and output them so they can be
+    later referenced.
+    """
     instances = list_instances(obj)
     if not instances:
         return
@@ -90,8 +103,10 @@ def output_instances(obj, wrangler, now):
             soho_obj = soho.getObject(instance)
             wrangle_obj(soho_obj, wrangler, now)
         print()
+    return
 
 def header():
+    """Output informative header about state"""
     # Disable the header in the event we want to diff files for testing.
     if 'SOHO_PBRT_NO_HEADER' in os.environ:
         return
@@ -107,8 +122,10 @@ def header():
     if scene_state.fps:
         api.Comment('Output FPS: %s' % scene_state.fps)
     print()
+    return
 
 def output_transform_times(cam, now):
+    """Output the TransformTimes for the scene"""
     do_mb = cam.getDefaultedInt('allowmotionblur', now, [0])
     if not do_mb[0]:
         return
@@ -117,8 +134,10 @@ def output_transform_times(cam, now):
         return
     api.TransformTimes(window[0], window[1])
     print()
+    return
 
 def render(cam, now):
+    """Main render entry point"""
 
     # For now we will not be using wranglers
     wrangler = None
@@ -141,6 +160,8 @@ def render(cam, now):
 
     output_transform_times(cam, now)
 
+    # We will stash the global exterior and interior values in case they need
+    # to be compared against later.
     interior,exterior = output_mediums(cam, wrangler, now)
     scene_state.exterior = exterior
     scene_state.interior = interior
@@ -152,9 +173,9 @@ def render(cam, now):
 
     print()
 
+    # Output Lights
     api.Comment('='*50)
     api.Comment('Light Definitions')
-    print()
     for light in soho.objectList('objlist:light'):
         api.Comment(light.getName())
         with api.AttributeBlock():
@@ -187,9 +208,9 @@ def render(cam, now):
 
     print()
 
-    # Output Geometry
+    # Output Objects
     api.Comment('='*50)
-    api.Comment('Geometry Definitions')
+    api.Comment('Object Definitions')
     for obj in soho.objectList('objlist:instance'):
         api.Comment('-'*50)
         api.Comment(obj.getName())

@@ -1,32 +1,35 @@
 from __future__ import print_function, division, absolute_import
 
+import os
 import sys
 import time
 
 import hou
 import soho
-import sohog
-
 from soho import SohoParm
-from sohog import SohoGeometry
 
-import PBRTapi
-reload(PBRTapi)
-import PBRTstate
-reload(PBRTstate)
-import PBRTplugins
-reload(PBRTplugins)
-import PBRTsoho
-reload(PBRTsoho)
-import PBRTinstancing
-reload(PBRTinstancing)
-import PBRTgeo
-reload(PBRTgeo)
-import PBRTwranglers
-reload(PBRTwranglers)
+# Houdini does not reload modules at each render, so when doing dev work it
+# can be a pain to have to manually load modules, by setting this environment
+# variable all the modules will be reloaded.
+if 'SOHO_PBRT_DEV' in os.environ:
+    import PBRTapi
+    reload(PBRTapi)
+    import PBRTstate
+    reload(PBRTstate)
+    import PBRTplugins
+    reload(PBRTplugins)
+    import PBRTsoho
+    reload(PBRTsoho)
+    import PBRTinstancing
+    reload(PBRTinstancing)
+    import PBRTgeo
+    reload(PBRTgeo)
+    import PBRTwranglers
+    reload(PBRTwranglers)
+    import PBRTscene
+    reload(PBRTscene)
+
 import PBRTscene
-reload(PBRTscene)
-
 from PBRTstate import scene_state
 
 clockstart = time.time()
@@ -91,6 +94,6 @@ soho.removeObjects(now, excludeobject, excludelights, '')
 # Lock off the objects we've selected
 soho.lockObjects(now)
 
-with scene_state, hou.undos.disabler():
+with hou.undos.disabler(), scene_state:
     PBRTscene.render(cam, now)
 

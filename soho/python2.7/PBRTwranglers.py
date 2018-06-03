@@ -1,21 +1,18 @@
 from __future__ import print_function, division, absolute_import
 
-import collections
-
 import math
+import collections
 
 import hou
 import soho
 
-from PBRTsoho import SohoPBRT, SohoOverrideBlock
 import PBRTapi as api
-
-from PBRTstate import scene_state
-from PBRTplugins import PBRTParam, ParamSet, BaseNode
-
 import PBRTgeo as Geo
 import PBRTinstancing as Instancing
 
+from PBRTstate import scene_state
+from PBRTsoho import SohoPBRT, SohoOverrideBlock
+from PBRTplugins import PBRTParam, ParamSet, BaseNode
 
 __all__ = ['wrangle_film', 'wrangle_sampler', 'wrangle_accelerator',
            'wrangle_integrator', 'wrangle_filter', 'wrangle_camera',
@@ -711,5 +708,5 @@ def wrangle_geo(obj, wrangler, now):
         exterior = '' if exterior is None else exterior
         api.MediumInterface(interior, exterior)
 
-    Geo.save_geo(soppath, now, properties)
+    Geo.output_geo(soppath, now, properties)
 

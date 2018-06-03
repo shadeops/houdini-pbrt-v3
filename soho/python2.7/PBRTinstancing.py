@@ -6,14 +6,19 @@ from sohog import SohoGeometry
 import PBRTapi as api
 
 def list_instances(obj):
+    """Find and list any instances in a Soho Object"""
+
+    # We will be using a hou.Node instead of a Soho Object for this
+    # so we can just query the strings directly instead of having to
+    # iterate over all the points.
 
     obj_node = hou.node(obj.getName())
     if not obj_node:
-        return
+        return None
 
     sop_node = obj_node.renderNode()
     if sop_node is None:
-        return
+        return None
 
     instance_geos = set()
 
@@ -38,6 +43,7 @@ def list_instances(obj):
 
 
 def wrangle_instances(obj, now):
+    """Output any instanced geoemtry referenced by the Soho Object"""
 
     # We need hou.Node handles so we can resolve relative paths
     # since soho does not do this.
@@ -83,7 +89,7 @@ def wrangle_instances(obj, now):
                  )
 
     # NOTE: Homogenous volumes work when applied to a ObjectBegin/End however
-    #       Heterogenous volumes do not. The p0 p1 params aren't being 
+    #       Heterogenous volumes do not. The p0 p1 params aren't being
     #       transformed properly by the instance's CTM.
 
     pt_attrib_map = {}
@@ -121,4 +127,5 @@ def wrangle_instances(obj, now):
             xform = geo.value(pt_attrib_map['geo:pointxform'], pt)
             api.ConcatTransform(xform)
             api.ObjectInstance(instance_geo)
+    return
 

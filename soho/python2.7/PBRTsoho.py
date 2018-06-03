@@ -8,6 +8,8 @@ import sohoglue
 from PBRTplugins import PBRTParam
 
 class SohoPBRT(soho.SohoParm):
+    """Simple subclass of soho.SohoParm that adds to_pbrt() method"""
+
     def to_pbrt(self, pbrt_type=None):
         # bounds not supported
         # shader not supported
