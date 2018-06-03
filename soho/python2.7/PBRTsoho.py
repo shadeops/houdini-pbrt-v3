@@ -11,6 +11,7 @@ class SohoPBRT(soho.SohoParm):
     """Simple subclass of soho.SohoParm that adds to_pbrt() method"""
 
     def to_pbrt(self, pbrt_type=None):
+        """Convert SohoParm to PBRTParam"""
         # bounds not supported
         # shader not supported
         if pbrt_type is None:
@@ -23,9 +24,8 @@ class SohoPBRT(soho.SohoParm):
 
 # This is a replacement for soho.PropertyOverride
 @contextmanager
-def SohoOverrideBlock(options):
+def soho_override_block(options):
+    """Context for overriding properties"""
     sohoglue.pushOverrides(options)
     yield
     sohoglue.popOverrides()
-
-

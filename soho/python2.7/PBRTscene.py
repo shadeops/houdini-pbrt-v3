@@ -22,7 +22,7 @@ def output_materials(obj, wrangler, now):
     """
     # We use a shaderhandle instead of a string so Soho instances are properly
     # resolved when Full Instancing is used.
-    parms = [ soho.SohoParm('shop_materialpath', 'shaderhandle', skipdefault=False)]
+    parms = [soho.SohoParm('shop_materialpath', 'shaderhandle', skipdefault=False)]
     eval_parms = obj.evaluate(parms, now)
     if eval_parms:
         shop = eval_parms[0].Value[0]
@@ -162,7 +162,7 @@ def render(cam, now):
 
     # We will stash the global exterior and interior values in case they need
     # to be compared against later.
-    interior,exterior = output_mediums(cam, wrangler, now)
+    interior, exterior = output_mediums(cam, wrangler, now)
     scene_state.exterior = exterior
     scene_state.interior = interior
     if exterior:

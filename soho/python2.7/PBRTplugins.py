@@ -39,8 +39,8 @@ def pbrt_param_from_ref(parm, parm_value, parm_name=None):
     elif parm_scheme == hou.parmNamingScheme.RGBA:
         pbrt_type = 'rgb'
     # PBRT: point*/vector*/normal
-    elif ( parm_type == hou.parmTemplateType.Float and
-            'pbrt.type' in parm_tmpl.tags() ):
+    elif (parm_type == hou.parmTemplateType.Float and
+          'pbrt.type' in parm_tmpl.tags()):
         pbrt_type = parm_tmpl.tags()['pbrt.type']
     # PBRT: float (sometimes a float is just a float)
     elif parm_type == hou.parmTemplateType.Float:
@@ -118,14 +118,14 @@ def _hou_parm_to_pbrt_param(parm, parm_name=None):
         else:
             raise hou.ValueError('Can\'t convert %s to pbrt type' % (parm))
     # PBRT: float texture
-    elif ( parm_type == hou.parmTemplateType.Float and
-            coshader is not None and
-            coshader.directive == 'texture' ):
+    elif (parm_type == hou.parmTemplateType.Float and
+          coshader is not None and
+          coshader.directive == 'texture'):
         pbrt_type = 'texture'
         pbrt_value = coshader.path
     # PBRT: point*/vector*/normal
-    elif ( parm_type == hou.parmTemplateType.Float and
-            'pbrt.type' in parm_tmpl.tags() ):
+    elif (parm_type == hou.parmTemplateType.Float and
+          'pbrt.type' in parm_tmpl.tags()):
         pbrt_type = parm_tmpl.tags()['pbrt.type']
         pbrt_value = parm.eval()
     # PBRT: float (sometimes a float is just a float)
@@ -155,8 +155,8 @@ class PBRTParam(object):
     type_synonyms = {'point' : 'point3',
                      'vector' : 'vector3',
                      'color' : 'rgb',
-                     }
-    spectrum_types = set(['color','rgb','blackbody','xyz','spectrum'])
+                    }
+    spectrum_types = set(['color', 'rgb', 'blackbody', 'xyz', 'spectrum'])
 
     def __init__(self, param_type, param_name, param_value=None):
         param_type = self.type_synonyms.get(param_type, param_type)
@@ -188,12 +188,12 @@ class PBRTParam(object):
     def __eq__(self, other):
         if not isinstance(other, PBRTParam):
             raise TypeError('Can not compare non PBRTParam type')
-        return (self.type == other.type and self.name == other.name)
+        return self.type == other.type and self.name == other.name
 
     def __ne__(self, other):
         if not isinstance(other, PBRTParam):
             raise TypeError('Can not compare non PBRTParam type')
-        return (self.type != other.type or self.name != other.name)
+        return self.type != other.type or self.name != other.name
 
     @property
     def value(self):
@@ -204,7 +204,7 @@ class PBRTParam(object):
         else:
             v = self._value[:]
         if self.type == 'bool':
-            v = ( 'true' if (x and x!='false') else 'false' for x in v )
+            v = ('true' if (x and x != 'false') else 'false' for x in v)
         return v
 
     @property
@@ -375,8 +375,8 @@ class BaseNode(object):
                 continue
 
             if (parm_tup.isAtDefault() and
-                self.ignore_defaults and
-               'pbrt.force' not in parm_tags):
+                    self.ignore_defaults and
+                    'pbrt.force' not in parm_tags):
                 # If the parm is at its default but has an input
                 # then consider it used, otherwise skip it...
                 # unless we have metadata to says force its output
@@ -408,12 +408,12 @@ class SpectrumNode(BaseNode):
             samples = self.node.parm('ramp_samples').eval()
             ramp_range = self.node.parmTuple('ramp_range').eval()
             sample_step = 1.0/samples
-            values = [ ( hou.hmath.fit01(sample_step*x,
-                                         ramp_range[0],
-                                         ramp_range[1]),
-                          ramp.lookup(sample_step*x)
-                        )
-                        for x in xrange(samples+1) ]
+            values = [(hou.hmath.fit01(sample_step*x,
+                                       ramp_range[0],
+                                       ramp_range[1]),
+                       ramp.lookup(sample_step*x)
+                      )
+                      for x in xrange(samples+1)]
         elif spectrum_type == 'spd':
             # TODO: Houdini bug? key/value pairs return None
             #       when evaluated as a parmTuple, so we'll
@@ -423,7 +423,7 @@ class SpectrumNode(BaseNode):
             for spec in sorted(spd, key=lambda x: float(x)):
                 values.append(float(spec))
                 values.append(float(spd[spec]))
-        if spectrum_type in ('file','spd','ramp'):
+        if spectrum_type in ('file', 'spd', 'ramp'):
             spectrum_type = 'spectrum'
         params.add(PBRTParam(spectrum_type, None, values))
         return params
@@ -444,7 +444,7 @@ class MaterialNode(BaseNode):
             if input_node is None:
                 continue
             directive = get_directive_from_nodetype(input_node.type())
-            if directive not in ('material','texture'):
+            if directive not in ('material', 'texture'):
                 continue
             yield input_node.path()
 
@@ -460,7 +460,7 @@ class MaterialNode(BaseNode):
         bump_coshaders = self.node.coshaderNodes('bumpmap')
         if bump_coshaders:
             params.replace(PBRTParam('texture', 'bumpmap',
-                                      bump_coshaders[0].path()))
+                                     bump_coshaders[0].path()))
         return params
 
 
@@ -482,7 +482,7 @@ class TextureNode(MaterialNode):
 
         # Otherwise we need to strip off the suffix
         new_parms = {}
-        for parm_name,parm in parms.iteritems():
+        for parm_name, parm in parms.iteritems():
             if parm_name == 'signature':
                 continue
             # We could also check for name == texture_space
@@ -491,7 +491,7 @@ class TextureNode(MaterialNode):
             # Foolproof way:
             # re.sub('_%s$' % signature, '', parm_name)
             # Easy way:
-            new_parm_name = parm_name.rsplit('_',1)[0]
+            new_parm_name = parm_name.rsplit('_', 1)[0]
             new_parms[new_parm_name] = parm
         return new_parms
 

@@ -20,7 +20,7 @@ def _api_call_with_args(directive, *args):
 def _api_call_with_cmds(directive, *args):
     soho.indent()
     print(directive, end='')
-    soho.printArray(' ', args, '\n',  False)
+    soho.printArray(' ', args, '\n', False)
 
 # Transform [ 0 1 2 3 4 5 ... 13 14 15 ]
 def _api_call_with_iter(directive, args):
@@ -42,10 +42,11 @@ def _api_dtype_call(directive, dtype, paramset=None):
 # Texture "name" "texture|spectrum" "dtype" parmlist
 def _api_named_dtype_call(directive, name, output, dtype, paramset=None):
     soho.indent()
-    print(directive, '"{name}" "{output}" "{dtype}"'.format(name=name,
-                                                            output=output,
-                                                            dtype=dtype),
-                    end='')
+    print(directive,
+          '"{name}" "{output}" "{dtype}"'.format(name=name,
+                                                 output=output,
+                                                 dtype=dtype),
+          end='')
     if paramset:
         for param in paramset:
             print(' ', param.as_str(), sep='', end='')

@@ -44,12 +44,12 @@ if gdp is not None:
     def init_state(self):
         """Queries Soho to initialize the attributes of the class"""
         state_parms = {
-            'rop'     : soho.SohoParm('object:name',  'string', key='rop'),
-            'hip'     : soho.SohoParm('$HIP',         'string', key='hip'),
-            'hipname' : soho.SohoParm('$HIPNAME',     'string', key='hipname'),
-            'ver'     : soho.SohoParm('state:houdiniversion', 'string', ["9.0"], False, key='ver'),
-            'now'     : soho.SohoParm('state:time',  'real', [0], False,  key='now'),
-            'fps'     : soho.SohoParm('state:fps',   'real', [24], False, key='fps'),
+            'rop' : soho.SohoParm('object:name', 'string', key='rop'),
+            'hip' : soho.SohoParm('$HIP', 'string', key='hip'),
+            'hipname' : soho.SohoParm('$HIPNAME', 'string', key='hipname'),
+            'ver' : soho.SohoParm('state:houdiniversion', 'string', ["9.0"], False, key='ver'),
+            'now' : soho.SohoParm('state:time', 'real', [0], False, key='now'),
+            'fps' : soho.SohoParm('state:fps', 'real', [24], False, key='fps'),
         }
         rop = soho.getOutputDriver()
         parms = soho.evaluate(state_parms, None, rop)
@@ -87,7 +87,7 @@ if gdp is not None:
         self.remove_tesselator()
         return
 
-    def tesselate_geo(self, geo, compute_N=False):
+    def tesselate_geo(self, geo):
         """Takes an hou.Geometry and returns a tesselated version"""
 
         if self.tesselator is None:

@@ -36,7 +36,7 @@ def override_to_paramset(material, override_str):
         parm_tuple = parm.tuple()
         if parm_tuple.name() in processed_parms:
             continue
-        value = [ override[x.name()] for x in parm_tuple ]
+        value = [override[x.name()] for x in parm_tuple]
         pbrt_param = pbrt_param_from_ref(parm_tuple, value)
         paramset.add(pbrt_param)
     return paramset
@@ -62,7 +62,7 @@ def vtx_attrib_gen(gdp, attrib):
         # TODO Don't test each time through the inner loop
         # TODO reverse order?
         # for vtx in xrange(num_vtx-1,-1,-1):
-            if attrib == None:
+            if attrib is None:
                 yield vtx.point().number()
             elif attrib.type() == hou.attribType.Vertex:
                 yield vtx.attribValue(attrib)
@@ -104,7 +104,7 @@ def linear_vtx_gen(gdp):
     for prim in gdp.prims():
         for vtx in prim.vertices():
             yield i
-            i+=1
+            i += 1
 
 def pt_attrib_gen(gdp, attrib):
     """Fetch point values for input geometry
@@ -143,7 +143,7 @@ def sphere_wrangler(gdp, paramset=None, properties=None):
             xform = prim_transform(prim)
             api.ConcatTransform(xform)
             # Scale required to match Houdini's uvs
-            api.Scale(1,1,-1)
+            api.Scale(1, 1, -1)
             api.Shape('sphere', paramset)
     return
 
@@ -187,7 +187,7 @@ def tube_wrangler(gdp, paramset=None, properties=None):
             # workaround, see TODO below in the else: pass
             if not (taper == 0 or taper == 1):
                 api.Comment('Skipping tube, prim # %i, with non-conforming taper of %f' %
-                                (prim.number(),taper))
+                            (prim.number(), taper))
                 continue
 
             closed = prim.intrinsicValue('closed')
@@ -207,7 +207,7 @@ def tube_wrangler(gdp, paramset=None, properties=None):
                 pass
             with api.TransformBlock():
                 # Flip in Y so parameteric UV's match Houdini's
-                api.Scale(1,-1,1)
+                api.Scale(1, -1, 1)
                 api.Shape(shape, shape_paramset)
 
             if closed:
@@ -339,7 +339,7 @@ def trianglemesh_params(mesh_gdp, computeN=True):
     for attrib in (N_attrib, uv_attrib, S_attrib):
         if attrib is None:
             continue
-        if attrib.type()==hou.attribType.Vertex:
+        if attrib.type() == hou.attribType.Vertex:
             unique_points = True
             break
 
@@ -393,7 +393,7 @@ def trianglemesh_params(mesh_gdp, computeN=True):
         # Houdini's uvs are stored as 3 floats, but pbrt only needs two
         # We'll use a generator comprehension to strip off the extra
         # float.
-        uv2 = ( x[0:2] for x in uv )
+        uv2 = (x[0:2] for x in uv)
         mesh_paramset.add(PBRTParam('float', 'uv', uv2))
 
     return mesh_paramset
@@ -445,8 +445,8 @@ def volume_wrangler(gdp, paramset=None, properties=None):
         if prim.isHeightField():
             heightfield_prims.append(prim)
             continue
-        if ( name_attrib is not None and
-             prim.attribValue('name') != density_name ):
+        if (name_attrib is not None and
+                prim.attribValue('name') != density_name):
             continue
         density_prims.append(prim)
 
@@ -477,18 +477,18 @@ def bounds_to_api_box(b):
                                            b[1], b[2], b[4],
                                            b[0], b[3], b[4],
                                            b[1], b[3], b[4] ]))
-    paramset.add(PBRTParam('integer', 'indices', [0,3,1,
-                                                  0,2,3,
-                                                  4,7,5,
-                                                  4,6,7,
-                                                  6,2,7,
-                                                  6,3,2,
-                                                  5,1,4,
-                                                  5,0,1,
-                                                  5,2,0,
-                                                  5,7,2,
-                                                  1,6,4,
-                                                  1,3,6]))
+    paramset.add(PBRTParam('integer', 'indices', [0, 3, 1,
+                                                  0, 2, 3,
+                                                  4, 7, 5,
+                                                  4, 6, 7,
+                                                  6, 2, 7,
+                                                  6, 3, 2,
+                                                  5, 1, 4,
+                                                  5, 0, 1,
+                                                  5, 2, 0,
+                                                  5, 7, 2,
+                                                  1, 6, 4,
+                                                  1, 3, 6]))
     api.Shape('trianglemesh', paramset)
 
 # NOTE: In pbrt the medium interface and shading parameters
@@ -581,7 +581,7 @@ def smoke_prim_wrangler(prims, paramset=None, properties=None):
     if properties is None:
         properties = {}
 
-    if ( 'pbrt_ignorevolumes' in properties and
+    if ('pbrt_ignorevolumes' in properties and
             properties['pbrt_ignorevolumes'].Value[0]):
         api.Comment('Ignoring volumes because pbrt_ignorevolumes is enabled')
         return
@@ -605,17 +605,17 @@ def smoke_prim_wrangler(prims, paramset=None, properties=None):
         # TODO: Benchmark this vs other methods like fetching volumeSlices
         voxeldata = array.array('f')
         voxeldata.fromstring(prim.allVoxelsAsString())
-        smoke_paramset.add(PBRTParam('integer','nx', resolution[0]))
-        smoke_paramset.add(PBRTParam('integer','ny', resolution[1]))
-        smoke_paramset.add(PBRTParam('integer','nz', resolution[2]))
-        smoke_paramset.add(PBRTParam('point','p0', [-1,-1,-1]))
-        smoke_paramset.add(PBRTParam('point','p1', [1,1,1]))
-        smoke_paramset.add(PBRTParam('float','density', voxeldata))
+        smoke_paramset.add(PBRTParam('integer', 'nx', resolution[0]))
+        smoke_paramset.add(PBRTParam('integer', 'ny', resolution[1]))
+        smoke_paramset.add(PBRTParam('integer', 'nz', resolution[2]))
+        smoke_paramset.add(PBRTParam('point', 'p0', [-1, -1, -1]))
+        smoke_paramset.add(PBRTParam('point', 'p1', [1, 1, 1]))
+        smoke_paramset.add(PBRTParam('float', 'density', voxeldata))
         # By default we'll set a sigma_a and sigma_s
         # however the object's pbrt_interior, or prim's pbrt_interior
         # or prim attribs will override these.
-        smoke_paramset.add(PBRTParam('color','sigma_a',[1, 1, 1]))
-        smoke_paramset.add(PBRTParam('color','sigma_s',[1, 1, 1]))
+        smoke_paramset.add(PBRTParam('color', 'sigma_a', [1, 1, 1]))
+        smoke_paramset.add(PBRTParam('color', 'sigma_s', [1, 1, 1]))
 
         medium_prim_overrides = medium_prim_paramset(prim, medium_paramset)
         smoke_paramset.update(medium_prim_overrides)
@@ -628,7 +628,7 @@ def smoke_prim_wrangler(prims, paramset=None, properties=None):
             api.Material('none')
             api.MediumInterface(name, exterior)
             # Pad this slightly?
-            bounds_to_api_box([-1,1,-1,1,-1,1])
+            bounds_to_api_box([-1, 1, -1, 1, -1, 1])
     return
 
 def heightfield_prim_wrangler(prims, paramset=None, properties=None):
@@ -670,16 +670,16 @@ def heightfield_prim_wrangler(prims, paramset=None, properties=None):
             api.Translate(*srt['translate'])
             rot = srt['rotate']
             if rot.z():
-                api.Rotate(rot[2],0,0,1)
+                api.Rotate(rot[2], 0, 0, 1)
             if rot.y():
-                api.Rotate(rot[1],0,1,0)
+                api.Rotate(rot[1], 0, 1, 0)
             if rot.x():
-                api.Rotate(rot[0],1,0,0)
+                api.Rotate(rot[0], 1, 0, 0)
             api.Scale(srt['scale'][0]*2.0, srt['scale'][1]*2.0, 1.0)
             api.Translate(-0.5, -0.5, 0)
-            hf_paramset.add(PBRTParam('integer','nu',resolution[0]))
-            hf_paramset.add(PBRTParam('integer','nv',resolution[1]))
-            hf_paramset.add(PBRTParam('float','Pz',voxeldata))
+            hf_paramset.add(PBRTParam('integer', 'nu', resolution[0]))
+            hf_paramset.add(PBRTParam('integer', 'nv', resolution[1]))
+            hf_paramset.add(PBRTParam('float', 'Pz', voxeldata))
             hf_paramset |= paramset
 
             api.Shape('heightfield', hf_paramset)
@@ -759,7 +759,7 @@ def nurbs_wrangler(gdp, paramset=None, properties=None):
             #       is a bit odd. Scaled up geo? Not what I was expecting.
             #       Perhaps compare to RMan.
             w = prim_pt2vtx_attrib_gen(prim, 'Pw')
-            Pw = itertools.izip(P,w)
+            Pw = itertools.izip(P, w)
             nurbs_paramset.add(PBRTParam('float', 'Pw', Pw))
 
         nurbs_paramset |= paramset
@@ -814,7 +814,7 @@ def curve_wrangler(gdp, paramset=None, properties=None):
         #       pbrt supports but for now we'll expect the user to have
         #       a curve basis which is supported
         # https://www.codeproject.com/Articles/996281/NURBS-crve-made-easy
-        if degree not in ( 2,3 ):
+        if degree not in (2, 3):
             continue
         curve_paramset.add(PBRTParam('integer', 'degree', degree))
 
@@ -838,8 +838,8 @@ def curve_wrangler(gdp, paramset=None, properties=None):
                 N_01 = (prim.vertex(0).attribValue('N'),
                         prim.vertex(-1).attribValue('N'))
             elif has_pt_N:
-                N_01 = ( prim.vertex(0).point().attribValue('N'),
-                         prim.vertex(-1).point().attribValue('N') )
+                N_01 = (prim.vertex(0).point().attribValue('N'),
+                        prim.vertex(-1).point().attribValue('N'))
             else:
                 N_01 = None
             if N_01 is not None:
@@ -876,7 +876,7 @@ def tesselated_wrangler(gdp, paramset=None, properties=None):
     """Wrangler for any geo that needs to be tesselated"""
     prim_name = gdp.iterPrims()[0].intrinsicValue('typename')
     api.Comment('%s prims is are not directly supported, they will be tesselated' %
-                    prim_name)
+                prim_name)
     mesh_wrangler(gdp, paramset, properties)
     return
 
@@ -884,28 +884,28 @@ def not_supported(gdp, paramset=None, properties=None):
     """Wrangler for unsupported prim types"""
     num_prims = len(gdp.prims())
     prim_name = gdp.iterPrims()[0].intrinsicValue('typename')
-    api.Comment('Ignoring %i prims, %s is not supported' % (
-                    num_prims, prim_name))
+    api.Comment('Ignoring %i prims, %s is not supported' %
+                (num_prims, prim_name))
     return
 
-shape_wranglers = { 'Sphere': sphere_wrangler,
-                    'Circle' : disk_wrangler,
-                    'Tube' : tube_wrangler,
-                    'Poly' : mesh_wrangler,
-                    'Mesh' : mesh_wrangler,
-                    'PolySoup' : mesh_wrangler,
-                    'NURBMesh' : nurbs_wrangler,
-                    'BezierCurve' : curve_wrangler,
-                    'NURBCurve' : curve_wrangler,
-                    'Volume' : volume_wrangler,
-                    'TriFan' : tesselated_wrangler,
-                    'TriStrip' : tesselated_wrangler,
-                    'TriBezier' : tesselated_wrangler,
-                    'BezierMesh' : tesselated_wrangler,
-                    'PasteSurf' : tesselated_wrangler,
-                    'MetaBall' : tesselated_wrangler,
-                    'MetaSQuad' : tesselated_wrangler,
-                    'Tetrahedron' : tesselated_wrangler,
+shape_wranglers = {'Sphere': sphere_wrangler,
+                   'Circle' : disk_wrangler,
+                   'Tube' : tube_wrangler,
+                   'Poly' : mesh_wrangler,
+                   'Mesh' : mesh_wrangler,
+                   'PolySoup' : mesh_wrangler,
+                   'NURBMesh' : nurbs_wrangler,
+                   'BezierCurve' : curve_wrangler,
+                   'NURBCurve' : curve_wrangler,
+                   'Volume' : volume_wrangler,
+                   'TriFan' : tesselated_wrangler,
+                   'TriStrip' : tesselated_wrangler,
+                   'TriBezier' : tesselated_wrangler,
+                   'BezierMesh' : tesselated_wrangler,
+                   'PasteSurf' : tesselated_wrangler,
+                   'MetaBall' : tesselated_wrangler,
+                   'MetaSQuad' : tesselated_wrangler,
+                   'Tetrahedron' : tesselated_wrangler,
                   }
 
 def partition_by_attrib(input_gdp, attrib, intrinsic=False):
@@ -936,7 +936,7 @@ def partition_by_attrib(input_gdp, attrib, intrinsic=False):
         gdp.merge(input_gdp)
         keep_prims = prim_values[prim_value]
         remove_prims = all_prims - keep_prims
-        cull_list = [ gdp.iterPrims()[p] for p in remove_prims ]
+        cull_list = [gdp.iterPrims()[p] for p in remove_prims]
         gdp.deletePrims(cull_list)
         split_gdps[prim_value] = gdp
     return split_gdps
@@ -1011,10 +1011,8 @@ def output_geo(soppath, now, properties=None):
             pass
 
     # Further partition based on material overrides
-    if not ignore_materials and gdp.findPrimAttrib('material_override') is not None:
-        has_prim_overrides = True
-    else:
-        has_prim_overrides = False
+    has_prim_overrides = bool(not ignore_materials and
+                              gdp.findPrimAttrib('material_override') is not None)
 
     for material in material_gdps:
         if material:

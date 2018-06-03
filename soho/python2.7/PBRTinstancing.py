@@ -25,8 +25,8 @@ def list_instances(obj):
     # Get the full path to any point instance geos
     geo = sop_node.geometry()
     instance_attrib = geo.findPointAttrib('instance')
-    if ( instance_attrib is not None and
-         instance_attrib.dataType() == hou.attribData.String ):
+    if (instance_attrib is not None and
+            instance_attrib.dataType() == hou.attribData.String):
         for instance_str in instance_attrib.strings():
             instance_obj = sop_node.node(instance_str)
             if instance_obj:
@@ -102,9 +102,9 @@ def wrangle_instances(obj, now):
         api.Comment('Can not find instance xform attribs, skipping')
         return
 
-    instance_geo = []
-    obj.evalString('instancepath', now, instance_geo)
-    instance_node = obj_node.node(instance_geo[0])
+    instancepath = []
+    obj.evalString('instancepath', now, instancepath)
+    instance_node = obj_node.node(instancepath[0])
     if instance_node is not None:
         default_instance_geo = instance_node.path()
     else:
@@ -123,9 +123,8 @@ def wrangle_instances(obj, now):
             continue
 
         with api.AttributeBlock():
-            api.Comment('%s:[%i]' % ( sop, pt))
+            api.Comment('%s:[%i]' % (sop, pt))
             xform = geo.value(pt_attrib_map['geo:pointxform'], pt)
             api.ConcatTransform(xform)
             api.ObjectInstance(instance_geo)
     return
-

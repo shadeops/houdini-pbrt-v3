@@ -11,7 +11,7 @@ import PBRTgeo as Geo
 import PBRTinstancing as Instancing
 
 from PBRTstate import scene_state
-from PBRTsoho import SohoPBRT, SohoOverrideBlock
+from PBRTsoho import SohoPBRT, soho_override_block
 from PBRTplugins import PBRTParam, ParamSet, BaseNode
 
 __all__ = ['wrangle_film', 'wrangle_sampler', 'wrangle_accelerator',
@@ -34,7 +34,7 @@ def get_wrangler(obj, now, style):
     elif style == 'camera_wrangler':
         wrangler = soho.CameraWranglers.get(wrangler, None)
     elif style == 'object_wrangler':
-         wrangler = soho.ObjectWranglers.get(wrangler, None)
+        wrangler = soho.ObjectWranglers.get(wrangler, None)
     else:
         wrangler = None  # Not supported at the current time
 
@@ -52,7 +52,7 @@ def get_transform(obj, now, invert=False, flipz=False):
     if invert:
         xform = xform.inverted()
     if flipz:
-        xform = xform*hou.hmath.buildScale(1,1,-1)
+        xform = xform*hou.hmath.buildScale(1, 1, -1)
     return list(xform.asTuple())
 
 def xform_to_api_srt(xform, scale=True, rotate=True, trans=True):
@@ -64,11 +64,11 @@ def xform_to_api_srt(xform, scale=True, rotate=True, trans=True):
         # NOTE, be wary of -180 to 180 flips
         rot = srt['rotate']
         if rot.z():
-            api.Rotate(rot[2],0,0,1)
+            api.Rotate(rot[2], 0, 0, 1)
         if rot.y():
-            api.Rotate(rot[1],0,1,0)
+            api.Rotate(rot[1], 0, 1, 0)
         if rot.x():
-            api.Rotate(rot[0],1,0,0)
+            api.Rotate(rot[0], 1, 0, 0)
     if scale:
         api.Scale(*srt['scale'])
     return
@@ -154,10 +154,10 @@ def wrangle_shading_network(node_path, name_prefix='', saved_nodes=None):
 
 
 def wrangle_motionblur(obj, now):
-    mb_parms = [ soho.SohoParm('allowmotionblur', 'int', [0], False),
-                 soho.SohoParm('shutter', 'float', [0.5], False),
-                 soho.SohoParm('shutteroffset', 'float',  [None], False),
-                 soho.SohoParm('motionstyle', 'string', ['trailing'], False),
+    mb_parms = [soho.SohoParm('allowmotionblur', 'int', [0], False),
+                soho.SohoParm('shutter', 'float', [0.5], False),
+                soho.SohoParm('shutteroffset', 'float', [None], False),
+                soho.SohoParm('motionstyle', 'string', ['trailing'], False),
                ]
     eval_mb_parms = obj.evaluate(mb_parms, now)
     if not eval_mb_parms[0].Value[0]:
@@ -194,19 +194,19 @@ def wrangle_film(obj, wrangler, now):
         'diagonal' : SohoPBRT('diagonal', 'float', [35], True),
     }
     parms = obj.evaluate(parm_selection, now)
-    for parm_name,parm in parms.iteritems():
+    for parm_name, parm in parms.iteritems():
         paramset.add(parm.to_pbrt())
 
     parm_selection = {
         'res' : SohoPBRT('res', 'integer', [1280, 720], False),
     }
     parms = obj.evaluate(parm_selection, now)
-    paramset.add(PBRTParam('integer','xresolution',parms['res'].Value[0]))
-    paramset.add(PBRTParam('integer','yresolution',parms['res'].Value[1]))
+    paramset.add(PBRTParam('integer', 'xresolution', parms['res'].Value[0]))
+    paramset.add(PBRTParam('integer', 'yresolution', parms['res'].Value[1]))
 
     crop_region = obj.getCameraCropWindow(wrangler, now)
     if crop_region != [0.0, 1.0, 0.0, 1.0]:
-        paramset.add(PBRTParam('float','cropwindow',crop_region))
+        paramset.add(PBRTParam('float', 'cropwindow', crop_region))
 
     return ('image', paramset)
 
@@ -230,8 +230,8 @@ def wrangle_filter(obj, wrangler, now):
     paramset = ParamSet()
     xwidth = parms['filter_width'].Value[0]
     ywidth = parms['filter_width'].Value[1]
-    paramset.add(PBRTParam('float','xwidth',xwidth))
-    paramset.add(PBRTParam('float','ywidth',ywidth))
+    paramset.add(PBRTParam('float', 'xwidth', xwidth))
+    paramset.add(PBRTParam('float', 'ywidth', ywidth))
 
     if filter_name == 'gaussian' and 'alpha' in parms:
         paramset.add(parms['alpha'].to_pbrt())
@@ -316,18 +316,18 @@ def wrangle_integrator(obj, wrangler, now):
     }
 
     integrator_parms = {
-            'ao' : ['nsamples','cossample'],
-            'path' : ['maxdepth','rrthreshold','lightsamplestrategy'],
-            'bdpt' : ['maxdepth','rrthreshold','lightsamplestrategy',
-                      'visualizestrategies','visualizeweights'],
-            'mlt' : ['maxdepth','bootstrapsamples','chains','mutationsperpixel',
-                     'largestepprobability','sigma'],
-            'sppm' : ['maxdepth','iterations','photonsperiteration',
-                      'imagewritefrequency','radius'],
-            'whitted' : ['maxdepth'],
-            'volpath' : ['maxdepth','rrthreshold','lightsamplestrategy'],
-            'directlighting' : ['maxdepth','strategy'],
-            }
+        'ao' : ['nsamples', 'cossample'],
+        'path' : ['maxdepth', 'rrthreshold', 'lightsamplestrategy'],
+        'bdpt' : ['maxdepth', 'rrthreshold', 'lightsamplestrategy',
+                  'visualizestrategies', 'visualizeweights'],
+        'mlt' : ['maxdepth', 'bootstrapsamples', 'chains', 'mutationsperpixel',
+                 'largestepprobability', 'sigma'],
+        'sppm' : ['maxdepth', 'iterations', 'photonsperiteration',
+                  'imagewritefrequency', 'radius'],
+        'whitted' : ['maxdepth'],
+        'volpath' : ['maxdepth', 'rrthreshold', 'lightsamplestrategy'],
+        'directlighting' : ['maxdepth', 'strategy'],
+        }
     parms = obj.evaluate(parm_selection, now)
 
     integrator_name = parms['integrator'].Value[0]
@@ -368,7 +368,7 @@ def wrangle_accelerator(obj, wrangler, now):
                 SohoPBRT('maxprims', 'integer', [1], True),
             'kdtree_maxdepth' :
                 SohoPBRT('kdtree_maxdepth', 'integer', [1], True,
-                          key='maxdepth')
+                         key='maxdepth')
         }
     parms = obj.evaluate(parm_selection, now)
 
@@ -382,12 +382,12 @@ def wrangle_accelerator(obj, wrangler, now):
 def output_cam_xform(obj, projection, now):
     # NOTE: Initial tests show pbrt has problems when motion blur xforms
     #       are applied to the camera (outside the World block)
-    if projection in ('perspective','orthographic','realistic'):
+    if projection in ('perspective', 'orthographic', 'realistic'):
         output_xform(obj, now, no_motionblur=True, invert=True, flipz=True)
     elif projection in ('environment',):
         output_xform(obj, now, no_motionblur=True, invert=True, flipz=False)
         api.Transform(xform)
-        api.Rotate(180,0,1,0)
+        api.Rotate(180, 0, 1, 0)
     return
 
 def wrangle_camera(obj, wrangler, now):
@@ -429,7 +429,7 @@ def wrangle_camera(obj, wrangler, now):
         units = parms['focalunits'].Value[0]
         focal = soho.houdiniUnitLength(focal, units)
         lens_radius = focal/(fstop*2.0)
-        paramset.add(PBRTParam('float','lensradius',lens_radius))
+        paramset.add(PBRTParam('float', 'lensradius', lens_radius))
 
     if projection == 'perspective':
         projection_name = 'perspective'
@@ -440,27 +440,27 @@ def wrangle_camera(obj, wrangler, now):
         fov = 2.0 * math.degrees(math.atan2(1.0, fov))
         paramset.add(PBRTParam('float', 'fov', [fov]))
 
-        screen = [ (window[0] - .5) * 2.0,
-                   (window[1] - .5) * 2.0,
-                   (window[2] - .5) * 2.0 / aspectfix,
-                   (window[3] - .5) * 2.0 / aspectfix ]
+        screen = [(window[0] - 0.5) * 2.0,
+                  (window[1] - 0.5) * 2.0,
+                  (window[2] - 0.5) * 2.0 / aspectfix,
+                  (window[3] - 0.5) * 2.0 / aspectfix]
         paramset.add(PBRTParam('float', 'screenwindow', screen))
 
     elif projection == 'ortho':
         projection_name = 'orthographic'
 
         width = parms['orthowidth'].Value[0]
-        screen = [ (window[0] - .5) * width,
-                   (window[1] - .5) * width,
-                   (window[2] - .5) * width / aspectfix,
-                   (window[3] - .5) * width / aspectfix ]
+        screen = [(window[0] - 0.5) * width,
+                  (window[1] - 0.5) * width,
+                  (window[2] - 0.5) * width / aspectfix,
+                  (window[3] - 0.5) * width / aspectfix]
         paramset.add(PBRTParam('float', 'screenwindow', screen))
 
     elif projection == 'sphere':
         projection_name = 'environment'
     else:
         soho.error('Camera projection setting of %s not supported by PBRT' %
-                    projection)
+                   projection)
 
     output_cam_xform(obj, projection_name, now)
 
@@ -471,7 +471,7 @@ def _to_light_scale(parms):
     # There is a potential issue with using "rgb" types for
     # both L and scale as noted here -
     # https://groups.google.com/d/msg/pbrt/EyT6F-zfBkE/M23oQwGNCAAJ
-    # To summarize, when using SpectralSamples instead of RGBSamples, 
+    # To summarize, when using SpectralSamples instead of RGBSamples,
     # using an "rgb" type for both L and scale can result in a double application of the D65
     # illuminate.
     #
@@ -497,7 +497,7 @@ def wrangle_light(light, wrangler, now):
 
     parm_selection = {
         'light_wrangler' : SohoPBRT('light_wrangler', 'string', [''], False),
-        'light_color' : SohoPBRT('light_color', 'float', [1,1,1], False),
+        'light_color' : SohoPBRT('light_color', 'float', [1, 1, 1], False),
         'light_intensity' : SohoPBRT('light_intensity', 'float', [1], False),
         'light_exposure' : SohoPBRT('light_exposure', 'float', [0], False),
     }
@@ -509,11 +509,11 @@ def wrangle_light(light, wrangler, now):
 
     if light_wrangler == 'HoudiniEnvLight':
         env_map = []
-        paramset.add(PBRTParam('rgb','L',parms['light_color'].Value))
+        paramset.add(PBRTParam('rgb', 'L', parms['light_color'].Value))
         if light.evalString('env_map', now, env_map):
-            paramset.add(PBRTParam('string','mapname', env_map))
+            paramset.add(PBRTParam('string', 'mapname', env_map))
         output_xform(light, now, no_motionblur=True)
-        api.Scale(1,1,-1)
+        api.Scale(1, 1, -1)
         api.Rotate(90, 0, 0, 1)
         api.Rotate(90, 0, 1, 0)
         api.LightSource('infinite', paramset)
@@ -526,12 +526,12 @@ def wrangle_light(light, wrangler, now):
 
     light_type = light.wrangleString(wrangler, 'light_type', now, ['point'])[0]
 
-    if light_type in ('sphere','disk','grid','tube','geo'):
+    if light_type in ('sphere', 'disk', 'grid', 'tube', 'geo'):
         light_name = 'diffuse'
 
         single_sided = light.wrangleInt(wrangler, 'singlesided', now, [0])[0]
-        visible = light.wrangleInt(wrangler,'light_contribprimary',now,[0])[0]
-        size = light.wrangleFloat(wrangler, 'areasize', now, [1,1])
+        visible = light.wrangleInt(wrangler, 'light_contribprimary', now, [0])[0]
+        size = light.wrangleFloat(wrangler, 'areasize', now, [1, 1])
         paramset.add(PBRTParam('rgb', 'L', parms['light_color'].Value))
         paramset.add(PBRTParam('bool', 'twosided', [not single_sided]))
 
@@ -555,12 +555,12 @@ def wrangle_light(light, wrangler, now):
             api.Material('none')
 
         if light_type == 'sphere':
-            api.Shape('sphere', [PBRTParam('float','radius',0.5)])
+            api.Shape('sphere', [PBRTParam('float', 'radius', 0.5)])
         elif light_type == 'tube':
-            api.Rotate(90,0,1,0)
-            api.Shape('cylinder',[PBRTParam('float','radius',0.075),
-                                  PBRTParam('float','zmin',-0.5),
-                                  PBRTParam('float','zmax',0.5)])
+            api.Rotate(90, 0, 1, 0)
+            api.Shape('cylinder', [PBRTParam('float', 'radius', 0.075),
+                                   PBRTParam('float', 'zmin', -0.5),
+                                   PBRTParam('float', 'zmax', 0.5)])
         elif light_type == 'disk':
             # A bug was introduced with Issue #154 which requires a -z scale
             # on disk area lights
@@ -568,8 +568,8 @@ def wrangle_light(light, wrangler, now):
             # api.Scale(1,1,-1)
             api.Shape('disk', [PBRTParam('float', 'radius', [0.5])])
         elif light_type == 'grid':
-            api.Shape('trianglemesh', [PBRTParam('integer','indices', [0,3,1,
-                                                                        0,2,3]),
+            api.Shape('trianglemesh', [PBRTParam('integer', 'indices', [0, 3, 1,
+                                                                        0, 2, 3]),
                                        PBRTParam('point', 'P', [-0.5, -0.5, 0,
                                                                 0.5, -0.5, 0,
                                                                 -0.5, 0.5, 0,
@@ -597,36 +597,36 @@ def wrangle_light(light, wrangler, now):
 
     api_calls = []
     api_calls.append(_apiclosure(output_xform, light, now, no_motionblur=True))
-    api_calls.append(_apiclosure(api.Scale, 1,1,-1))
-    api_calls.append(_apiclosure(api.Scale, 1,-1,1))
+    api_calls.append(_apiclosure(api.Scale, 1, 1, -1))
+    api_calls.append(_apiclosure(api.Scale, 1, -1, 1))
 
     if light_type == 'point':
         paramset.add(PBRTParam('rgb', 'I', parms['light_color'].Value))
         if areamap:
             light_name = 'goniometric'
-            paramset.add(PBRTParam('string','mapname',[areamap]))
+            paramset.add(PBRTParam('string', 'mapname', [areamap]))
             api_calls = []
             api_calls.append(_apiclosure(output_xform, light, now, no_motionblur=True))
-            api_calls.append(_apiclosure(api.Scale, 1,-1,1))
-            api_calls.append(_apiclosure(api.Rotate, 90, 0,1,0))
+            api_calls.append(_apiclosure(api.Scale, 1, -1, 1))
+            api_calls.append(_apiclosure(api.Rotate, 90, 0, 1, 0))
         elif not cone_enable:
             light_name = 'point'
         else:
-            conedelta = light.wrangleFloat(wrangler,'conedelta',now,[10])[0]
-            coneangle = light.wrangleFloat(wrangler,'coneangle',now,[45])[0]
+            conedelta = light.wrangleFloat(wrangler, 'conedelta', now, [10])[0]
+            coneangle = light.wrangleFloat(wrangler, 'coneangle', now, [45])[0]
             if projmap:
                 light_name = 'projection'
-                paramset.add(PBRTParam('float','fov',[coneangle]))
-                paramset.add(PBRTParam('string','mapname',[projmap]))
+                paramset.add(PBRTParam('float', 'fov', [coneangle]))
+                paramset.add(PBRTParam('string', 'mapname', [projmap]))
             else:
                 light_name = 'spot'
                 coneangle *= 0.5
                 coneangle += conedelta
-                paramset.add(PBRTParam('float','coneangle',[coneangle]))
-                paramset.add(PBRTParam('float','conedeltaangle',[conedelta]))
+                paramset.add(PBRTParam('float', 'coneangle', [coneangle]))
+                paramset.add(PBRTParam('float', 'conedeltaangle', [conedelta]))
     elif light_type == 'distant':
         light_name = light_type
-        paramset.add(PBRTParam('rgb','L',parms['light_color'].Value))
+        paramset.add(PBRTParam('rgb', 'L', parms['light_color'].Value))
     else:
         api.Comment('Light Type, %s, not supported' % light_type)
         return
@@ -709,4 +709,4 @@ def wrangle_geo(obj, wrangler, now):
         api.MediumInterface(interior, exterior)
 
     Geo.output_geo(soppath, now, properties)
-
+    return
