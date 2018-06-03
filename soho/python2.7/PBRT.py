@@ -35,16 +35,16 @@ clockstart = time.time()
 
 control_parms = {
     # The time at which the scene is being rendered
-    'now'     : SohoParm('state:time',  'real', [0], False,  key='now'),
-    'fps'     : SohoParm('state:fps',   'real', [24], False, key='fps'),
-    'camera'  : SohoParm('camera', 'string', ['/obj/cam1'], False),
+    'now' : SohoParm('state:time', 'real', [0], False, key='now'),
+    'fps' : SohoParm('state:fps', 'real', [24], False, key='fps'),
+    'camera' : SohoParm('camera', 'string', ['/obj/cam1'], False),
 }
 
 parms = soho.evaluate(control_parms)
 
-now     = parms['now'].Value[0]
-camera  = parms['camera'].Value[0]
-fps     = parms['fps'].Value[0]
+now = parms['now'].Value[0]
+camera = parms['camera'].Value[0]
+fps = parms['fps'].Value[0]
 
 options = {'state:precision' : 6}
 if not soho.initialize(now, camera, options):
@@ -52,22 +52,22 @@ if not soho.initialize(now, camera, options):
 
 object_selection = {
     # Candidate object selection
-    'vobject'     : SohoParm('vobject', 'string',       ['*'], False),
-    'alights'     : SohoParm('alights', 'string',       ['*'], False),
+    'vobject' : SohoParm('vobject', 'string', ['*'], False),
+    'alights' : SohoParm('alights', 'string', ['*'], False),
 
-    'forceobject' : SohoParm('forceobject',     'string',       [''], False),
-    'forcelights' : SohoParm('forcelights',     'string',       [''], False),
+    'forceobject' : SohoParm('forceobject', 'string', [''], False),
+    'forcelights' : SohoParm('forcelights', 'string', [''], False),
 
-    'excludeobject' : SohoParm('excludeobject', 'string',       [''], False),
-    'excludelights' : SohoParm('excludelights', 'string',       [''], False),
+    'excludeobject' : SohoParm('excludeobject', 'string', [''], False),
+    'excludelights' : SohoParm('excludelights', 'string', [''], False),
 
-    'sololight'     : SohoParm('sololight',     'string',       [''], False),
+    'sololight' : SohoParm('sololight', 'string', [''], False),
 }
 
 for cam in soho.objectList('objlist:camera'):
     break
 else:
-    soho.error("Unable to find viewing camera for render")
+    soho.error('Unable to find viewing camera for render')
 
 objparms = cam.evaluate(object_selection, now)
 
@@ -95,4 +95,3 @@ soho.lockObjects(now)
 
 with hou.undos.disabler(), scene_state:
     PBRTscene.render(cam, now)
-

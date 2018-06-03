@@ -141,6 +141,22 @@ def _hou_parm_to_pbrt_param(parm, parm_name=None):
 
 
 class PBRTParam(object):
+    """Representation of a param in PBRT
+
+    A PBRT param will hold the type, name and possibly values of a param in
+    meant for passing to PBRT. PBRTparams can be compared with other PBRTparams
+    but *only* their types and names are checked for equality NOT their values.
+    This is done for easy use in ParamSets. ie) Is this param already defined
+    in the ParamSet or not?
+
+    This class is also responsible for serializing the data into a pbrt scene
+    format. Values can be a POD, iterable or generator.
+
+    Attributes:
+        param_type (str): pbrt type name
+        name (str): name of the param
+        value (list/generator): Param's values
+    """
 
     # NOTE: There is a typo on the pbrt website with regards to the allowed
     #       types. It lists normal as a valid type and normal as an synonym
@@ -159,6 +175,15 @@ class PBRTParam(object):
     spectrum_types = set(['color', 'rgb', 'blackbody', 'xyz', 'spectrum'])
 
     def __init__(self, param_type, param_name, param_value=None):
+        """
+        Args:
+        param_type (str): PBRT param type
+        param_name (str): Name of the param
+        param_value (None, POD, list, generator): Value of the param (Optional)
+
+        Raises:
+            TypeError: If param_type does not match a known pbrt_type
+        """
         param_type = self.type_synonyms.get(param_type, param_type)
         if param_type not in self.pbrt_types:
             raise TypeError('%s not a known PBRT type' % param_type)
@@ -183,6 +208,7 @@ class PBRTParam(object):
         return '%s [ %s ]' % (self.type_name, value_str)
 
     def __hash__(self):
+        # We only hash on the type and name, not the value
         return hash((self.type, self.name))
 
     def __eq__(self, other):
@@ -197,6 +223,7 @@ class PBRTParam(object):
 
     @property
     def value(self):
+        """The value of the param, converted from python values to pbrt values"""
         if isinstance(self._value, types.GeneratorType):
             v = self._value
         elif not isinstance(self._value, (list, tuple, array.array)):
@@ -209,15 +236,28 @@ class PBRTParam(object):
 
     @property
     def type_name(self):
+        """The type and name of the param"""
         return '%s %s' % (self.param_type, self.name)
 
     def as_str(self):
+        """Returns param as a string suitable for a pbrt scene file"""
         return soho.arrayToString('"%s" [ ' % self.type_name, self.value, ' ]')
 
     def print_str(self):
+        """Prints param as a string suitable for a pbrt scene file"""
         return soho.printArray('"%s" [ ' % self.type_name, self.value, ' ]')
 
 class ParamSet(collections.MutableSet):
+    """Represents a collection of PBRTParams
+
+    The behaviour is much like a set allowing for updating, removal and adding
+    of PBRTParams.
+
+    Set operations like
+    paramset |= other_paramset
+    are valid, in the case above the operation is similar to and add,
+    not a replace.
+    """
 
     def __init__(self, iterable=None):
         self._data = set()
@@ -240,16 +280,20 @@ class ParamSet(collections.MutableSet):
         return ' , '.join(str(x) for x in self)
 
     def add(self, param):
+        """Add a param if it does not already exist"""
         self._data.add(param)
 
     def discard(self, param):
+        """Remove a param if it exists, no exception if it does not"""
         self._data.discard(param)
 
     def replace(self, param):
+        """Remove a param then add the new one"""
         self.discard(param)
         self.add(param)
 
     def find_param(self, ptype, name):
+        """Find a return a PBRTParam of ptype and name if in the ParamSet"""
         param_to_find = PBRTParam(ptype, name)
         for p in self._data:
             if p == param_to_find:
@@ -257,12 +301,25 @@ class ParamSet(collections.MutableSet):
         return None
 
     def update(self, other):
+        """Update (and replace) the this ParamSet with another ParamSet"""
         if not other:
             return
         for o in other:
             self.replace(o)
 
 def get_directive_from_nodetype(node_type):
+    """Get the 'directive' of a Houdini PBRT VOP
+
+    The directive will typically be something like 'texture', 'material', etc.
+    These coorespond to the api calls. The type of directive the not represents
+    is first searched for in the userInfo of the node's definition. If the
+    userInfo does not contain the expected data then the type name of the node
+    is parsed and derived from that. If that fails None is returned.
+
+    An example of valid userInfo looks like -
+    print hou.node('/mat/pbrt_material_plastic1').type().definition().userInfo()
+    '{"dtype": "plastic", "directive": "material"}'
+    """
 
     directive = None
 
@@ -291,9 +348,16 @@ def get_directive_from_nodetype(node_type):
 
 
 class BaseNode(object):
+    """Base representation of a PBRT VOP node
+
+    This node acts as a wrapper and translator from a standard Houdini VOP node
+    to a PBRT call. It derives the directive type and paramset from the Houdini
+    node.
+    """
 
     @staticmethod
     def from_node(node, ignore_defaults=True):
+        """Factory method for creating *Node classes based on the input node"""
         if isinstance(node, basestring):
             node = hou.node(node)
 
