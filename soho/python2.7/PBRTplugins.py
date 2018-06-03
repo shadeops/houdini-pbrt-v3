@@ -281,7 +281,7 @@ def get_directive_from_nodetype(node_type):
 
     try:
         if len(typename_tokens) == 2:
-            directive == 'soho_helper'
+            directive = 'soho_helper'
         elif len(typename_tokens) == 3:
             directive = typename_tokens[1]
     except IndexError:

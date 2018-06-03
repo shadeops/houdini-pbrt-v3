@@ -103,7 +103,7 @@ def wrangle_node_parm(obj, parm_name, now):
     if not node_path:
         return None
     node = BaseNode(node_path)
-    return node.node_class, node.paramset
+    return node.directive_type, node.paramset
 
 def wrangle_shading_network(node_path, name_prefix='', saved_nodes=None):
     # Depth first, as textures/materials need to be
