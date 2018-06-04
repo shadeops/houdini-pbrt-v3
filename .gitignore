@@ -3,8 +3,9 @@
 *.hip
 *.hda
 *.exr
-*.pbrt
+scene.pbrt
 
 backup/
 ifds/
 render/
+issues/

@@ -1,4 +1,4 @@
-Film "image" "integer xresolution" [ 320 ] "integer yresolution" [ 240 ] "string filename" [ "test_sphere_xformed.exr" ]
+Film "image" "integer xresolution" [ 320 ] "integer yresolution" [ 240 ] "string filename" [ "test_cone.exr" ]
 PixelFilter "gaussian" "float xwidth" [ 2 ] "float ywidth" [ 2 ]
 Sampler "halton" "integer pixelsamples" [ 16 ]
 Integrator "path" "integer maxdepth" [ 5 ]
@@ -42,9 +42,13 @@ WorldBegin	# {
 	Transform [ 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 ]
 	NamedMaterial "/mat/pbrt_material_matte1"
 	TransformBegin	# {
-	    ConcatTransform [ 0.176776692271 0.306186228991 -0.353553384542 0 -0.554399192333 -0.210247576237 -0.459279358387 0 -0.143305823207 0.184799730778 0.0883883461356 0 0.10000000149 0.20000000298 0.300000011921 1 ]
-	    Scale 1 1 -1
-	    Shape "sphere"
+	    ConcatTransform [ 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 ]
+	    Rotate -90 1 0 0
+	    Translate 0 0 -0.5
+	    TransformBegin	# {
+		Scale 1 -1 1
+		Shape "cone"
+	    TransformEnd	# }
 	TransformEnd	# }
     AttributeEnd	# }
 

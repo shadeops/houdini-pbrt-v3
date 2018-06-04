@@ -24,6 +24,10 @@ def build_checker_material():
     matte.setNamedInput('Kd', checks, 'output')
     return matte
 
+def clear_mat():
+    for child in hou.node('/mat').children():
+        child.destroy()
+
 def build_envlight():
     env = hou.node('/obj').createNode('envlight')
     env.parm('light_intensity').set(0.5)
@@ -98,7 +102,7 @@ class TestSphere(TestGeo):
     def tearDown(self):
         self.geo.destroy()
         self.rop.destroy()
-        self.mat.destroy()
+        clear_mat()
         if CLEANUP_FILES:
             os.remove(self.testfile)
 
@@ -115,6 +119,32 @@ class TestSphere(TestGeo):
         xform.parmTuple('t').set([0.1, 0.2, 0.3])
         xform.parmTuple('r').set([30, 45, 60])
         xform.setRenderFlag(True)
+        self.rop.render()
+        self.assertTrue(filecmp.cmp(self.testfile,
+                                    self.basefile))
+
+    def test_circle(self):
+        circle = self.geo.createNode('circle')
+        self.rop.render()
+        self.assertTrue(filecmp.cmp(self.testfile,
+                                    self.basefile))
+
+    def test_cylinder(self):
+        tube = self.geo.createNode('tube')
+        self.rop.render()
+        self.assertTrue(filecmp.cmp(self.testfile,
+                                    self.basefile))
+
+    def test_cone(self):
+        tube = self.geo.createNode('tube')
+        tube.parm('rad1').set(0)
+        self.rop.render()
+        self.assertTrue(filecmp.cmp(self.testfile,
+                                    self.basefile))
+
+    def test_cylinder_caps(self):
+        tube = self.geo.createNode('tube')
+        tube.parm('cap').set(True)
         self.rop.render()
         self.assertTrue(filecmp.cmp(self.testfile,
                                     self.basefile))
