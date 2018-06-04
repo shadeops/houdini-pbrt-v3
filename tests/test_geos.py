@@ -114,6 +114,7 @@ class TestSphere(TestGeo):
         xform.setFirstInput(sphere)
         xform.parmTuple('t').set([0.1, 0.2, 0.3])
         xform.parmTuple('r').set([30, 45, 60])
+        xform.setRenderFlag(True)
         self.rop.render()
         self.assertTrue(filecmp.cmp(self.testfile,
                                     self.basefile))
