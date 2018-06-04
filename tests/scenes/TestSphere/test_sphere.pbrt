@@ -1,0 +1,52 @@
+Film "image" "integer xresolution" [ 320 ] "integer yresolution" [ 240 ] "string filename" [ "test_sphere.exr" ]
+PixelFilter "gaussian" "float xwidth" [ 2 ] "float ywidth" [ 2 ]
+Sampler "halton" "integer pixelsamples" [ 16 ]
+Integrator "path" "integer maxdepth" [ 5 ]
+Accelerator "bvh"
+
+#  /obj/cam1
+Transform [ 1 0 0 0 0 0.978147600734 -0.207911690818 6.93889390391e-18 0 -0.207911690818 -0.978147600734 2.77555756156e-17 0 0.061410853355 5.09864969449 1 ]
+Camera "perspective" "float fov" [ 45.0000428043 ] "float screenwindow" [ -1 1 -0.75 0.75 ]
+
+WorldBegin	# {
+
+    #  ==================================================
+    #  Light Definitions
+    #  /obj/envlight1
+    AttributeBegin	# {
+	Transform [ 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 ]
+	Scale 1 1 -1
+	Rotate 90 0 0 1
+	Rotate 90 0 1 0
+	LightSource "infinite" "rgb L" [ 1 1 1 ] "string mapname" [ "" ] "rgb scale" [ 0.5 0.5 0.5 ]
+    AttributeEnd	# }
+
+
+    #  ==================================================
+    #  NamedMaterial Definitions
+    Texture "/mat/pbrt_texture_checkerboard1" "spectrum" "checkerboard" "rgb tex1" [ 0.1 0.1 0.1 ] "rgb tex2" [ 0.375 0.5 0.5 ] "float uscale" [ 10 ] "float vscale" [ 10 ]
+    MakeNamedMaterial "/mat/pbrt_material_matte1" "string type" "matte" "texture Kd" [ "/mat/pbrt_texture_checkerboard1" ]
+
+
+    #  ==================================================
+    #  NamedMedium Definitions
+
+    #  ==================================================
+    #  Object Instance Definitions
+
+    #  ==================================================
+    #  Object Definitions
+    #  --------------------------------------------------
+    #  /obj/geo1
+    AttributeBegin	# {
+	Transform [ 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 ]
+	NamedMaterial "/mat/pbrt_material_matte1"
+	TransformBegin	# {
+	    ConcatTransform [ 1 0 0 0 0 0 -1 0 0 1 0 0 0 0 0 1 ]
+	    Scale 1 1 -1
+	    Shape "sphere"
+	TransformEnd	# }
+    AttributeEnd	# }
+
+
+WorldEnd	# }
