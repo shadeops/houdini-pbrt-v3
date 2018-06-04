@@ -88,7 +88,7 @@ class TestGeo(unittest.TestCase):
     def name(self):
         return self.id().split('.')[-1]
 
-class TestSphere(TestGeo):
+class TestShapes(TestGeo):
 
     def setUp(self):
         self.geo = build_geo()

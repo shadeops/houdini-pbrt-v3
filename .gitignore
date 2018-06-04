@@ -5,6 +5,7 @@
 *.exr
 scene.pbrt
 
+*/tmp/
 backup/
 ifds/
 render/
