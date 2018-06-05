@@ -214,6 +214,31 @@ class TestShapes(TestGeo):
         self.assertTrue(filecmp.cmp(self.testfile,
                                     self.basefile))
 
+    def test_loopsubdiv(self):
+        box = self.geo.createNode('box')
+        ptg = self.geo.parmTemplateGroup()
+        parm = hou.properties.parmTemplate('pbrt-v3','pbrt_rendersubd')
+        ptg.append(parm)
+        self.geo.setParmTemplateGroup(ptg)
+        self.geo.parm('pbrt_rendersubd').set(True)
+        self.rop.render()
+        self.assertTrue(filecmp.cmp(self.testfile,
+                                    self.basefile))
+
+    def test_loopsubdiv_level_1(self):
+        box = self.geo.createNode('box')
+        ptg = self.geo.parmTemplateGroup()
+        subd_parm = hou.properties.parmTemplate('pbrt-v3','pbrt_rendersubd')
+        level_parm = hou.properties.parmTemplate('pbrt-v3','pbrt_subdlevels')
+        ptg.append(subd_parm)
+        ptg.append(level_parm)
+        self.geo.setParmTemplateGroup(ptg)
+        self.geo.parm('pbrt_rendersubd').set(True)
+        self.geo.parm('pbrt_subdlevels').set(1)
+        self.rop.render()
+        self.assertTrue(filecmp.cmp(self.testfile,
+                                    self.basefile))
+
 if __name__ == '__main__':
     unittest.main()
 
