@@ -18,7 +18,18 @@ WorldBegin	# {
 	Scale 1 1 -1
 	Rotate 90 0 0 1
 	Rotate 90 0 1 0
-	LightSource "infinite" "rgb L" [ 1 1 1 ] "string mapname" [ "" ] "rgb scale" [ 0.5 0.5 0.5 ]
+	LightSource "infinite" "rgb L" [ 1 1 1 ] "string mapname" [ "" ] "rgb scale" [ 0.1 0.1 0.1 ]
+    AttributeEnd	# }
+
+    #  /obj/hlight1
+    AttributeBegin	# {
+	Translate 3 3 3
+	AreaLightSource "diffuse" "bool twosided" [ "true" ] "rgb L" [ 1 1 1 ] "rgb scale" [ 50 50 50 ]
+	AttributeBegin	# {
+	    Scale 1 1 1
+	    Material "none"
+	    Shape "sphere" "float radius" [ 0.5 ]
+	AttributeEnd	# }
     AttributeEnd	# }
 
 

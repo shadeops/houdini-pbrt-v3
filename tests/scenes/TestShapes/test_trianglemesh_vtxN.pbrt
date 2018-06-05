@@ -1,4 +1,4 @@
-Film "image" "integer xresolution" [ 320 ] "integer yresolution" [ 240 ] "string filename" [ "test_sphere.exr" ]
+Film "image" "integer xresolution" [ 320 ] "integer yresolution" [ 240 ] "string filename" [ "test_trianglemesh_vtxN.exr" ]
 PixelFilter "gaussian" "float xwidth" [ 2 ] "float ywidth" [ 2 ]
 Sampler "halton" "integer pixelsamples" [ 16 ]
 Integrator "path" "integer maxdepth" [ 5 ]
@@ -52,11 +52,7 @@ WorldBegin	# {
     AttributeBegin	# {
 	Transform [ 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 ]
 	NamedMaterial "/mat/pbrt_material_matte1"
-	TransformBegin	# {
-	    ConcatTransform [ 1 0 0 0 0 0 -1 0 0 1 0 0 0 0 0 1 ]
-	    Scale 1 1 -1
-	    Shape "sphere"
-	TransformEnd	# }
+	Shape "trianglemesh" "integer indices" [ 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 ] "point3 P" [ 0.5 -0.5 -0.5 0.5 0.5 -0.5 -0.5 0.5 -0.5 0.5 -0.5 0.5 0.5 0.5 0.5 0.5 0.5 -0.5 -0.5 -0.5 0.5 -0.5 0.5 0.5 0.5 0.5 0.5 -0.5 -0.5 -0.5 -0.5 0.5 -0.5 -0.5 0.5 0.5 0.5 -0.5 0.5 0.5 -0.5 -0.5 -0.5 -0.5 -0.5 0.5 0.5 -0.5 0.5 0.5 0.5 -0.5 0.5 0.5 -0.5 0.5 0.5 -0.5 0.5 -0.5 0.5 0.5 -0.5 -0.5 -0.5 -0.5 -0.5 -0.5 0.5 0.5 -0.5 0.5 -0.5 0.5 0.5 -0.5 -0.5 0.5 -0.5 -0.5 -0.5 0.5 0.5 0.5 0.5 -0.5 0.5 -0.5 -0.5 0.5 0.5 0.5 -0.5 0.5 -0.5 -0.5 0.5 -0.5 0.5 -0.5 0.5 -0.5 -0.5 -0.5 -0.5 0.5 -0.5 -0.5 ] "normal N" [ 0 0 -1 0 0 -1 0 0 -1 1 0 0 1 0 0 1 0 0 0 0 1 0 0 1 0 0 1 -1 0 0 -1 0 0 -1 0 0 0 -1 0 0 -1 0 0 -1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 -1 0 0 -1 0 0 -1 0 -1 0 0 -1 0 0 -1 0 0 0 0 1 0 0 1 0 0 1 1 0 0 1 0 0 1 0 0 0 0 -1 0 0 -1 0 0 -1 ]
     AttributeEnd	# }
 
 

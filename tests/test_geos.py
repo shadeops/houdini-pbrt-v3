@@ -30,8 +30,15 @@ def clear_mat():
 
 def build_envlight():
     env = hou.node('/obj').createNode('envlight')
-    env.parm('light_intensity').set(0.5)
+    env.parm('light_intensity').set(0.1)
     return env
+
+def build_spherelight():
+    light = hou.node('/obj').createNode('hlight')
+    light.parm('light_type').set('sphere')
+    light.parmTuple('areasize').set([1, 1])
+    light.parmTuple('t').set([3, 3, 3])
+    light.parm('light_intensity').set(50)
 
 def build_cam():
     cam = hou.node('/obj').createNode('cam')
@@ -69,6 +76,7 @@ class TestGeo(unittest.TestCase):
     def setUpClass(cls):
         build_cam()
         build_envlight()
+        build_spherelight()
 
     @classmethod
     def tearDownClass(cls):
@@ -145,6 +153,63 @@ class TestShapes(TestGeo):
     def test_cylinder_caps(self):
         tube = self.geo.createNode('tube')
         tube.parm('cap').set(True)
+        self.rop.render()
+        self.assertTrue(filecmp.cmp(self.testfile,
+                                    self.basefile))
+
+    def test_trianglemesh(self):
+        box = self.geo.createNode('box')
+        self.rop.render()
+        self.assertTrue(filecmp.cmp(self.testfile,
+                                    self.basefile))
+
+    def test_trianglemesh_vtxN(self):
+        box = self.geo.createNode('box')
+        box.parm('vertexnormals').set(True)
+        self.rop.render()
+        self.assertTrue(filecmp.cmp(self.testfile,
+                                    self.basefile))
+
+    def test_trianglemesh_ptN(self):
+        box = self.geo.createNode('box')
+        normal = self.geo.createNode('normal')
+        normal.parm('type').set(0)
+        normal.setRenderFlag(True)
+        normal.setFirstInput(box)
+        self.rop.render()
+        self.assertTrue(filecmp.cmp(self.testfile,
+                                    self.basefile))
+
+    def test_trianglemesh_noauto_ptN(self):
+        box = self.geo.createNode('box')
+        ptg = self.geo.parmTemplateGroup()
+        parm = hou.properties.parmTemplate('pbrt-v3','pbrt_computeN')
+        ptg.append(parm)
+        self.geo.setParmTemplateGroup(ptg)
+        self.geo.parm('pbrt_computeN').set(False)
+        self.rop.render()
+        self.assertTrue(filecmp.cmp(self.testfile,
+                                    self.basefile))
+
+    def test_trianglemesh_vtxN_vtxUV(self):
+        box = self.geo.createNode('box')
+        box.parm('vertexnormals').set(True)
+        uvtex = self.geo.createNode('texture')
+        uvtex.parm('type').set('polar')
+        uvtex.setRenderFlag(True)
+        uvtex.setFirstInput(box)
+        self.rop.render()
+        self.assertTrue(filecmp.cmp(self.testfile,
+                                    self.basefile))
+
+    def test_trianglemesh_vtxN_ptUV(self):
+        box = self.geo.createNode('box')
+        box.parm('vertexnormals').set(True)
+        uvtex = self.geo.createNode('texture')
+        uvtex.parm('type').set('polar')
+        uvtex.parm('coord').set('point')
+        uvtex.setRenderFlag(True)
+        uvtex.setFirstInput(box)
         self.rop.render()
         self.assertTrue(filecmp.cmp(self.testfile,
                                     self.basefile))
