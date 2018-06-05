@@ -20,10 +20,13 @@ def list_instances(obj):
     if sop_node is None:
         return None
 
+    geo = sop_node.geometry()
+    if geo is None:
+        return None
+
     instance_geos = set()
 
     # Get the full path to any point instance geos
-    geo = sop_node.geometry()
     instance_attrib = geo.findPointAttrib('instance')
     if (instance_attrib is not None and
             instance_attrib.dataType() == hou.attribData.String):
