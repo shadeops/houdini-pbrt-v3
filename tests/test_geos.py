@@ -373,6 +373,38 @@ class TestShapes(TestGeo):
         hf_n.setRenderFlag(True)
         self.compare_scene()
 
+    def test_volume_vdb(self):
+        torus = self.geo.createNode('torus')
+        torus.parm('orient').set('z')
+        torus.parm('scale').set(0.75)
+        cloud = self.geo.createNode('cloud')
+        cloud.setFirstInput(torus)
+        cloudnoise = self.geo.createNode('cloudnoise',
+                                         run_init_scripts=False)
+        cloudnoise.setFirstInput(cloud)
+        cloudnoise.setRenderFlag(True)
+        self.rop.parm('integrator').set('volpath')
+        self.compare_scene()
+
+    def test_volume(self):
+        torus = self.geo.createNode('torus')
+        torus.parm('orient').set('z')
+        torus.parm('scale').set(0.75)
+        cloud = self.geo.createNode('cloud')
+        cloud.setFirstInput(torus)
+        cloudnoise = self.geo.createNode('cloudnoise',
+                                         run_init_scripts=False)
+        cloudnoise.setFirstInput(cloud)
+        convertvdb = self.geo.createNode('convertvdb')
+        convertvdb.setFirstInput(cloudnoise)
+        convertvdb.setRenderFlag(True)
+        self.rop.parm('integrator').set('volpath')
+        self.compare_scene()
+
+    def test_tesselated(self):
+        sop = self.geo.createNode('metaball')
+        self.compare_scene()
+
 if __name__ == '__main__':
     unittest.main()
 
