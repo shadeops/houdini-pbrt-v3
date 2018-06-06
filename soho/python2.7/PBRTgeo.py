@@ -807,6 +807,10 @@ def curve_wrangler(gdp, paramset=None, properties=None):
         curve_paramset = ParamSet()
         prim_curve_type = curve_type
 
+        # Closed curve surfaces are not supported
+        if prim.intrinsicValue('closed'):
+            continue
+
         order = prim.intrinsicValue('order')
         degree = order - 1
         # PBRT only supports degree 2 or 3 curves
@@ -828,22 +832,23 @@ def curve_wrangler(gdp, paramset=None, properties=None):
         curve_paramset.add(PBRTParam('point', 'P', P))
 
         if has_curvetype:
-            prim_curve_type = prim.attribValue('curvetype')
+            prim_val = prim.attribValue('curvetype')
+            prim_curve_type = prim_val if prim_val else curve_type
 
         if prim_curve_type is not None:
             curve_paramset.add(PBRTParam('string', 'type', [prim_curve_type]))
 
         if prim_curve_type == 'ribbon':
-            if has_vtx_N:
-                N_01 = (prim.vertex(0).attribValue('N'),
-                        prim.vertex(-1).attribValue('N'))
-            elif has_pt_N:
-                N_01 = (prim.vertex(0).point().attribValue('N'),
-                        prim.vertex(-1).point().attribValue('N'))
+
+            if has_vtx_N or has_pt_N:
+                N = ( prim.attribValueAt('N', u) for u in prim.intrinsicValue('knots') )
             else:
-                N_01 = None
-            if N_01 is not None:
-                curve_paramset.add(PBRTParam('normal', 'N', N_01))
+                # If ribbon, normals must exist
+                # TODO: Let pbrt error? Or put default values?
+                N = [ (0, 0, 1), ] * len(prim.intrinsicValue('knots'))
+
+            if N is not None:
+                curve_paramset.add(PBRTParam('normal', 'N', N))
 
         if has_vtx_width:
             curve_paramset.add(PBRTParam('float',
@@ -896,7 +901,8 @@ shape_wranglers = {'Sphere': sphere_wrangler,
                    'PolySoup' : mesh_wrangler,
                    'NURBMesh' : nurbs_wrangler,
                    'BezierCurve' : curve_wrangler,
-                   'NURBCurve' : curve_wrangler,
+                   # TODO, Figure out mapping between NURBS and bsplines
+                   #'NURBCurve' : curve_wrangler,
                    'Volume' : volume_wrangler,
                    'TriFan' : tesselated_wrangler,
                    'TriStrip' : tesselated_wrangler,
