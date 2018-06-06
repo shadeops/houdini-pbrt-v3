@@ -53,6 +53,13 @@ def build_geo():
         child.destroy()
     return geo
 
+def build_ground():
+    ground = hou.node('/obj').createNode('geo')
+    for child in geo.children():
+        child.destroy()
+    ground.createNode('grid')
+    return ground
+
 def build_rop(filename=None, diskfile=None):
     rop = hou.node('/out').createNode('pbrt')
     rop.parm('soho_outputmode').set(1)
@@ -106,11 +113,15 @@ class TestShapes(TestGeo):
         self.rop = build_rop(filename=exr, diskfile=self.testfile)
 
         self.geo.parm('shop_materialpath').set(self.mat.path())
+        self.extras = []
 
     def tearDown(self):
         self.geo.destroy()
         self.rop.destroy()
         clear_mat()
+        for extra in self.extras:
+            extra.destroy()
+        self.extras[:] = []
         if CLEANUP_FILES:
             os.remove(self.testfile)
 
@@ -238,6 +249,147 @@ class TestShapes(TestGeo):
         self.rop.render()
         self.assertTrue(filecmp.cmp(self.testfile,
                                     self.basefile))
+
+    def test_nurbs(self):
+        box = self.geo.createNode('box')
+        box.parm('type').set('nurbs')
+        self.rop.render()
+        self.assertTrue(filecmp.cmp(self.testfile,
+                                    self.basefile))
+    def test_nurbs_wrap(self):
+        torus = self.geo.createNode('torus')
+        torus.parm('type').set('nurbs')
+        torus.parm('orderu').set(3)
+        torus.parm('orderv').set(3)
+        self.rop.render()
+        self.assertTrue(filecmp.cmp(self.testfile,
+                                    self.basefile))
+
+    def test_curves(self):
+        grid = self.geo.createNode('grid')
+        grid.parmTuple('size').set([2, 2])
+        fur = self.geo.createNode('fur')
+        fur.setFirstInput(grid)
+        fur.parm('density').set(10)
+        fur.parm('length').set(1)
+        convert = self.geo.createNode('convert')
+        convert.setFirstInput(fur)
+        convert.parm('totype').set('bezCurve')
+        convert.setRenderFlag(True)
+        self.rop.render()
+        self.assertTrue(filecmp.cmp(self.testfile,
+                                    self.basefile))
+
+    def test_curves_vtxwidth(self):
+        grid = self.geo.createNode('grid')
+        grid.parmTuple('size').set([2, 2])
+        fur = self.geo.createNode('fur')
+        fur.setFirstInput(grid)
+        fur.parm('density').set(10)
+        fur.parm('length').set(1)
+        wrangler = self.geo.createNode('attribwrangle')
+        wrangler.parm('class').set('vertex')
+        wrangler.parm('snippet').set('@width = fit(@ptnum%5,0,4,0.1,0.01);')
+        wrangler.setFirstInput(fur)
+        convert = self.geo.createNode('convert')
+        convert.setFirstInput(wrangler)
+        convert.parm('totype').set('bezCurve')
+        convert.setRenderFlag(True)
+        self.rop.render()
+        self.assertTrue(filecmp.cmp(self.testfile,
+                                    self.basefile))
+
+    def test_curves_ptwidth(self):
+        grid = self.geo.createNode('grid')
+        grid.parmTuple('size').set([2, 2])
+        fur = self.geo.createNode('fur')
+        fur.setFirstInput(grid)
+        fur.parm('density').set(10)
+        fur.parm('length').set(1)
+        wrangler = self.geo.createNode('attribwrangle')
+        wrangler.parm('class').set('point')
+        wrangler.parm('snippet').set('@width = fit(@ptnum%5,0,4,0.1,0.01);')
+        wrangler.setFirstInput(fur)
+        convert = self.geo.createNode('convert')
+        convert.setFirstInput(wrangler)
+        convert.parm('totype').set('bezCurve')
+        convert.setRenderFlag(True)
+        self.rop.render()
+        self.assertTrue(filecmp.cmp(self.testfile,
+                                    self.basefile))
+
+    def test_curves_bspline(self):
+        grid = self.geo.createNode('grid')
+        grid.parmTuple('size').set([2, 2])
+        fur = self.geo.createNode('fur')
+        fur.setFirstInput(grid)
+        fur.parm('density').set(10)
+        fur.parm('length').set(1)
+        fur.setRenderFlag(True)
+        self.rop.render()
+        self.assertTrue(filecmp.cmp(self.testfile,
+                                    self.basefile))
+
+    def test_curves_primwidth(self):
+        grid = self.geo.createNode('grid')
+        grid.parmTuple('size').set([2, 2])
+        fur = self.geo.createNode('fur')
+        fur.setFirstInput(grid)
+        fur.parm('density').set(10)
+        fur.parm('length').set(1)
+        wrangler = self.geo.createNode('attribwrangle')
+        wrangler.parm('class').set('primitive')
+        wrangler.parm('snippet').set('@width = fit01(@primnum/10.0, 0.05, 0.1);')
+        wrangler.setFirstInput(fur)
+        convert = self.geo.createNode('convert')
+        convert.setFirstInput(wrangler)
+        convert.parm('totype').set('bezCurve')
+        convert.setRenderFlag(True)
+        self.rop.render()
+        self.assertTrue(filecmp.cmp(self.testfile,
+                                    self.basefile))
+
+    def test_curves_primcurvetype(self):
+        grid = self.geo.createNode('grid')
+        grid.parmTuple('size').set([2, 2])
+        fur = self.geo.createNode('fur')
+        fur.setFirstInput(grid)
+        fur.parm('density').set(10)
+        fur.parm('length').set(1)
+        wrangler = self.geo.createNode('attribwrangle')
+        wrangler.parm('class').set('primitive')
+        wrangler.parm('snippet').set('if (@primnum%3 == 0) s@curvetype = "ribbon";\n'
+                                     'if (@primnum%3 == 1) s@curvetype = "cylinder";\n'
+                                     'if (@primnum%3 == 2) s@curvetype = "flat";')
+        wrangler.setFirstInput(fur)
+        convert = self.geo.createNode('convert')
+        convert.setFirstInput(wrangler)
+        convert.parm('totype').set('bezCurve')
+        convert.setRenderFlag(True)
+        self.rop.render()
+        self.assertTrue(filecmp.cmp(self.testfile,
+                                    self.basefile))
+
+    def test_curves_curvetype(self):
+        parm = hou.properties.parmTemplate('pbrt-v3','pbrt_curvetype')
+        ptg = self.geo.parmTemplateGroup()
+        ptg.append(parm)
+        self.geo.setParmTemplateGroup(ptg)
+        self.geo.parm('pbrt_curvetype').set('ribbon')
+        grid = self.geo.createNode('grid')
+        grid.parmTuple('size').set([2, 2])
+        fur = self.geo.createNode('fur')
+        fur.setFirstInput(grid)
+        fur.parm('density').set(10)
+        fur.parm('length').set(1)
+        convert = self.geo.createNode('convert')
+        convert.setFirstInput(fur)
+        convert.parm('totype').set('bezCurve')
+        convert.setRenderFlag(True)
+        self.rop.render()
+        self.assertTrue(filecmp.cmp(self.testfile,
+                                    self.basefile))
+
 
 if __name__ == '__main__':
     unittest.main()
