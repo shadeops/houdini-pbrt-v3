@@ -3,10 +3,13 @@
 *.hip
 *.hda
 *.exr
-scene.pbrt
-
 */tmp/
+
 backup/
 ifds/
 render/
 issues/
+htmlcov/
+
+scene.pbrt
+.coverage
