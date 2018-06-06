@@ -31,67 +31,69 @@ if 'SOHO_PBRT_DEV' in os.environ:
 import PBRTscene
 from PBRTstate import scene_state
 
-clockstart = time.time()
+def soho_render():
+    control_parms = {
+        # The time at which the scene is being rendered
+        'now' : SohoParm('state:time', 'real', [0], False, key='now'),
+        'fps' : SohoParm('state:fps', 'real', [24], False, key='fps'),
+        'camera' : SohoParm('camera', 'string', ['/obj/cam1'], False),
+    }
 
-control_parms = {
-    # The time at which the scene is being rendered
-    'now' : SohoParm('state:time', 'real', [0], False, key='now'),
-    'fps' : SohoParm('state:fps', 'real', [24], False, key='fps'),
-    'camera' : SohoParm('camera', 'string', ['/obj/cam1'], False),
-}
+    parms = soho.evaluate(control_parms)
 
-parms = soho.evaluate(control_parms)
+    now = parms['now'].Value[0]
+    camera = parms['camera'].Value[0]
+    fps = parms['fps'].Value[0]
 
-now = parms['now'].Value[0]
-camera = parms['camera'].Value[0]
-fps = parms['fps'].Value[0]
+    options = {'state:precision' : 6}
+    if not soho.initialize(now, camera, options):
+        soho.error("Unable to initialize rendering module with given camera")
 
-options = {'state:precision' : 6}
-if not soho.initialize(now, camera, options):
-    soho.error("Unable to initialize rendering module with given camera")
+    object_selection = {
+        # Candidate object selection
+        'vobject' : SohoParm('vobject', 'string', ['*'], False),
+        'alights' : SohoParm('alights', 'string', ['*'], False),
+        'forceobject' : SohoParm('forceobject', 'string', [''], False),
+        'forcelights' : SohoParm('forcelights', 'string', [''], False),
+        'excludeobject' : SohoParm('excludeobject', 'string', [''], False),
+        'excludelights' : SohoParm('excludelights', 'string', [''], False),
+        'sololight' : SohoParm('sololight', 'string', [''], False),
+    }
 
-object_selection = {
-    # Candidate object selection
-    'vobject' : SohoParm('vobject', 'string', ['*'], False),
-    'alights' : SohoParm('alights', 'string', ['*'], False),
+    for cam in soho.objectList('objlist:camera'):
+        break
+    else:
+        soho.error('Unable to find viewing camera for render')
 
-    'forceobject' : SohoParm('forceobject', 'string', [''], False),
-    'forcelights' : SohoParm('forcelights', 'string', [''], False),
+    objparms = cam.evaluate(object_selection, now)
 
-    'excludeobject' : SohoParm('excludeobject', 'string', [''], False),
-    'excludelights' : SohoParm('excludelights', 'string', [''], False),
+    stdobject = objparms['vobject'].Value[0]
+    stdlights = objparms['alights'].Value[0]
+    forceobject = objparms['forceobject'].Value[0]
+    forcelights = objparms['forcelights'].Value[0]
+    excludeobject = objparms['excludeobject'].Value[0]
+    excludelights = objparms['excludelights'].Value[0]
+    sololight = objparms['sololight'].Value[0]
+    forcelightsparm = 'forcelights'
 
-    'sololight' : SohoParm('sololight', 'string', [''], False),
-}
+    if sololight:
+        stdlights = excludelights = None
+        forcelights = sololight
+        forcelightsparm = 'sololight'
 
-for cam in soho.objectList('objlist:camera'):
-    break
-else:
-    soho.error('Unable to find viewing camera for render')
+    # First, we add objects based on their display flags or dimmer values
+    soho.addObjects(now, stdobject, stdlights, '', True)
+    soho.addObjects(now, forceobject, forcelights, '', False)
+    soho.removeObjects(now, excludeobject, excludelights, '')
 
-objparms = cam.evaluate(object_selection, now)
+    # Lock off the objects we've selected
+    soho.lockObjects(now)
 
-stdobject = objparms['vobject'].Value[0]
-stdlights = objparms['alights'].Value[0]
-forceobject = objparms['forceobject'].Value[0]
-forcelights = objparms['forcelights'].Value[0]
-excludeobject = objparms['excludeobject'].Value[0]
-excludelights = objparms['excludelights'].Value[0]
-sololight = objparms['sololight'].Value[0]
-forcelightsparm = 'forcelights'
+    with hou.undos.disabler(), scene_state:
+        PBRTscene.render(cam, now)
+    return
 
-if sololight:
-    stdlights = excludelights = None
-    forcelights = sololight
-    forcelightsparm = 'sololight'
-
-# First, we add objects based on their display flags or dimmer values
-soho.addObjects(now, stdobject, stdlights, '', True)
-soho.addObjects(now, forceobject, forcelights, '', False)
-soho.removeObjects(now, excludeobject, excludelights, '')
-
-# Lock off the objects we've selected
-soho.lockObjects(now)
-
-with hou.undos.disabler(), scene_state:
-    PBRTscene.render(cam, now)
+if __name__ in ('__builtin__', '__main__'):
+    clockstart = time.time()
+    soho_render()
+    clockend = time.time()
