@@ -125,11 +125,15 @@ class TestShapes(TestGeo):
         if CLEANUP_FILES:
             os.remove(self.testfile)
 
-    def test_sphere(self):
-        sphere = self.geo.createNode('sphere')
+    def compare_scene(self):
         self.rop.render()
         self.assertTrue(filecmp.cmp(self.testfile,
                                     self.basefile))
+
+    def test_sphere(self):
+        sphere = self.geo.createNode('sphere')
+        self.compare_scene()
+
     def test_sphere_xformed(self):
         sphere = self.geo.createNode('sphere')
         sphere.parmTuple('rad').set([0.5, 0.25, 0.75])
@@ -138,48 +142,45 @@ class TestShapes(TestGeo):
         xform.parmTuple('t').set([0.1, 0.2, 0.3])
         xform.parmTuple('r').set([30, 45, 60])
         xform.setRenderFlag(True)
-        self.rop.render()
-        self.assertTrue(filecmp.cmp(self.testfile,
-                                    self.basefile))
+        self.compare_scene()
 
     def test_circle(self):
         circle = self.geo.createNode('circle')
-        self.rop.render()
-        self.assertTrue(filecmp.cmp(self.testfile,
-                                    self.basefile))
+        self.compare_scene()
 
     def test_cylinder(self):
         tube = self.geo.createNode('tube')
-        self.rop.render()
-        self.assertTrue(filecmp.cmp(self.testfile,
-                                    self.basefile))
+        self.compare_scene()
 
     def test_cone(self):
         tube = self.geo.createNode('tube')
         tube.parm('rad1').set(0)
-        self.rop.render()
-        self.assertTrue(filecmp.cmp(self.testfile,
-                                    self.basefile))
+        self.compare_scene()
+
+    def test_cone_caps(self):
+        tube = self.geo.createNode('tube')
+        tube.parm('rad1').set(0)
+        tube.parm('cap').set(True)
+        self.compare_scene()
+
+    def test_unsupported_tube(self):
+        tube = self.geo.createNode('tube')
+        tube.parm('rad1').set(0.5)
+        self.compare_scene()
 
     def test_cylinder_caps(self):
         tube = self.geo.createNode('tube')
         tube.parm('cap').set(True)
-        self.rop.render()
-        self.assertTrue(filecmp.cmp(self.testfile,
-                                    self.basefile))
+        self.compare_scene()
 
     def test_trianglemesh(self):
         box = self.geo.createNode('box')
-        self.rop.render()
-        self.assertTrue(filecmp.cmp(self.testfile,
-                                    self.basefile))
+        self.compare_scene()
 
     def test_trianglemesh_vtxN(self):
         box = self.geo.createNode('box')
         box.parm('vertexnormals').set(True)
-        self.rop.render()
-        self.assertTrue(filecmp.cmp(self.testfile,
-                                    self.basefile))
+        self.compare_scene()
 
     def test_trianglemesh_ptN(self):
         box = self.geo.createNode('box')
@@ -187,9 +188,7 @@ class TestShapes(TestGeo):
         normal.parm('type').set(0)
         normal.setRenderFlag(True)
         normal.setFirstInput(box)
-        self.rop.render()
-        self.assertTrue(filecmp.cmp(self.testfile,
-                                    self.basefile))
+        self.compare_scene()
 
     def test_trianglemesh_noauto_ptN(self):
         box = self.geo.createNode('box')
@@ -198,9 +197,7 @@ class TestShapes(TestGeo):
         ptg.append(parm)
         self.geo.setParmTemplateGroup(ptg)
         self.geo.parm('pbrt_computeN').set(False)
-        self.rop.render()
-        self.assertTrue(filecmp.cmp(self.testfile,
-                                    self.basefile))
+        self.compare_scene()
 
     def test_trianglemesh_vtxN_vtxUV(self):
         box = self.geo.createNode('box')
@@ -209,9 +206,7 @@ class TestShapes(TestGeo):
         uvtex.parm('type').set('polar')
         uvtex.setRenderFlag(True)
         uvtex.setFirstInput(box)
-        self.rop.render()
-        self.assertTrue(filecmp.cmp(self.testfile,
-                                    self.basefile))
+        self.compare_scene()
 
     def test_trianglemesh_vtxN_ptUV(self):
         box = self.geo.createNode('box')
@@ -221,9 +216,7 @@ class TestShapes(TestGeo):
         uvtex.parm('coord').set('point')
         uvtex.setRenderFlag(True)
         uvtex.setFirstInput(box)
-        self.rop.render()
-        self.assertTrue(filecmp.cmp(self.testfile,
-                                    self.basefile))
+        self.compare_scene()
 
     def test_loopsubdiv(self):
         box = self.geo.createNode('box')
@@ -232,9 +225,7 @@ class TestShapes(TestGeo):
         ptg.append(parm)
         self.geo.setParmTemplateGroup(ptg)
         self.geo.parm('pbrt_rendersubd').set(True)
-        self.rop.render()
-        self.assertTrue(filecmp.cmp(self.testfile,
-                                    self.basefile))
+        self.compare_scene()
 
     def test_loopsubdiv_level_1(self):
         box = self.geo.createNode('box')
@@ -246,24 +237,19 @@ class TestShapes(TestGeo):
         self.geo.setParmTemplateGroup(ptg)
         self.geo.parm('pbrt_rendersubd').set(True)
         self.geo.parm('pbrt_subdlevels').set(1)
-        self.rop.render()
-        self.assertTrue(filecmp.cmp(self.testfile,
-                                    self.basefile))
+        self.compare_scene()
 
     def test_nurbs(self):
         box = self.geo.createNode('box')
         box.parm('type').set('nurbs')
-        self.rop.render()
-        self.assertTrue(filecmp.cmp(self.testfile,
-                                    self.basefile))
+        self.compare_scene()
+
     def test_nurbs_wrap(self):
         torus = self.geo.createNode('torus')
         torus.parm('type').set('nurbs')
         torus.parm('orderu').set(3)
         torus.parm('orderv').set(3)
-        self.rop.render()
-        self.assertTrue(filecmp.cmp(self.testfile,
-                                    self.basefile))
+        self.compare_scene()
 
     def test_curves(self):
         grid = self.geo.createNode('grid')
@@ -276,9 +262,7 @@ class TestShapes(TestGeo):
         convert.setFirstInput(fur)
         convert.parm('totype').set('bezCurve')
         convert.setRenderFlag(True)
-        self.rop.render()
-        self.assertTrue(filecmp.cmp(self.testfile,
-                                    self.basefile))
+        self.compare_scene()
 
     def test_curves_vtxwidth(self):
         grid = self.geo.createNode('grid')
@@ -295,9 +279,7 @@ class TestShapes(TestGeo):
         convert.setFirstInput(wrangler)
         convert.parm('totype').set('bezCurve')
         convert.setRenderFlag(True)
-        self.rop.render()
-        self.assertTrue(filecmp.cmp(self.testfile,
-                                    self.basefile))
+        self.compare_scene()
 
     def test_curves_ptwidth(self):
         grid = self.geo.createNode('grid')
@@ -314,9 +296,7 @@ class TestShapes(TestGeo):
         convert.setFirstInput(wrangler)
         convert.parm('totype').set('bezCurve')
         convert.setRenderFlag(True)
-        self.rop.render()
-        self.assertTrue(filecmp.cmp(self.testfile,
-                                    self.basefile))
+        self.compare_scene()
 
     def test_curves_bspline(self):
         grid = self.geo.createNode('grid')
@@ -326,9 +306,7 @@ class TestShapes(TestGeo):
         fur.parm('density').set(10)
         fur.parm('length').set(1)
         fur.setRenderFlag(True)
-        self.rop.render()
-        self.assertTrue(filecmp.cmp(self.testfile,
-                                    self.basefile))
+        self.compare_scene()
 
     def test_curves_primwidth(self):
         grid = self.geo.createNode('grid')
@@ -345,9 +323,7 @@ class TestShapes(TestGeo):
         convert.setFirstInput(wrangler)
         convert.parm('totype').set('bezCurve')
         convert.setRenderFlag(True)
-        self.rop.render()
-        self.assertTrue(filecmp.cmp(self.testfile,
-                                    self.basefile))
+        self.compare_scene()
 
     def test_curves_primcurvetype(self):
         grid = self.geo.createNode('grid')
@@ -366,9 +342,7 @@ class TestShapes(TestGeo):
         convert.setFirstInput(wrangler)
         convert.parm('totype').set('bezCurve')
         convert.setRenderFlag(True)
-        self.rop.render()
-        self.assertTrue(filecmp.cmp(self.testfile,
-                                    self.basefile))
+        self.compare_scene()
 
     def test_curves_curvetype(self):
         parm = hou.properties.parmTemplate('pbrt-v3','pbrt_curvetype')
@@ -386,10 +360,18 @@ class TestShapes(TestGeo):
         convert.setFirstInput(fur)
         convert.parm('totype').set('bezCurve')
         convert.setRenderFlag(True)
-        self.rop.render()
-        self.assertTrue(filecmp.cmp(self.testfile,
-                                    self.basefile))
+        self.compare_scene()
 
+    def test_heightfield(self):
+        hf = self.geo.createNode('heightfield')
+        hf.parm('gridspacing').set(0.05)
+        hf.parmTuple('size').set([3, 3])
+        hf_n = self.geo.createNode('heightfield_noise')
+        hf_n.setFirstInput(hf)
+        hf_n.parm('amp').set(1)
+        hf_n.parm('elementsize').set(0.5)
+        hf_n.setRenderFlag(True)
+        self.compare_scene()
 
 if __name__ == '__main__':
     unittest.main()
