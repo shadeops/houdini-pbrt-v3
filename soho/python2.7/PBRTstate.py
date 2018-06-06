@@ -63,7 +63,7 @@ if gdp is not None:
     def __enter__(self):
         self.reset()
         self.init_state()
-        self.create_tesselator()
+        self.tesselator = self.create_tesselator()
         return
 
     def __exit__(self, *args):
@@ -94,7 +94,7 @@ if gdp is not None:
             raise TypeError('Tesselator is None')
         self.tesselator.setCachedUserData('gdp', geo)
         self.tesselator.node('python').cook(force=True)
-        gdp = self.tesselator.node('triangulate').geometry().freeze()
+        gdp = self.tesselator.node('OUT').geometry().freeze()
         return gdp
 
     def create_tesselator(self):
@@ -106,21 +106,31 @@ if gdp is not None:
         py_node = sopnet.createNode('python', node_name='python', run_init_scripts=False)
         convert_node = sopnet.createNode('convert', node_name='to_polys', run_init_scripts=False)
         divide_node = sopnet.createNode('divide', node_name='triangulate', run_init_scripts=False)
+        wrangler_node = sopnet.createNode('attribwrangle', node_name='cull_open',
+                                          run_init_scripts=False)
+        out_node = sopnet.createNode('output', node_name='OUT', run_init_scripts=False)
 
         py_node.setUnloadFlag(True)
         convert_node.setUnloadFlag(True)
-        divide_node.setDisplayFlag(True)
+        out_node.setDisplayFlag(True)
+        out_node.setRenderFlag(True)
 
         py_node.parm('python').set(self._tesslate_py)
 
         convert_node.parm('lodu').set(1)
         convert_node.parm('lodv').set(1)
 
+        # Remove any primitives that are not closed as pbrt can not handle them
+        wrangler_node.parm('class').set('primitive')
+        wrangler_node.parm('snippet').set('if (!primintrinsic(geoself(), "closed", @primnum)) '
+                                          'removeprim(geoself(), @primnum, 1);')
+
         convert_node.setFirstInput(py_node)
         divide_node.setFirstInput(convert_node)
+        wrangler_node.setFirstInput(divide_node)
+        out_node.setFirstInput(wrangler_node)
 
-        self.tesselator = sopnet
-        return
+        return sopnet
 
     def remove_tesselator(self):
         """Tear down the previously created tesselator network"""
