@@ -405,6 +405,45 @@ class TestShapes(TestGeo):
         sop = self.geo.createNode('metaball')
         self.compare_scene()
 
+    def test_geo_materials(self):
+        disney = hou.node('/mat').createNode('pbrt_material_disney',
+                                             run_init_scripts=False)
+        box = self.geo.createNode('box')
+        material = self.geo.createNode('material')
+        material.parm('shop_materialpath1').set(disney.path())
+        material.setFirstInput(box)
+        material.setRenderFlag(True)
+        self.compare_scene()
+
+    def test_geo_material_overrides(self):
+        disney = hou.node('/mat').createNode('pbrt_material_disney',
+                                             run_init_scripts=False)
+        box = self.geo.createNode('box')
+        material = self.geo.createNode('material')
+        material.parm('shop_materialpath1').set(disney.path())
+        material.parm('num_local1').set(1)
+        material.parm('local1_name1').set('color')
+        material.parm('local1_type1').set('color')
+        material.parmTuple('local1_cval1').set([0.9, 0, 0])
+        material.setFirstInput(box)
+        material.setRenderFlag(True)
+        self.compare_scene()
+
+    def test_geo_ignore_materials(self):
+        parm = hou.properties.parmTemplate('pbrt-v3','pbrt_ignorematerials')
+        ptg = self.geo.parmTemplateGroup()
+        ptg.append(parm)
+        self.geo.setParmTemplateGroup(ptg)
+        self.geo.parm('pbrt_ignorematerials').set(True)
+        disney = hou.node('/mat').createNode('pbrt_material_disney',
+                                             run_init_scripts=False)
+        box = self.geo.createNode('box')
+        material = self.geo.createNode('material')
+        material.parm('shop_materialpath1').set(disney.path())
+        material.setFirstInput(box)
+        material.setRenderFlag(True)
+        self.compare_scene()
+
 if __name__ == '__main__':
     unittest.main()
 
