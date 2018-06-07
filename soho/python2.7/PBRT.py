@@ -94,6 +94,4 @@ def soho_render():
     return
 
 if __name__ in ('__builtin__', '__main__'):
-    clockstart = time.time()
     soho_render()
-    clockend = time.time()

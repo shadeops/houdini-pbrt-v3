@@ -973,7 +973,7 @@ def output_geo(soppath, now, properties=None):
 
     ignore_materials = False
     if 'pbrt_ignorematerials' in properties:
-        ignore_materials = properties[ignore_materials].Value[0]
+        ignore_materials = properties['pbrt_ignorematerials'].Value[0]
 
     # PBRT allows setting Material parameters on the Shapes in order to
     #       override a material's settings.  (Shapes get checked first)
