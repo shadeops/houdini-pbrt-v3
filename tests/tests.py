@@ -55,7 +55,7 @@ def build_geo():
 
 def build_ground():
     ground = hou.node('/obj').createNode('geo')
-    for child in geo.children():
+    for child in ground.children():
         child.destroy()
     ground.createNode('grid')
     return ground
@@ -69,21 +69,11 @@ def build_rop(filename=None, diskfile=None):
         rop.parm('filename').set(filename)
     return rop
 
-def build_scene():
-    cam = build_cam()
-    env = build_envlight()
-    matte = build_checker_material()
-
-    geo = hou.node('/obj').createNode('geo')
-    geo.parm('shop_materialpath').set(matte.path())
-
-class TestGeo(unittest.TestCase):
+class TestBase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
         build_cam()
-        build_envlight()
-        build_spherelight()
 
     @classmethod
     def tearDownClass(cls):
@@ -102,6 +92,94 @@ class TestGeo(unittest.TestCase):
     @property
     def name(self):
         return self.id().split('.')[-1]
+
+class TestLights(TestBase):
+
+    @classmethod
+    def setUpClass(cls):
+        build_cam()
+        build_ground()
+
+    def setUp(self):
+        self.light = hou.node('/obj').createNode('hlight')
+        self.light.parm('ty').set(1.5)
+        self.light.parm('rx').set(-90)
+        exr = '%s.exr' % self.name
+        self.rop = build_rop(filename=exr, diskfile=self.testfile)
+
+    def tearDown(self):
+        self.light.destroy()
+        self.rop.destroy()
+        if CLEANUP_FILES:
+            os.remove(self.testfile)
+
+    def compare_scene(self):
+        self.rop.render()
+        self.assertTrue(filecmp.cmp(self.testfile,
+                                    self.basefile))
+
+    def test_pointlight(self):
+        self.light.parm('light_type').set('point')
+        self.light.parm('light_intensity').set(5)
+        self.compare_scene()
+
+    def test_spotlight(self):
+        self.light.parm('light_type').set('point')
+        self.light.parm('light_intensity').set(5)
+        self.light.parm('coneenable').set(True)
+        self.compare_scene()
+
+    def test_projectorlight(self):
+        self.light.parm('light_type').set('point')
+        self.light.parm('light_intensity').set(5)
+        self.light.parm('coneenable').set(True)
+        self.light.parm('projmap').set('../../maps/tex.exr')
+        self.compare_scene()
+
+    def test_goniometriclight(self):
+        self.light.parm('light_type').set('point')
+        self.light.parm('light_intensity').set(5)
+        self.light.parm('areamap').set('../../maps/tex.exr')
+        self.compare_scene()
+
+    def test_distantlight(self):
+        self.light.parm('light_type').set('distant')
+        self.light.parm('light_intensity').set(5)
+        self.compare_scene()
+
+    def test_spherelight(self):
+        self.light.parm('light_type').set('sphere')
+        self.light.parm('light_intensity').set(5)
+        self.compare_scene()
+
+    def test_tubelight(self):
+        self.light.parm('light_type').set('tube')
+        self.light.parm('light_intensity').set(5)
+        self.compare_scene()
+
+    def test_disklight(self):
+        self.light.parm('light_type').set('disk')
+        self.light.parm('light_intensity').set(5)
+        self.compare_scene()
+
+    def test_gridlight(self):
+        self.light.parm('light_type').set('grid')
+        self.light.parm('light_intensity').set(5)
+        self.compare_scene()
+
+class TestGeo(TestBase):
+
+    @classmethod
+    def setUpClass(cls):
+        build_cam()
+        build_envlight()
+        build_spherelight()
+
+    @classmethod
+    def tearDownClass(cls):
+        hou.hipFile.clear(suppress_save_prompt=True)
+        if CLEANUP_FILES:
+            shutil.rmtree('tests/tmp')
 
 class TestShapes(TestGeo):
 
