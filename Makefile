@@ -1,6 +1,3 @@
-
-# hython coverage run --branch --source=soho/python2.7 /mnt/storage/job/soho_pbrt/tests/test_geos.py
-
 COVERAGE = coverage
 
 hda:
