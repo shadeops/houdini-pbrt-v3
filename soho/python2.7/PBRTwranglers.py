@@ -535,6 +535,8 @@ def wrangle_light(light, wrangler, now):
         paramset.add(PBRTParam('rgb', 'L', parms['light_color'].Value))
         paramset.add(PBRTParam('bool', 'twosided', [not single_sided]))
 
+        # TODO, Possibly get the xform's scale and scale the geo, not the light.
+        #       (for example, further multiplying down the radius)
         xform = get_transform(light, now)
         xform_to_api_srt(xform, scale=False)
 
@@ -544,9 +546,7 @@ def wrangle_light(light, wrangler, now):
 
         # PBRT only supports uniform scales for non-mesh area lights
         # this is in part due to explicit light's area scaling factor.
-        if light_type in ('sphere', 'tube', 'disk'):
-            api.Scale(size[0], size[0], size[0])
-        else:
+        if light_type in ('grid', 'geo'):
             api.Scale(size[0], size[1], size[0])
 
         # The visibility only applies to hits on the non-emissive side of the light.
@@ -555,18 +555,19 @@ def wrangle_light(light, wrangler, now):
             api.Material('none')
 
         if light_type == 'sphere':
-            api.Shape('sphere', [PBRTParam('float', 'radius', 0.5)])
+            # We apply the scale to the radius instead of using a api.Scale
+            api.Shape('sphere', [PBRTParam('float', 'radius', 0.5*size[0])])
         elif light_type == 'tube':
             api.Rotate(90, 0, 1, 0)
-            api.Shape('cylinder', [PBRTParam('float', 'radius', 0.075),
-                                   PBRTParam('float', 'zmin', -0.5),
-                                   PBRTParam('float', 'zmax', 0.5)])
+            api.Shape('cylinder', [PBRTParam('float', 'radius', 0.075*size[1]),
+                                   PBRTParam('float', 'zmin', -0.5*size[0]),
+                                   PBRTParam('float', 'zmax', 0.5*size[0])])
         elif light_type == 'disk':
             # A bug was introduced with Issue #154 which requires a -z scale
             # on disk area lights
             # See issue #183
             # api.Scale(1,1,-1)
-            api.Shape('disk', [PBRTParam('float', 'radius', [0.5])])
+            api.Shape('disk', [PBRTParam('float', 'radius', 0.5*size[0])])
         elif light_type == 'grid':
             api.Shape('trianglemesh', [PBRTParam('integer', 'indices', [0, 3, 1,
                                                                         0, 2, 3]),
