@@ -869,9 +869,10 @@ def curve_wrangler(gdp, paramset=None, properties=None):
                                          'width',
                                          prim.attribValue('width')))
         else:
+            # Houdini's default matches a width of 0.05
             curve_paramset.add(PBRTParam('float',
                                          'width',
-                                         0.1))
+                                         0.05))
 
         curve_paramset |= paramset
         api.Shape('curve', curve_paramset)
