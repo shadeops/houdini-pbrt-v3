@@ -166,8 +166,8 @@ class PBRTParam(object):
     #       http://www.pbrt.org/fileformat-v3.html#parameter-lists
 
     pbrt_types = ('texture', 'float', 'point2', 'vector2', 'point3', 'normal',
-                  'integer', 'spectrum', 'rgb', 'xyz', 'blackbody', 'string',
-                  'bool')
+                  'vector3', 'integer', 'spectrum', 'rgb', 'xyz', 'blackbody',
+                  'string', 'bool')
     type_synonyms = {'point' : 'point3',
                      'vector' : 'vector3',
                      'color' : 'rgb',
@@ -574,6 +574,10 @@ class TextureNode(MaterialNode):
 
     @property
     def output_type(self):
-        if self.node.currentSignatureName() == 'default':
+        # We assume that the first output is always representative
+        # of the node's output_type
+        if self.node.outputDataTypes()[0] == 'float':
             return 'float'
-        return 'spectrum'
+        elif self.node.outputDataTypes()[0] == 'struct_PBRTSpectrum':
+            return 'spectrum'
+        return None
