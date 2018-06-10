@@ -62,7 +62,7 @@
         }
     }
     parm {
-        SOHO_TOGGLE(pbrt_computeN, "Auto Create Normals if Missing", "Geometry", 1)
+        SOHO_TOGGLE(pbrt_computeN, "Auto Create Normals if Missing (pbrt)", "Geometry", 1)
     }
     parm {
         SOHO_TOGGLE(pbrt_ignorevolumes, "Ignore Volumes", "Geometry", 0)
