@@ -9,7 +9,7 @@ from sohog import SohoGeometry
 
 import PBRTapi as api
 from PBRTwranglers import *
-from PBRTplugins import BaseNode
+from PBRTnodes import BaseNode
 from PBRTinstancing import list_instances
 from PBRTstate import scene_state
 

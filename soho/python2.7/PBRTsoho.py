@@ -5,7 +5,7 @@ from contextlib import contextmanager
 import soho
 import sohoglue
 
-from PBRTplugins import PBRTParam
+from PBRTnodes import PBRTParam
 
 class SohoPBRT(soho.SohoParm):
     """Simple subclass of soho.SohoParm that adds to_pbrt() method"""

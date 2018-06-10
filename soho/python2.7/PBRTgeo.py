@@ -7,7 +7,7 @@ import collections
 import hou
 
 import PBRTapi as api
-from PBRTplugins import BaseNode, PBRTParam, ParamSet, pbrt_param_from_ref
+from PBRTnodes import BaseNode, PBRTParam, ParamSet, pbrt_param_from_ref
 
 from PBRTstate import scene_state
 

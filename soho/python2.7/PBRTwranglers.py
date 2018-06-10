@@ -12,7 +12,7 @@ import PBRTinstancing as Instancing
 
 from PBRTstate import scene_state
 from PBRTsoho import SohoPBRT, soho_override_block
-from PBRTplugins import PBRTParam, ParamSet, BaseNode
+from PBRTnodes import PBRTParam, ParamSet, BaseNode
 
 __all__ = ['wrangle_film', 'wrangle_sampler', 'wrangle_accelerator',
            'wrangle_integrator', 'wrangle_filter', 'wrangle_camera',
