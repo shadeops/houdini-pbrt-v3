@@ -1187,6 +1187,15 @@
                 "2" "Stdout"
             }
         }
+        parm { 
+            name    soho_foreground
+            label   "Block Until Render Completes"
+            type    toggle
+            parmtag { spare_category    "SOHO Intrinsics" }
+            default { 0 }
+            disablewhen "{ soho_outputmode != 0 }"
+            help    "When rendering to the soho_pipecmd, turning this on will block Houdini until the pipe command completes."
+        }
         parm {
             name    "soho_diskfile"
             label   "Disk File"
@@ -1194,6 +1203,14 @@
             default { "$HIP/scene.pbrt" }
             disablewhen "{ soho_outputmode != 1 }"
             parmtag { "filechooser_mode" "write" }
+        }
+        parm {
+            name    "soho_viewport_menu"
+            label   "Show In Viewport Menu"
+            type    toggle
+            default { "0" }
+            help    "By default SOHO output drivers do not appear in the viewport menu.  Adding this property and turning it on will cause the driver to show up."
+            parmtag { "spare_category" "Menu" }
         }
         groupsimple {
             name    "soho_config"
@@ -1226,6 +1243,140 @@
             }
         }
 
+    }
+
+    group {
+        name    "Scripts"
+        label   "Scripts"
+
+        parm {
+            name    "tprerender"
+            label   "tprerender"
+            type    toggle
+            nolabel
+            joinnext
+            default { "1" }
+            help    "None"
+        }
+        parm {
+            name    "prerender"
+            label   "Pre-Render Script"
+            type    file
+            joinnext
+            default { "" }
+            help    "None"
+            disablewhen "{ tprerender == 0 }"
+            parmtag { "filechooser_mode" "read" }
+        }
+        parm {
+            name    "lprerender"
+            label   "lprerender"
+            type    string
+            nolabel
+            default { "hscript" }
+            help    "None"
+            disablewhen "{ tprerender == 0 }"
+            menu {
+                "hscript"   "Hscript"
+                "python"    "Python"
+            }
+        }
+        parm {
+            name    "tpreframe"
+            label   "tpreframe"
+            type    toggle
+            nolabel
+            joinnext
+            default { "1" }
+            help    "None"
+        }
+        parm {
+            name    "preframe"
+            label   "Pre-Frame Script"
+            type    file
+            joinnext
+            default { "" }
+            help    "None"
+            disablewhen "{ tpreframe == 0 }"
+            parmtag { "filechooser_mode" "read" }
+        }
+        parm {
+            name    "lpreframe"
+            label   "lpreframe"
+            type    string
+            nolabel
+            default { "hscript" }
+            help    "None"
+            disablewhen "{ tpreframe == 0 }"
+            menu {
+                "hscript"   "Hscript"
+                "python"    "Python"
+            }
+        }
+        parm {
+            name    "tpostframe"
+            label   "tpostframe"
+            type    toggle
+            nolabel
+            joinnext
+            default { "1" }
+            help    "None"
+        }
+        parm {
+            name    "postframe"
+            label   "Post-Frame Script"
+            type    file
+            joinnext
+            default { "" }
+            help    "None"
+            disablewhen "{ tpostframe == 0 }"
+            parmtag { "filechooser_mode" "read" }
+        }
+        parm {
+            name    "lpostframe"
+            label   "lpostframe"
+            type    string
+            nolabel
+            default { "hscript" }
+            help    "None"
+            disablewhen "{ tpostframe == 0 }"
+            menu {
+                "hscript"   "Hscript"
+                "python"    "Python"
+            }
+        }
+        parm {
+            name    "tpostrender"
+            label   "tpostrender"
+            type    toggle
+            nolabel
+            joinnext
+            default { "1" }
+            help    "None"
+        }
+        parm {
+            name    "postrender"
+            label   "Post-Render Script"
+            type    file
+            joinnext
+            default { "" }
+            help    "None"
+            disablewhen "{ tpostrender == 0 }"
+            parmtag { "filechooser_mode" "read" }
+        }
+        parm {
+            name    "lpostrender"
+            label   "lpostrender"
+            type    string
+            nolabel
+            default { "hscript" }
+            help    "None"
+            disablewhen "{ tpostrender == 0 }"
+            menu {
+                "hscript"   "Hscript"
+                "python"    "Python"
+            }
+        }
     }
 
 }
