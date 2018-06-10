@@ -588,8 +588,8 @@ def smoke_prim_wrangler(prims, paramset=None, properties=None):
 
     medium_paramset = ParamSet()
     if 'pbrt_interior' in properties:
-        interior = BaseNode.from_node(properties['pbrt_interior'])
-        if interior is not None and interior.directive == 'medium':
+        interior = BaseNode.from_node(properties['pbrt_interior'].Value[0])
+        if interior is not None and interior.directive_type == 'pbrt_medium':
             medium_paramset |= interior.paramset
 
     exterior = None
@@ -611,15 +611,19 @@ def smoke_prim_wrangler(prims, paramset=None, properties=None):
         smoke_paramset.add(PBRTParam('point', 'p0', [-1, -1, -1]))
         smoke_paramset.add(PBRTParam('point', 'p1', [1, 1, 1]))
         smoke_paramset.add(PBRTParam('float', 'density', voxeldata))
-        # By default we'll set a sigma_a and sigma_s
-        # however the object's pbrt_interior, or prim's pbrt_interior
-        # or prim attribs will override these.
-        smoke_paramset.add(PBRTParam('color', 'sigma_a', [1, 1, 1]))
-        smoke_paramset.add(PBRTParam('color', 'sigma_s', [1, 1, 1]))
 
         medium_prim_overrides = medium_prim_paramset(prim, medium_paramset)
         smoke_paramset.update(medium_prim_overrides)
         smoke_paramset |= paramset
+
+        # By default we'll set a sigma_a and sigma_s to be more Houdini-like
+        # however the object's pbrt_interior, or prim's pbrt_interior
+        # or prim attribs will override these.
+        if ( (PBRTParam('color', 'sigma_a') not in smoke_paramset and
+              PBRTParam('color', 'sigma_s') not in smoke_paramset) and
+             PBRTParam('string', 'preset') not in smoke_paramset ):
+            smoke_paramset.add(PBRTParam('color', 'sigma_a', [1, 1, 1]))
+            smoke_paramset.add(PBRTParam('color', 'sigma_s', [1, 1, 1]))
 
         with api.AttributeBlock():
             xform = prim_transform(prim)
