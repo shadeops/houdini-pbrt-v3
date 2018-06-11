@@ -391,6 +391,10 @@ class BaseNode(object):
         else:
             raise hou.TypeError('%s is unknown type' % node)
 
+        # Since we rely on hidden and disabled states for which parms
+        # to export, we need to ensure these are set
+        self.node.updateParmStates()
+
         self.ignore_defaults = ignore_defaults
         self.directive = get_directive_from_nodetype(node.type())
 
