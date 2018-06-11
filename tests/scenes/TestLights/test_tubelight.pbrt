@@ -18,7 +18,6 @@ WorldBegin	# {
 	Rotate -90 1 0 0
 	AreaLightSource "diffuse" "bool twosided" [ "true" ] "rgb L" [ 1 1 1 ] "rgb scale" [ 5 5 5 ]
 	AttributeBegin	# {
-	    Scale 1 1 1
 	    Material "none"
 	    Rotate 90 0 1 0
 	    Shape "cylinder" "float radius" [ 0.075 ] "float zmin" [ -0.5 ] "float zmax" [ 0.5 ]

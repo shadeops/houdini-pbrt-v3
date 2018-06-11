@@ -26,7 +26,6 @@ WorldBegin	# {
 	Translate 3 3 3
 	AreaLightSource "diffuse" "bool twosided" [ "true" ] "rgb L" [ 1 1 1 ] "rgb scale" [ 50 50 50 ]
 	AttributeBegin	# {
-	    Scale 1 1 1
 	    Material "none"
 	    Shape "sphere" "float radius" [ 0.5 ]
 	AttributeEnd	# }
