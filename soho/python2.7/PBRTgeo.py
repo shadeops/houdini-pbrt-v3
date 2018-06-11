@@ -515,39 +515,39 @@ def medium_prim_paramset(prim, paramset=None):
     except hou.OperationFailed:
         interior = None
 
-    if interior and interior.directive == 'medium':
+    if interior and interior.directive_type == 'pbrt_medium':
         medium_paramset |= interior.paramset
 
     try:
         preset_value = prim.stringAttribValue('preset')
         if preset_value:
-            medium_paramset.update(PBRTParam('string', 'preset', preset_value))
+            medium_paramset.replace(PBRTParam('string', 'preset', preset_value))
     except hou.OperationFailed:
         pass
 
     try:
         g_value = prim.floatAttribValue('g')
-        medium_paramset.update(PBRTParam('float', 'g', g_value))
+        medium_paramset.replace(PBRTParam('float', 'g', g_value))
     except hou.OperationFailed:
         pass
 
     try:
         scale_value = prim.floatAttribValue('scale')
-        medium_paramset.update(PBRTParam('float', 'scale', g_value))
+        medium_paramset.replace(PBRTParam('float', 'scale', scale_value))
     except hou.OperationFailed:
         pass
 
     try:
         sigma_a_value = prim.floatListAttribValue('sigma_a')
         if len(sigma_a) == 3:
-            medium_paramset.update(PBRTParam('rgb', 'sigma_a', sigma_a_value))
+            medium_paramset.replace(PBRTParam('rgb', 'sigma_a', sigma_a_value))
     except hou.OperationFailed:
         pass
 
     try:
         sigma_s_value = prim.floatListAttribValue('sigma_s')
         if len(sigma_s) == 3:
-            medium_paramset.update(PBRTParam('rgb', 'sigma_s', sigma_s_value))
+            medium_paramset.replace(PBRTParam('rgb', 'sigma_s', sigma_s_value))
     except hou.OperationFailed:
         pass
 
