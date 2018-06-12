@@ -7,11 +7,11 @@ an interface familiar with Houdini user.
 
 Motivation
 ----------
-pbrt is a fantastic resource and the authors well deserve all the kudos given. A common use case in a vfx production environment
-is to add functionality to an existing 3rd party rendering engine. Often the internals of that engine are closed making it
-difficult when debugging a new algorithm. With pbrt the development of new approaches can be developed within a well documented and
-open system. By providing an exporter for Houdini to pbrt makes translating larger production scenes into a test environment
-much easier.
+Support the amazing project that is pbrt and indirectly provide more test cases for the renderer.
+More selfishly a common use case in a vfx production environment is to add functionality to an existing 3rd party rendering engine.
+Often the internals of that engine are closed making it difficult to experiment with new algorithms.
+With pbrt the development of new approaches can be developed within a well documented and open system.
+By providing an exporter for Houdini to pbrt makes translating larger production scenes into a test environment much easier.
 
 Design Goals
 ------------
@@ -21,7 +21,7 @@ Design Goals
 
 Installation
 ------------
-For now clone the repo in anywhere within the HOUDINI_PATH.
+For now clone the repo in anywhere within the HOUDINI_PATH. More details in the wiki.
 
 Usage
 -----
