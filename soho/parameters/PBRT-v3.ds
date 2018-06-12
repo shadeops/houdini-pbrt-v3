@@ -100,5 +100,53 @@
         default     { "" }
         parmtag     { spare_opfilter "!!VOP!!" }
     }
+    parm {
+        name        light_node
+        label       "Light Node (pbrt)"
+        parmtag     { spare_category "Shaders" }
+        type        oppath
+        default     { "" }
+        parmtag     { spare_opfilter "!!VOP!!" }
+    }
+    parm {
+        name        film_node
+        label       "Film Node (pbrt)"
+        parmtag     { spare_category "Shaders" }
+        type        oppath
+        default     { "" }
+        parmtag     { spare_opfilter "!!VOP!!" }
+    }
+    parm {
+        name        filter_node
+        label       "Filter Node (pbrt)"
+        parmtag     { spare_category "Shaders" }
+        type        oppath
+        default     { "" }
+        parmtag     { spare_opfilter "!!VOP!!" }
+    }
+    parm {
+        name        integrator_node
+        label       "Integrator Node (pbrt)"
+        parmtag     { spare_category "Shaders" }
+        type        oppath
+        default     { "" }
+        parmtag     { spare_opfilter "!!VOP!!" }
+    }
+    parm {
+        name        camera_node
+        label       "Camera Node (pbrt)"
+        parmtag     { spare_category "Shaders" }
+        type        oppath
+        default     { "" }
+        parmtag     { spare_opfilter "!!VOP!!" }
+    }
+    parm {
+        name        accelerator_node
+        label       "Accelerator Node (pbrt)"
+        parmtag     { spare_category "Shaders" }
+        type        oppath
+        default     { "" }
+        parmtag     { spare_opfilter "!!VOP!!" }
+    }
 
 }
