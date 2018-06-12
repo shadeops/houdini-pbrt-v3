@@ -573,48 +573,48 @@
             label   "Plugins"
 
             parm {
-                name    "film_plugin"
-                label   "Film Plugin"
+                name    "film_node"
+                label   "Film Node"
                 type    oppath
                 default { "" }
                 parmtag { "opfilter" "!!VOP!!" }
                 parmtag { "oprelative" "." }
             }
             parm {
-                name    "filter_plugin"
-                label   "Filter Plugin"
+                name    "filter_node"
+                label   "Filter Node"
                 type    oppath
                 default { "" }
                 parmtag { "opfilter" "!!VOP!!" }
                 parmtag { "oprelative" "." }
             }
             parm {
-                name    "sampler_plugin"
-                label   "Sampler Plugin"
+                name    "sampler_node"
+                label   "Sampler Node"
                 type    oppath
                 default { "" }
                 parmtag { "opfilter" "!!VOP!!" }
                 parmtag { "oprelative" "." }
             }
             parm {
-                name    "integrator_plugin"
-                label   "Intergrator Plugin"
+                name    "integrator_node"
+                label   "Intergrator Node"
                 type    oppath
                 default { "" }
                 parmtag { "opfilter" "!!VOP!!" }
                 parmtag { "oprelative" "." }
             }
             parm {
-                name    "accelerator_plugin"
-                label   "Accelerator Plugin"
+                name    "accelerator_node"
+                label   "Accelerator Node"
                 type    oppath
                 default { "" }
                 parmtag { "opfilter" "!!VOP!!" }
                 parmtag { "oprelative" "." }
             }
             parm {
-                name    "camera_plugin"
-                label   "Camera Plugin"
+                name    "camera_node"
+                label   "Camera Node"
                 type    oppath
                 default { "" }
                 parmtag { "opfilter" "!!VOP!!" }
@@ -628,7 +628,7 @@
             type    toggle
             default { "0" }
             help    "None"
-            disablewhen "{ camera_plugin != \"\" }"
+            disablewhen "{ camera_node != \"\" }"
             parmtag { "spare_category" "Camera" }
         }
         parm {
@@ -653,7 +653,7 @@
         groupsimple {
             name    "film_group"
             label   "Film"
-            disablewhentab "{ film_plugin != \"\" }"
+            disablewhentab "{ film_node != \"\" }"
 
             parm {
                 name    "filename"
@@ -685,7 +685,7 @@
         groupsimple {
             name    "filter_group"
             label   "Filter"
-            disablewhentab "{ filter_plugin != \"\" }"
+            disablewhentab "{ filter_node != \"\" }"
 
             parm {
                 name    "filter"
@@ -746,7 +746,7 @@
         groupsimple {
             name    "sampler_group"
             label   "Sampler"
-            disablewhentab "{ sampler_plugin != \"\" }"
+            disablewhentab "{ sampler_node != \"\" }"
 
             parm {
                 name    "sampler"
@@ -800,7 +800,7 @@
         groupsimple {
             name    "integrator_group"
             label   "Integrator"
-            disablewhentab "{ integrator_plugin != \"\" }"
+            disablewhentab "{ integrator_node != \"\" }"
 
             parm {
                 name    "integrator"
@@ -998,7 +998,7 @@
         groupsimple {
             name    "accelerator_group"
             label   "Accelerator"
-            disablewhentab "{ accelerator_plugin != \"\" }"
+            disablewhentab "{ accelerator_node != \"\" }"
 
             parm {
                 name    "accelerator"

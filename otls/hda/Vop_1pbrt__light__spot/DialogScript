@@ -2,7 +2,7 @@
 
 {
     name	pbrt_light_spot
-    script	distant
+    script	spot
     label	"PBRT SpotLight"
 
     rendermask	PBRT

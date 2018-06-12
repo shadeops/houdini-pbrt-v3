@@ -2,7 +2,7 @@
 
 {
     name	pbrt_light_point
-    script	distant
+    script	point
     label	"PBRT PointLight"
 
     rendermask	PBRT

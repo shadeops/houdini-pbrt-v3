@@ -10,7 +10,7 @@ Inputs:       0 to 9999
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sun Jun 10 20:57:44 2018
+Modified:     Sun Jun 10 23:13:04 2018
 
 Operator:     pbrt_spectrum
 Label:        PBRT Spectrum
@@ -444,7 +444,7 @@ Inputs:       0 to 2
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Tue May 15 00:01:05 2018
+Modified:     Sun Jun 10 23:40:25 2018
 
 Operator:     pbrt_light_projection
 Label:        PBRT ProjectionLight
@@ -472,7 +472,7 @@ Inputs:       0 to 2
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Tue May 15 00:01:05 2018
+Modified:     Mon Jun 11 19:25:22 2018
 
 Operator:     pbrt_arealight_diffuse
 Label:        PBRT DiffuseAreaLight
