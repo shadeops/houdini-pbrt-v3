@@ -102,8 +102,7 @@ def wrangle_node_parm(obj, parm_name, now):
     node_path = parms[parm_name].Value[0]
     if not node_path:
         return None
-    node = BaseNode(node_path)
-    return node.directive_type, node.paramset
+    return BaseNode(node_path)
 
 def wrangle_shading_network(node_path, name_prefix='', saved_nodes=None):
     # Depth first, as textures/materials need to be
@@ -182,9 +181,9 @@ def wrangle_motionblur(obj, now):
 
 def wrangle_film(obj, wrangler, now):
 
-    node_nfo = wrangle_node_parm(obj, 'film_node', now)
-    if node_nfo is not None:
-        return node_nfo
+    node = wrangle_node_parm(obj, 'film_node', now)
+    if node is not None:
+        return node.type_and_paramset
 
     paramset = ParamSet()
 
@@ -212,9 +211,9 @@ def wrangle_film(obj, wrangler, now):
 
 def wrangle_filter(obj, wrangler, now):
 
-    node_nfo = wrangle_node_parm(obj, 'filter_node', now)
-    if node_nfo is not None:
-        return node_nfo
+    node = wrangle_node_parm(obj, 'filter_node', now)
+    if node is not None:
+        return node.type_and_paramset
 
     parm_selection = {
         'filter' : SohoPBRT('filter', 'string', ['gaussian'], False),
@@ -245,9 +244,9 @@ def wrangle_filter(obj, wrangler, now):
 
 def wrangle_sampler(obj, wrangler, now):
 
-    node_nfo = wrangle_node_parm(obj, 'sampler_node', now)
-    if node_nfo is not None:
-        return node_nfo
+    node = wrangle_node_parm(obj, 'sampler_node', now)
+    if node is not None:
+        return node.type_and_paramset
 
     parm_selection = {
         'sampler' : SohoPBRT('sampler', 'string', ['halton'], False),
@@ -275,9 +274,9 @@ def wrangle_sampler(obj, wrangler, now):
 
 def wrangle_integrator(obj, wrangler, now):
 
-    node_nfo = wrangle_node_parm(obj, 'integrator_node', now)
-    if node_nfo is not None:
-        return node_nfo
+    node = wrangle_node_parm(obj, 'integrator_node', now)
+    if node is not None:
+        return node.type_and_paramset
 
     parm_selection = {
         'integrator' : SohoPBRT('integrator', 'string', ['path'], False),
@@ -341,9 +340,9 @@ def wrangle_integrator(obj, wrangler, now):
 
 def wrangle_accelerator(obj, wrangler, now):
 
-    node_nfo = wrangle_node_parm(obj, 'accelerator_node', now)
-    if node_nfo is not None:
-        return node_nfo
+    node = wrangle_node_parm(obj, 'accelerator_node', now)
+    if node is not None:
+        return node.type_and_paramset
 
     parm_selection = {
         'accelerator' : SohoPBRT('accelerator', 'string', ['bvh'], False),
@@ -392,10 +391,10 @@ def output_cam_xform(obj, projection, now):
 
 def wrangle_camera(obj, wrangler, now):
 
-    node_nfo = wrangle_node_parm(obj, 'camera_node', now)
-    if node_nfo is not None:
-        output_cam_xform(obj, node_nfo[0], now)
-        return node_nfo
+    node = wrangle_node_parm(obj, 'camera_node', now)
+    if node is not None:
+        output_cam_xform(obj, node.directive_type, now)
+        return node.type_and_paramset
 
     paramset = ParamSet()
 
@@ -467,6 +466,7 @@ def wrangle_camera(obj, wrangler, now):
     return (projection_name, paramset)
 
 def _to_light_scale(parms):
+    """Converts light_intensity, light_exposure to a single scale value"""
     # TODO
     # There is a potential issue with using "rgb" types for
     # both L and scale as noted here -
@@ -485,15 +485,28 @@ def _to_light_scale(parms):
     scale = intensity*(2.0**exposure)
     return PBRTParam('rgb', 'scale', [scale,]*3)
 
+def _light_api_wrapper(wrangler_light_type, wrangler_paramset, node):
+    if node is not None:
+        ltype = node.directive_type
+        paramset = node.paramset
+        is_arealight = bool(node.directive == 'arealight')
+    else:
+        ltype = wrangler_light_type
+        paramset = wrangler_paramset
+        is_arealight = bool(ltype == 'diffuse')
+
+    if is_arealight:
+        api.AreaLightSource(ltype, paramset)
+    else:
+        api.LightSource(ltype, paramset)
+
 def wrangle_light(light, wrangler, now):
 
-    # NOTE: Lights do not support motion blur so we disable it when
-    #       output the xforms
 
-    node_nfo = wrangle_node_parm(light, 'light_node', now)
-    if node_nfo is not None:
-        output_xform(light, now, no_motionblur=True)
-        return node_nfo
+    # NOTE: Lights do not support motion blur so we disable it when
+    #       outputs the xforms
+
+    node = wrangle_node_parm(light, 'light_node', now)
 
     parm_selection = {
         'light_wrangler' : SohoPBRT('light_wrangler', 'string', [''], False),
@@ -516,7 +529,7 @@ def wrangle_light(light, wrangler, now):
         api.Scale(1, 1, -1)
         api.Rotate(90, 0, 0, 1)
         api.Rotate(90, 0, 1, 0)
-        api.LightSource('infinite', paramset)
+        _light_api_wrapper('infinite', paramset, node)
         return
     elif light_wrangler != 'HoudiniLight':
         api.Comment('This light type, %s, is unsupported' % light_wrangler)
@@ -527,7 +540,6 @@ def wrangle_light(light, wrangler, now):
     light_type = light.wrangleString(wrangler, 'light_type', now, ['point'])[0]
 
     if light_type in ('sphere', 'disk', 'grid', 'tube', 'geo'):
-        light_name = 'diffuse'
 
         single_sided = light.wrangleInt(wrangler, 'singlesided', now, [0])[0]
         visible = light.wrangleInt(wrangler, 'light_contribprimary', now, [0])[0]
@@ -540,7 +552,7 @@ def wrangle_light(light, wrangler, now):
         xform = get_transform(light, now)
         xform_to_api_srt(xform, scale=False)
 
-        api.AreaLightSource(light_name, paramset)
+        _light_api_wrapper('diffuse', paramset, node)
 
         api.AttributeBegin()
 
@@ -634,7 +646,7 @@ def wrangle_light(light, wrangler, now):
 
     for api_call in api_calls:
         api_call()
-    api.LightSource(light_name, paramset)
+    _light_api_wrapper(light_name, paramset, node)
 
     return
 

@@ -464,6 +464,10 @@ class BaseNode(object):
             params.add(param)
         return params
 
+    @property
+    def type_and_paramset(self):
+        return (self.directive_type, self.paramset)
+
 class SpectrumNode(BaseNode):
     @property
     def paramset(self):
