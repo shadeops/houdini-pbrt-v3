@@ -10,7 +10,7 @@ Inputs:       0 to 9999
 Subnet:       false
 Python:       false
 Empty:        false
-Modified:     Sun Jun 10 23:13:04 2018
+Modified:     Mon Jun 11 21:35:52 2018
 
 Operator:     pbrt_spectrum
 Label:        PBRT Spectrum
