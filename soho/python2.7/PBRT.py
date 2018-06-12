@@ -10,6 +10,24 @@ from soho import SohoParm
 # Houdini does not reload modules at each render, so when doing dev work it
 # can be a pain to have to manually load modules, by setting this environment
 # variable all the modules will be reloaded.
+if 'SOHO_PBRT_DEV' in os.environ:
+    import PBRTapi
+    reload(PBRTapi)
+    import PBRTstate
+    reload(PBRTstate)
+    import PBRTnodes
+    reload(PBRTnodes)
+    import PBRTsoho
+    reload(PBRTsoho)
+    import PBRTinstancing
+    reload(PBRTinstancing)
+    import PBRTgeo
+    reload(PBRTgeo)
+    import PBRTwranglers
+    reload(PBRTwranglers)
+    import PBRTscene
+    reload(PBRTscene)
+
 import PBRTscene
 from PBRTstate import scene_state
 
@@ -76,23 +94,4 @@ def soho_render():
     return
 
 if __name__ in ('__builtin__', '__main__'):
-
-    if 'SOHO_PBRT_DEV' in os.environ:
-        import PBRTapi
-        reload(PBRTapi)
-        import PBRTstate
-        reload(PBRTstate)
-        import PBRTnodes
-        reload(PBRTnodes)
-        import PBRTsoho
-        reload(PBRTsoho)
-        import PBRTinstancing
-        reload(PBRTinstancing)
-        import PBRTgeo
-        reload(PBRTgeo)
-        import PBRTwranglers
-        reload(PBRTwranglers)
-        import PBRTscene
-        reload(PBRTscene)
-
     soho_render()
