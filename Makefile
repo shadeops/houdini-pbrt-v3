@@ -12,6 +12,7 @@ package: hda
 		otls/pbrt.hda \
 		soho \
 		vop \
+		examples/*.hip \
 		-x *.pyc
 
 .PHONY: tests
