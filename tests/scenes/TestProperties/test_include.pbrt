@@ -1,0 +1,54 @@
+Film "image" "integer xresolution" [ 320 ] "integer yresolution" [ 240 ] "string filename" [ "test_include.exr" ]
+PixelFilter "gaussian" "float xwidth" [ 2 ] "float ywidth" [ 2 ]
+Sampler "halton" "integer pixelsamples" [ 16 ]
+Integrator "path" "integer maxdepth" [ 5 ]
+Accelerator "bvh"
+
+#  /obj/cam1
+Transform [ 1 0 0 0 0 0.978147600734 -0.207911690818 6.93889390391e-18 0 -0.207911690818 -0.978147600734 2.77555756156e-17 0 0.061410853355 5.09864969449 1 ]
+Camera "perspective" "float fov" [ 45.0000428043 ] "float screenwindow" [ -1 1 -0.75 0.75 ]
+
+WorldBegin	# {
+
+    #  ==================================================
+    #  Light Definitions
+    #  /obj/envlight1
+    AttributeBegin	# {
+	Transform [ 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 ]
+	Scale 1 1 -1
+	Rotate 90 0 0 1
+	Rotate 90 0 1 0
+	LightSource "infinite" "rgb L" [ 1 1 1 ] "string mapname" [ "" ] "rgb scale" [ 0.1 0.1 0.1 ]
+    AttributeEnd	# }
+
+    #  /obj/hlight1
+    AttributeBegin	# {
+	Translate 3 3 3
+	AreaLightSource "diffuse" "bool twosided" [ "true" ] "rgb L" [ 1 1 1 ] "rgb scale" [ 50 50 50 ]
+	AttributeBegin	# {
+	    Material "none"
+	    Shape "sphere" "float radius" [ 0.5 ]
+	AttributeEnd	# }
+    AttributeEnd	# }
+
+
+    #  ==================================================
+    #  NamedMaterial Definitions
+
+    #  ==================================================
+    #  NamedMedium Definitions
+
+    #  ==================================================
+    #  Object Instance Definitions
+
+    #  ==================================================
+    #  Object Definitions
+    #  --------------------------------------------------
+    #  /obj/geo1
+    AttributeBegin	# {
+	Transform [ 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 ]
+	Include "test.pbrt"
+    AttributeEnd	# }
+
+
+WorldEnd	# }

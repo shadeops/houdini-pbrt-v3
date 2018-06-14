@@ -181,6 +181,30 @@ class TestGeo(TestBase):
         if CLEANUP_FILES:
             shutil.rmtree('tests/tmp')
 
+class TestProperties(TestGeo):
+    def setUp(self):
+        self.geo = build_geo()
+        exr = '%s.exr' % self.name
+        self.rop = build_rop(filename=exr, diskfile=self.testfile)
+
+    def tearDown(self):
+        self.geo.destroy()
+        self.rop.destroy()
+        if CLEANUP_FILES:
+            os.remove(self.testfile)
+
+    def compare_scene(self):
+        self.rop.render()
+        self.assertTrue(filecmp.cmp(self.testfile,
+                                    self.basefile))
+    def test_include(self):
+        ptg = self.geo.parmTemplateGroup()
+        parm = hou.properties.parmTemplate('pbrt-v3','pbrt_include')
+        ptg.append(parm)
+        self.geo.setParmTemplateGroup(ptg)
+        self.geo.parm('pbrt_include').set('test.pbrt')
+        self.compare_scene()
+
 class TestShapes(TestGeo):
 
     def setUp(self):
