@@ -1188,15 +1188,6 @@
             }
         }
         parm {
-            name    "soho_foreground"
-            label   "Block Until Render Completes"
-            type    toggle
-            default { "0" }
-            help    "When rendering to the soho_pipecmd, turning this on will block Houdini until the pipe command completes."
-            disablewhen "{ soho_outputmode != 0 }"
-            parmtag { "spare_category" "SOHO Intrinsics" }
-        }
-        parm {
             name    "soho_diskfile"
             label   "Disk File"
             type    file
@@ -1205,12 +1196,27 @@
             parmtag { "filechooser_mode" "write" }
         }
         parm {
+            name    "soho_mkpath"
+            label   "Create intermediate Directories"
+            type    toggle
+            default { "1" }
+        }
+        parm {
             name    "soho_viewport_menu"
             label   "Show In Viewport Menu"
             type    toggle
             default { "1" }
             help    "By default SOHO output drivers do not appear in the viewport menu.  Adding this property and turning it on will cause the driver to show up."
             parmtag { "spare_category" "Menu" }
+        }
+        parm {
+            name    "soho_foreground"
+            label   "Block Until Render Completes"
+            type    toggle
+            default { "0" }
+            help    "When rendering to the soho_pipecmd, turning this on will block Houdini until the pipe command completes."
+            disablewhen "{ soho_outputmode != 0 }"
+            parmtag { "spare_category" "SOHO Intrinsics" }
         }
         groupsimple {
             name    "soho_config"
