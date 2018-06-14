@@ -688,16 +688,11 @@ def wrangle_geo(obj, wrangler, now):
         'pbrt_ignorematerials' : SohoPBRT('pbrt_ignorematerials', 'bool', [False], True),
         'pbrt_splitdepth' : SohoPBRT('pbrt_splitdepth', 'integer', [3], True, key='splitdepth'),
         # We don't use the key=type since its a bit too generic of a name
-        'pbrt_curvetype' : SohoPBRT('pbrt_curvetype', 'string', ["flat"], True),
+        'pbrt_curvetype' : SohoPBRT('pbrt_curvetype', 'string', ['flat'], True),
+        'pbrt_include' : SohoPBRT('pbrt_include', 'string', [''], False),
         # TODO, Tesselation options?
     }
     properties = obj.evaluate(parm_selection, now)
-
-    soppath = properties['object:soppath'].Value[0]
-
-    if not soppath:
-        api.Comment('Can not find soppath for object')
-        return
 
     if 'shop_materialpath' not in properties:
         shop = ''
@@ -720,6 +715,16 @@ def wrangle_geo(obj, wrangler, now):
         interior = '' if interior is None else interior
         exterior = '' if exterior is None else exterior
         api.MediumInterface(interior, exterior)
+
+    if properties['pbrt_include'].Value[0]:
+        # If we have included a file, skip output any geo.
+        api.Include(properties['pbrt_include'].Value[0])
+        return
+
+    soppath = properties['object:soppath'].Value[0]
+    if not soppath:
+        api.Comment('Can not find soppath for object')
+        return
 
     Geo.output_geo(soppath, now, properties)
     return

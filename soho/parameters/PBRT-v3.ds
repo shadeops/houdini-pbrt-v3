@@ -85,6 +85,10 @@
         }
     }
     parm {
+        SOHO_FILE(pbrt_include, "Include PBRT File", "Geometry", "")
+        parmtag     { filechooser_mode  "read" }
+    }
+    parm {
         name        pbrt_interior
         label       "Interior Medium"
         parmtag     { spare_category "Shaders" }
