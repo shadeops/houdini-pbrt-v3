@@ -113,8 +113,8 @@ def header():
     if scene_state.ver is not None:
         api.Comment('Houdini Version %s' % scene_state.ver)
     api.Comment('Generation Time: %s' % time.strftime("%b %d, %Y at %H:%M:%S"))
-    if scene_state.hip and scene_state.hipname:
-        api.Comment('Hip File: %s.%s' % (scene_state.hip, scene_state.hipname))
+    if scene_state.hipfile:
+        api.Comment('Hip File: %s' % scene_state.hipfile)
     if scene_state.rop is not None:
         api.Comment('Output Driver: %s' % scene_state.rop)
     if scene_state.now is not None:

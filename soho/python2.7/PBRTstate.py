@@ -33,7 +33,7 @@ if gdp is not None:
 
         self.rop = None
         self.hip = None
-        self.hipname = None
+        self.hipfile = None
         self.fps = None
         self.ver = None
         self.now = None
@@ -47,6 +47,7 @@ if gdp is not None:
             'rop' : soho.SohoParm('object:name', 'string', key='rop'),
             'hip' : soho.SohoParm('$HIP', 'string', key='hip'),
             'hipname' : soho.SohoParm('$HIPNAME', 'string', key='hipname'),
+            'hipfile' : soho.SohoParm('$HIPFILE', 'string', key='hipfile'),
             'ver' : soho.SohoParm('state:houdiniversion', 'string', ["9.0"], False, key='ver'),
             'now' : soho.SohoParm('state:time', 'real', [0], False, key='now'),
             'fps' : soho.SohoParm('state:fps', 'real', [24], False, key='fps'),
@@ -74,7 +75,7 @@ if gdp is not None:
         """Resets the class attributes back to their default state"""
         self.rop = None
         self.hip = None
-        self.hipname = None
+        self.hipfile = None
         self.fps = None
         self.ver = None
         self.now = None
