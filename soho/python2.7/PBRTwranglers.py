@@ -599,7 +599,11 @@ def wrangle_light(light, wrangler, now):
                 return
             obj = soho.getObject(area_geo_node.path())
             api.Comment('Light geo from %s' % obj.getName())
-            wrangle_obj(obj, None, now, ignore_xform=True)
+            # TODO: The area light scale ('areasize') happens *after* the wrangle_obj's xform
+            #       when 'intothisobject' is enabled.
+            into_this_obj = light.wrangleInt(wrangler, 'intothisobject', now, [0])[0]
+            ignore_xform = not into_this_obj
+            wrangle_obj(obj, None, now, ignore_xform=ignore_xform)
 
         api.AttributeEnd()
 
