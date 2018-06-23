@@ -115,10 +115,11 @@ def wrangle_shading_network(node_path, name_prefix='', saved_nodes=None):
     if saved_nodes is None:
         saved_nodes = scene_state.shading_nodes
 
-    if node_path in saved_nodes:
+    prefix_node_path = name_prefix + node_path
+    if prefix_node_path in saved_nodes:
         return
 
-    saved_nodes.add(node_path)
+    saved_nodes.add(prefix_node_path)
 
     hnode = hou.node(node_path)
 
@@ -135,7 +136,7 @@ def wrangle_shading_network(node_path, name_prefix='', saved_nodes=None):
         return
 
     for node_input in node.inputs():
-        wrangle_shading_network(node_input, saved_nodes=saved_nodes)
+        wrangle_shading_network(node_input, name_prefix=name_prefix, saved_nodes=saved_nodes)
 
     coord_sys = node.coord_sys
     if coord_sys:
@@ -690,6 +691,10 @@ def wrangle_geo(obj, wrangler, now):
         # We don't use the key=type since its a bit too generic of a name
         'pbrt_curvetype' : SohoPBRT('pbrt_curvetype', 'string', ['flat'], True),
         'pbrt_include' : SohoPBRT('pbrt_include', 'string', [''], False),
+        'pbrt_alpha_texture' : SohoPBRT('pbrt_alpha_texture', 'string', [''],
+                                         skipdefault=False, key='alpha'),
+        'pbrt_shadowalpha_texture' : SohoPBRT('pbrt_shadowalpha_texture', 'string', [''],
+                                              skipdefault=False, key='shadowalpha'),
         # TODO, Tesselation options?
     }
     properties = obj.evaluate(parm_selection, now)
@@ -706,7 +711,6 @@ def wrangle_geo(obj, wrangler, now):
     exterior = None
     if 'pbrt_interior' in properties:
         interior = properties['pbrt_interior'].Value[0]
-
     if 'pbrt_exterior' in properties:
         exterior = properties['pbrt_exterior'].Value[0]
 
@@ -715,6 +719,21 @@ def wrangle_geo(obj, wrangler, now):
         interior = '' if interior is None else interior
         exterior = '' if exterior is None else exterior
         api.MediumInterface(interior, exterior)
+
+    for prop in ('alpha', 'shadowalpha'):
+        alpha_tex = properties[prop].Value[0]
+        alpha_node = BaseNode.from_node(alpha_tex)
+        if ( alpha_node and
+             alpha_node.directive == 'texture' and
+             alpha_node.output_type == 'float'):
+            if alpha_node.path not in scene_state.shading_nodes:
+                wrangle_shading_network(alpha_node.path, saved_nodes=set())
+        else:
+            # If the passed in alpha_texture wasn't valid, clear it so we don't add
+            # it to the geometry
+            if alpha_tex:
+                api.Comment('%s is an invalid float texture' % alpha_tex)
+            properties[prop].Value[0] = ''
 
     if properties['pbrt_include'].Value[0]:
         # If we have included a file, skip output any geo.

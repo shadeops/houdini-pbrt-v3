@@ -222,6 +222,19 @@ def tube_wrangler(gdp, paramset=None, properties=None):
                     api.Shape('disk', disk_paramset)
     return
 
+def mesh_alpha_texs(properties):
+    if not properties:
+        return
+    paramset = ParamSet()
+    for prop in ('alpha', 'shadowalpha'):
+        if prop not in properties:
+            continue
+        tex = properties[prop].Value[0]
+        if not tex:
+            continue
+        paramset.add(PBRTParam('texture', prop, tex))
+    return paramset
+
 def mesh_wrangler(gdp, paramset=None, properties=None):
     """Outputs meshes (trianglemesh or loopsubdiv) depending on properties
 
@@ -267,12 +280,14 @@ def mesh_wrangler(gdp, paramset=None, properties=None):
     if shape == 'loopsubdiv':
         wrangler_paramset = loopsubdiv_params(mesh_gdp)
         if 'levels' in properties:
-            mesh_paramset.replace(properties['levels'].to_pbrt())
+            wrangler_paramset.replace(properties['levels'].to_pbrt())
     else:
         computeN = True
         if 'pbrt_computeN' in properties:
             computeN = properties['pbrt_computeN'].Value[0]
         wrangler_paramset = trianglemesh_params(mesh_gdp, computeN)
+        alpha_paramset = mesh_alpha_texs(properties)
+        wrangler_paramset.update(alpha_paramset)
 
     mesh_paramset.update(wrangler_paramset)
 

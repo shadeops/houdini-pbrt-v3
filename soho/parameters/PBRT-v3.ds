@@ -89,6 +89,22 @@
         parmtag     { filechooser_mode  "read" }
     }
     parm {
+        name        pbrt_alpha_texture
+        label       "Alpha Texture"
+        parmtag     { spare_category "Geometry" }
+        type        oppath
+        default     { "" }
+        parmtag     { spare_opfilter "!!VOP!!" }
+    }
+    parm {
+        name        pbrt_shadowalpha_texture
+        label       "ShadowAlpha Texture"
+        parmtag     { spare_category "Geometry" }
+        type        oppath
+        default     { "" }
+        parmtag     { spare_opfilter "!!VOP!!" }
+    }
+    parm {
         name        pbrt_interior
         label       "Interior Medium"
         parmtag     { spare_category "Shaders" }
