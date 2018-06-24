@@ -1,5 +1,6 @@
 from __future__ import print_function, division, absolute_import
 
+import os
 import array
 import itertools
 import collections
@@ -39,6 +40,19 @@ def override_to_paramset(material, override_str):
         value = [override[x.name()] for x in parm_tuple]
         pbrt_param = pbrt_param_from_ref(parm_tuple, value)
         paramset.add(pbrt_param)
+    return paramset
+
+def mesh_alpha_texs(properties):
+    if not properties:
+        return
+    paramset = ParamSet()
+    for prop in ('alpha', 'shadowalpha'):
+        if prop not in properties:
+            continue
+        tex = properties[prop].Value[0]
+        if not tex:
+            continue
+        paramset.add(PBRTParam('texture', prop, tex))
     return paramset
 
 # The following generators could be simplified if we
@@ -166,6 +180,31 @@ def disk_wrangler(gdp, paramset=None, properties=None):
             api.Shape('disk', paramset)
     return
 
+def packeddisk_wrangler(gdp, paramset=None, properties=None):
+    """Outputs "ply" Shapes for the input geometry
+
+    Args:
+        gdp (hou.Geometry): Input geo
+        paramset (ParamSet): Any base params to add to the shape. (Optional)
+        properties (dict): Dictionary of SohoParms (Optional)
+    Returns: None
+    """
+    alpha_paramset = mesh_alpha_texs(properties)
+    for prim in gdp.prims():
+        shape_paramset = ParamSet(paramset)
+        filename = prim.intrinsicValue('filename')
+        if not filename:
+            continue
+        if os.path.splitext(filename)[1].lower() != '.ply':
+            continue
+        shape_paramset.replace(PBRTParam('string', 'filename', filename))
+        shape_paramset.update(alpha_paramset)
+        with api.TransformBlock():
+            xform = prim_transform(prim)
+            api.ConcatTransform(xform)
+            api.Shape('plymesh', shape_paramset)
+    return
+
 def tube_wrangler(gdp, paramset=None, properties=None):
     """Outputs "cone" or "cylinder" Shapes for the input geometry
 
@@ -221,19 +260,6 @@ def tube_wrangler(gdp, paramset=None, properties=None):
                     disk_paramset.add(PBRTParam('float', 'height', 0))
                     api.Shape('disk', disk_paramset)
     return
-
-def mesh_alpha_texs(properties):
-    if not properties:
-        return
-    paramset = ParamSet()
-    for prop in ('alpha', 'shadowalpha'):
-        if prop not in properties:
-            continue
-        tex = properties[prop].Value[0]
-        if not tex:
-            continue
-        paramset.add(PBRTParam('texture', prop, tex))
-    return paramset
 
 def mesh_wrangler(gdp, paramset=None, properties=None):
     """Outputs meshes (trianglemesh or loopsubdiv) depending on properties
@@ -924,6 +950,7 @@ shape_wranglers = {'Sphere': sphere_wrangler,
                    # TODO, Figure out mapping between NURBS and bsplines
                    #'NURBCurve' : curve_wrangler,
                    'Volume' : volume_wrangler,
+                   'PackedDisk' : packeddisk_wrangler,
                    'TriFan' : tesselated_wrangler,
                    'TriStrip' : tesselated_wrangler,
                    'TriBezier' : tesselated_wrangler,
