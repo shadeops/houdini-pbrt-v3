@@ -22,28 +22,6 @@
     }
 
     help {
-	"#type: node"
-	"#context: vop"
-	"#tags: rman,pattern"
-	"#icon: NETWORKS/shop"
-	""
-	"= pxrhsl ="
-	""
-	"Adjust the hue, saturation and value of a given input color. Note the output is in RGB color space."
-	"@parameters"
-	""
-	"inputRGB:"
-	"The color to have HSL adjustments applied to it."
-	""
-	"hue:"
-	"The amount to shift hue by."
-	""
-	"saturation:"
-	"The amount to scale saturation by."
-	""
-	"luminance:"
-	"The amount to scale luminance by."
-	""
     }
 
     parm {
