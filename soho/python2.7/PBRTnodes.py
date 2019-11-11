@@ -8,6 +8,9 @@ import collections
 import hou
 import soho
 
+class HouParmException(Exception):
+    pass
+
 # TODO is this the best name/location for this?
 # should some of this functionality be in _hou_parm_to_pbrt_param()
 def pbrt_param_from_ref(parm, parm_value, parm_name=None):
@@ -46,7 +49,7 @@ def pbrt_param_from_ref(parm, parm_value, parm_name=None):
     elif parm_type == hou.parmTemplateType.Float:
         pbrt_type = 'float'
     else:
-        raise hou.ValueError('Can\'t convert %s to pbrt type' % (parm))
+        raise HouParmException('Can\'t convert %s to pbrt type' % (parm))
 
     return PBRTParam(pbrt_type, parm_name, parm_value)
 
@@ -116,7 +119,7 @@ def _hou_parm_to_pbrt_param(parm, parm_name=None):
             pbrt_type = 'texture'
             pbrt_value = coshader.path
         else:
-            raise hou.ValueError('Can\'t convert %s to pbrt type' % (parm))
+            raise HouParmException('Can\'t convert %s to pbrt type' % (parm))
     # PBRT: float texture
     elif (parm_type == hou.parmTemplateType.Float and
           coshader is not None and
@@ -134,7 +137,7 @@ def _hou_parm_to_pbrt_param(parm, parm_name=None):
         pbrt_value = parm.eval()
     # PBRT: wut is dis?
     else:
-        raise hou.ValueError('Can\'t convert %s to pbrt type' % (parm))
+        raise HouParmException('Can\'t convert %s to pbrt type' % (parm))
 
     return PBRTParam(pbrt_type, parm_name, pbrt_value)
 
@@ -460,7 +463,11 @@ class BaseNode(object):
         hou_parms = self.get_used_parms()
         for parm_name in sorted(hou_parms):
             parm = hou_parms[parm_name]
-            param = _hou_parm_to_pbrt_param(parm, parm_name)
+            # If we can't wrangle a parm type we'll skip it
+            try:
+                param = _hou_parm_to_pbrt_param(parm, parm_name)
+            except HouParmException:
+                continue
             params.add(param)
         return params
 
