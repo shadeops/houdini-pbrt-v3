@@ -576,10 +576,10 @@ def wrangle_light(light, wrangler, now):
                                    PBRTParam('float', 'zmin', -0.5*size[0]),
                                    PBRTParam('float', 'zmax', 0.5*size[0])])
         elif light_type == 'disk':
-            # A bug was introduced with Issue #154 which requires a -z scale
-            # on disk area lights
-            # See issue #183
-            # api.Scale(1,1,-1)
+            # After pbrt-v3 commit #2f0852ce api.ReverseOrientation() is needed,
+            # prior that it was a api.Scale(1,1,-1)
+            # (see issue #183 in pbrt-v3)
+            api.ReverseOrientation()
             api.Shape('disk', [PBRTParam('float', 'radius', 0.5*size[0])])
         elif light_type == 'grid':
             api.Shape('trianglemesh', [PBRTParam('integer', 'indices', [0, 3, 1,
