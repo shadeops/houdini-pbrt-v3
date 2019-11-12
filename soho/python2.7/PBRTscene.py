@@ -139,6 +139,8 @@ def output_transform_times(cam, now):
 def render(cam, now):
     """Main render entry point"""
 
+    start_time = time.time()
+
     # For now we will not be using wranglers
     wrangler = None
 
@@ -221,5 +223,8 @@ def render(cam, now):
     print()
 
     api.WorldEnd()
+
+    export_time = time.time() - start_time
+    api.Comment('Total export time %0.02f seconds' % export_time)
 
     return
