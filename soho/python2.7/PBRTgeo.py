@@ -29,16 +29,32 @@ def override_to_paramset(material, override_str):
     node = hou.node(material)
     if not node:
         return paramset
-    processed_parms = set()
-    for parm_name in override:
-        parm = node.parm(parm_name)
-        if parm is None:
-            continue
-        parm_tuple = parm.tuple()
-        if parm_tuple.name() in processed_parms:
-            continue
-        value = [override[x.name()] for x in parm_tuple]
-        pbrt_param = pbrt_param_from_ref(parm_tuple, value)
+    for override_name in override:
+        # There can be two style of "overrides" one is a straight parm override
+        # which is similar to what Houdini does. The other style of override is
+        # for the spectrum type parms. Since spectrum parms can be of different
+        # types and the Material Overrides only support "rgb" we are limited
+        # in the types of spectrum overrides we can do. To work around this we'll
+        # support a different style, override_name.spectrum_type. If the parm name
+        # ends in one the none "rgb/color" types then we'll handle it differently.
+        try:
+            parm_name,spectrum_type = override_name.split('.',1)
+            parm_tuple = node.parmTuple(parm_name)
+        except ValueError:
+            spectrum_type = None
+            parm_name = override_name
+            parm = node.parm(parm_name)
+            if parm is None:
+                continue
+            parm_tuple = parm.tuple()
+
+        if spectrum_type is None:
+            value = [override[x.name()] for x in parm_tuple]
+            pbrt_param = pbrt_param_from_ref(parm_tuple, value)
+        elif spectrum_type in ('spectrum','xyz','blackbody'):
+            pbrt_param = PBRTParam(spectrum_type, parm_name, override[override_name])
+        else:
+            raise ValueError('Unable to wrangle override name: %s' % override_name)
         paramset.add(pbrt_param)
     return paramset
 
