@@ -104,7 +104,12 @@ def wrangle_node_parm(obj, parm_name, now):
         return None
     return BaseNode(node_path)
 
-def wrangle_shading_network(node_path, name_prefix='', saved_nodes=None):
+def wrangle_shading_network(node_path,
+                            name_prefix='',
+                            name_suffix='',
+                            use_named= True,
+                            saved_nodes=None):
+
     # Depth first, as textures/materials need to be
     # defined before they are referenced
 
@@ -115,11 +120,11 @@ def wrangle_shading_network(node_path, name_prefix='', saved_nodes=None):
     if saved_nodes is None:
         saved_nodes = scene_state.shading_nodes
 
-    prefix_node_path = name_prefix + node_path
-    if prefix_node_path in saved_nodes:
+    presufed_node_path = name_prefix + node_path + name_suffix
+    if presufed_node_path in saved_nodes:
         return
 
-    saved_nodes.add(prefix_node_path)
+    saved_nodes.add(presufed_node_path)
 
     hnode = hou.node(node_path)
 
@@ -129,23 +134,32 @@ def wrangle_shading_network(node_path, name_prefix='', saved_nodes=None):
         return
 
     if node.directive == 'material':
-        api_call = api.MakeNamedMaterial
+        api_call = api.MakeNamedMaterial if use_named else api.Material
     elif node.directive == 'texture':
         api_call = api.Texture
     else:
         return
 
     for node_input in node.inputs():
-        wrangle_shading_network(node_input, name_prefix=name_prefix, saved_nodes=saved_nodes)
+        wrangle_shading_network(node_input,
+                                name_prefix=name_prefix,
+                                name_suffix=name_suffix,
+                                use_named=use_named,
+                                saved_nodes=saved_nodes)
 
     coord_sys = node.coord_sys
     if coord_sys:
         api.TransformBegin()
         api.Transform(coord_sys)
-    api_call(name_prefix + node.name,
-             node.output_type,
-             node.directive_type,
-             node.paramset)
+
+    if api_call == api.Material:
+        api_call(node.directive_type,
+                 node.paramset)
+    else:
+        api_call(presufed_node_path,
+                 node.output_type,
+                 node.directive_type,
+                 node.paramset)
     if coord_sys:
         api.TransformEnd()
     if api_call == api.MakeNamedMaterial:
@@ -672,9 +686,9 @@ def wrangle_obj(obj, wrangler, now, ignore_xform=False):
     return
 
 def wrangle_geo(obj, wrangler, now):
-
     parm_selection = {
         'object:soppath' : SohoPBRT('object:soppath', 'string', [''], skipdefault=False),
+        'ptinstance' : SohoPBRT('ptinstance', 'integer', [0], skipdefault=False),
         # NOTE: In order for shop_materialpath to evaluate correctly when using (full) instancing
         #       shop_materialpath needs to be a 'shaderhandle' and not a 'string'
         # TODO: However this does not seem to apply to shop_materialpaths on the instance points.
@@ -708,8 +722,18 @@ def wrangle_geo(obj, wrangler, now):
     else:
         shop = properties['shop_materialpath'].Value[0]
 
-    if shop and shop in scene_state.shading_nodes:
-        api.NamedMaterial(shop)
+    if shop:
+        if properties['ptinstance'].Value[0] == 1:
+            instance_tokens = shop.split(':')
+            instance_num = instance_tokens[-1]
+            instance_suffix = ':%s' % instance_num
+            wrangle_shading_network(shop,
+                                    name_suffix=instance_suffix,
+                                    use_named=False,
+                                    saved_nodes=set()
+                                   )
+        elif shop in scene_state.shading_nodes:
+            api.NamedMaterial(shop)
 
     interior = None
     exterior = None
