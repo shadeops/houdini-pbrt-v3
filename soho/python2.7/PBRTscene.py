@@ -124,6 +124,14 @@ def header():
     print()
     return
 
+def footer(start_time):
+    # Disable the header in the event we want to diff files for testing.
+    if 'SOHO_PBRT_NO_HEADER' in os.environ:
+        return
+    export_time = time.time() - start_time
+    api.Comment('Total export time %0.02f seconds' % export_time)
+
+
 def output_transform_times(cam, now):
     """Output the TransformTimes for the scene"""
     do_mb = cam.getDefaultedInt('allowmotionblur', now, [0])
@@ -224,7 +232,6 @@ def render(cam, now):
 
     api.WorldEnd()
 
-    export_time = time.time() - start_time
-    api.Comment('Total export time %0.02f seconds' % export_time)
+    footer(start_time)
 
     return
