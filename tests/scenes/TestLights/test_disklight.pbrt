@@ -19,6 +19,7 @@ WorldBegin	# {
 	AreaLightSource "diffuse" "bool twosided" [ "true" ] "rgb L" [ 1 1 1 ] "rgb scale" [ 5 5 5 ]
 	AttributeBegin	# {
 	    Material "none"
+	    ReverseOrientation
 	    Shape "disk" "float radius" [ 0.5 ]
 	AttributeEnd	# }
     AttributeEnd	# }

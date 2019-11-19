@@ -14,7 +14,7 @@ WorldBegin	# {
     #  Light Definitions
     #  /obj/hlight1
     AttributeBegin	# {
-	Transform [ 1 0 0 0 0 6.12323399574e-17 -1 0 0 1 6.12323399574e-17 0 0 1.5 0 1 ]
+	Transform [ 1 0 0 0 0 0 -1 0 0 1 0 0 0 1.5 0 1 ]
 	Scale 1 1 -1
 	Scale 1 -1 1
 	LightSource "distant" "rgb L" [ 1 1 1 ] "rgb scale" [ 5 5 5 ]

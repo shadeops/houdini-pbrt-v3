@@ -51,7 +51,7 @@ WorldBegin	# {
     AttributeBegin	# {
 	Transform [ 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 ]
 	NamedMaterial "/mat/pbrt_material_matte1"
-	Shape "loopsubdiv" "integer indices" [ 1 5 4 2 6 5 3 7 6 0 4 7 2 1 0 5 6 7 7 4 5 0 3 2 7 3 0 6 2 3 5 1 2 4 0 1 ] "integer levels" [ 3 ] "point3 P" [ -0.5 -0.5 -0.5 0.5 -0.5 -0.5 0.5 -0.5 0.5 -0.5 -0.5 0.5 -0.5 0.5 -0.5 0.5 0.5 -0.5 0.5 0.5 0.5 -0.5 0.5 0.5 ]
+	Shape "loopsubdiv" "integer indices" [ 1 5 4 2 6 5 3 7 6 0 4 7 2 1 0 5 6 7 7 4 5 0 3 2 7 3 0 6 2 3 5 1 2 4 0 1 ] "point3 P" [ -0.5 -0.5 -0.5 0.5 -0.5 -0.5 0.5 -0.5 0.5 -0.5 -0.5 0.5 -0.5 0.5 -0.5 0.5 0.5 -0.5 0.5 0.5 0.5 -0.5 0.5 0.5 ] "integer levels" [ 3 ]
     AttributeEnd	# }
 
 
