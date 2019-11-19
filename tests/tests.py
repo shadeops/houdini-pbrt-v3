@@ -475,30 +475,25 @@ class TestShapes(TestGeo):
         hf_n.setRenderFlag(True)
         self.compare_scene()
 
-    def test_volume_vdb(self):
-        torus = self.geo.createNode('torus')
-        torus.parm('orient').set('z')
-        torus.parm('scale').set(0.75)
-        cloud = self.geo.createNode('cloud')
-        cloud.setFirstInput(torus)
-        cloudnoise = self.geo.createNode('cloudnoise',
-                                         run_init_scripts=False)
-        cloudnoise.setFirstInput(cloud)
-        cloudnoise.setRenderFlag(True)
+    def test_volume(self):
+        volume = self.geo.createNode('volume')
+        volume.parmTuple('size').set([10,10,10])
+        wrangle = self.geo.createNode('volumewrangle')
+        wrangle.parm('snippet').set('@density = floor(@P.x+0.5);')
+        wrangle.setFirstInput(volume)
+        wrangle.setRenderFlag(True)
         self.rop.parm('integrator').set('volpath')
         self.compare_scene()
 
-    def test_volume(self):
-        torus = self.geo.createNode('torus')
-        torus.parm('orient').set('z')
-        torus.parm('scale').set(0.75)
-        cloud = self.geo.createNode('cloud')
-        cloud.setFirstInput(torus)
-        cloudnoise = self.geo.createNode('cloudnoise',
-                                         run_init_scripts=False)
-        cloudnoise.setFirstInput(cloud)
+    def test_volume_vdb(self):
+        volume = self.geo.createNode('volume')
+        volume.parmTuple('size').set([10,10,10])
+        wrangle = self.geo.createNode('volumewrangle')
+        wrangle.parm('snippet').set('@density = floor(@P.x+0.5);')
+        wrangle.setFirstInput(volume)
         convertvdb = self.geo.createNode('convertvdb')
-        convertvdb.setFirstInput(cloudnoise)
+        convertvdb.setFirstInput(wrangle)
+        convertvdb.parm('conversion').set('vdb')
         convertvdb.setRenderFlag(True)
         self.rop.parm('integrator').set('volpath')
         self.compare_scene()
