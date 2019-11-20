@@ -596,14 +596,14 @@ def medium_prim_paramset(prim, paramset=None):
 
     try:
         sigma_a_value = prim.floatListAttribValue('sigma_a')
-        if len(sigma_a) == 3:
+        if len(sigma_a_value) == 3:
             medium_paramset.replace(PBRTParam('rgb', 'sigma_a', sigma_a_value))
     except hou.OperationFailed:
         pass
 
     try:
         sigma_s_value = prim.floatListAttribValue('sigma_s')
-        if len(sigma_s) == 3:
+        if len(sigma_s_value) == 3:
             medium_paramset.replace(PBRTParam('rgb', 'sigma_s', sigma_s_value))
     except hou.OperationFailed:
         pass

@@ -117,7 +117,7 @@ def wrangle_instances(obj, now):
     for pt in xrange(num_pts):
         instance_geo = default_instance_geo
         if 'instance' in pt_attrib_map:
-            pt_instance_geo = geo.pt_instance_geovalue(pt_attrib_map['instance'], pt)[0]
+            pt_instance_geo = geo.value(pt_attrib_map['instance'], pt)[0]
             pt_instance_node = sop_node.node(pt_instance_geo)
             if pt_instance_node is not None:
                 instance_geo = pt_instance_node.path()
