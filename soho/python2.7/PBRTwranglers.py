@@ -44,15 +44,17 @@ def get_wrangler(obj, now, style):
         wrangler = None
     return wrangler
 
-def get_transform(obj, now, invert=False, flipz=False):
+def get_transform(obj, now, invert=False, flipx=False, flipy=False, flipz=False):
     xform = []
     if not obj.evalFloat('space:world', now, xform):
         return None
     xform = hou.Matrix4(xform)
     if invert:
         xform = xform.inverted()
-    if flipz:
-        xform = xform*hou.hmath.buildScale(1, 1, -1)
+    x = -1 if flipx else 1
+    y = -1 if flipy else 1
+    z = -1 if flipz else 1
+    xform = xform*hou.hmath.buildScale(x, y, z)
     return list(xform.asTuple())
 
 def xform_to_api_srt(xform, scale=True, rotate=True, trans=True):
@@ -73,20 +75,24 @@ def xform_to_api_srt(xform, scale=True, rotate=True, trans=True):
         api.Scale(*srt['scale'])
     return
 
-def output_xform(obj, now, no_motionblur=False, invert=False, flipz=False):
+def output_xform(obj, now, no_motionblur=False, invert=False,
+                 flipx=False, flipy=False, flipz=False):
     if no_motionblur:
         shutter_range = None
     else:
         shutter_range = wrangle_motionblur(obj, now)
     if shutter_range is None:
-        xform = get_transform(obj, now, invert=invert, flipz=flipz)
+        xform = get_transform(obj, now, invert=invert,
+                              flipx=flipx, flipy=flipy, flipz=flipz)
         api.Transform(xform)
         return
     api.ActiveTransform('StartTime')
-    xform = get_transform(obj, shutter_range.open, invert=invert, flipz=flipz)
+    xform = get_transform(obj, shutter_range.open, invert=invert,
+                          flipx=flipx, flipy=flipy, flipz=flipz)
     api.Transform(xform)
     api.ActiveTransform('EndTime')
-    xform = get_transform(obj, shutter_range.close, invert=invert, flipz=flipz)
+    xform = get_transform(obj, shutter_range.close, invert=invert,
+                          flipx=flipx, flipy=flipy, flipz=flipz)
     api.Transform(xform)
     api.ActiveTransform('All')
     return
@@ -399,9 +405,8 @@ def output_cam_xform(obj, projection, now):
     if projection in ('perspective', 'orthographic', 'realistic'):
         output_xform(obj, now, no_motionblur=True, invert=True, flipz=True)
     elif projection in ('environment',):
-        output_xform(obj, now, no_motionblur=True, invert=True, flipz=False)
-        api.Transform(xform)
-        api.Rotate(180, 0, 1, 0)
+        api.Rotate(-180, 0, 1, 0)
+        output_xform(obj, now, invert=True, flipx=True, flipz=True)
     return
 
 def wrangle_camera(obj, wrangler, now):
