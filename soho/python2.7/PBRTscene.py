@@ -82,12 +82,13 @@ def output_instances(obj, wrangler, now):
     will iterate over any found instances and output them so they can be
     later referenced.
     """
-    instances = find_referenced_instances(obj)
-    if not instances:
-        return
 
-    for instance in instances:
+    for instance in find_referenced_instances(obj):
         if instance in scene_state.instanced_geo:
+            # If we've already emitted this reference geometry
+            # then continue so we don't have duplicate definitions
+            # this can happen if multiple instance nodes reference
+            # the same geo
             continue
         scene_state.instanced_geo.add(instance)
 
