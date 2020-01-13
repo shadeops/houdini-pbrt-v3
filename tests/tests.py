@@ -53,6 +53,12 @@ def build_geo():
         child.destroy()
     return geo
 
+def build_instance():
+    instance = hou.node('/obj').createNode('instance')
+    for child in instance.children():
+        child.destroy()
+    return instance
+
 def build_ground():
     ground = hou.node('/obj').createNode('geo')
     for child in ground.children():
@@ -180,6 +186,108 @@ class TestGeo(TestBase):
         hou.hipFile.clear(suppress_save_prompt=True)
         if CLEANUP_FILES:
             shutil.rmtree('tests/tmp')
+
+class TestInstance(TestGeo):
+
+    def setUp(self):
+        self.geo1 = build_geo()
+        self.geo1.createNode('sphere')
+        self.geo1.setDisplayFlag(False)
+        self.geo2 = build_geo()
+        self.geo2.createNode('sphere')
+        self.geo2.setDisplayFlag(False)
+        self.instance = build_instance()
+        self.mat = build_checker_material()
+
+        exr = '%s.exr' % self.name
+        self.rop = build_rop(filename=exr, diskfile=self.testfile)
+
+        self.geo1.parm('shop_materialpath').set(self.mat.path())
+        self.geo2.parm('shop_materialpath').set(self.mat.path())
+        self.extras = []
+
+    def tearDown(self):
+        self.geo1.destroy()
+        self.geo2.destroy()
+        self.instance.destroy()
+        self.rop.destroy()
+        clear_mat()
+        for extra in self.extras:
+            extra.destroy()
+        self.extras[:] = []
+        if CLEANUP_FILES:
+            os.remove(self.testfile)
+
+    def compare_scene(self):
+        self.rop.render()
+        self.assertTrue(filecmp.cmp(self.testfile,
+                                    self.basefile))
+
+    def test_instance(self):
+        add_sop = self.instance.createNode('add')
+        add_sop.parm('usept0').set(True)
+        self.instance.parm('instancepath').set(self.geo1.path())
+        self.compare_scene()
+
+    def test_full_instance(self):
+        add_sop = self.instance.createNode('add')
+        add_sop.parm('usept0').set(True)
+        self.instance.parm('instancepath').set(self.geo1.path())
+        self.instance.parm('ptinstance').set('on')
+        self.compare_scene()
+
+    def test_fast_instance(self):
+        add_sop = self.instance.createNode('add')
+        add_sop.parm('usept0').set(True)
+        self.instance.parm('instancepath').set(self.geo1.path())
+        self.instance.parm('ptinstance').set('fast')
+        self.compare_scene()
+
+    def test_full_pt_instance(self):
+        add_sop = self.instance.createNode('add')
+        add_sop.parm('points').set(2)
+        add_sop.parm('usept0').set(True)
+        add_sop.parm('usept1').set(True)
+        add_sop.parmTuple('pt1').set([2,0,0])
+        attrib1_sop = self.instance.createNode('attribcreate')
+        attrib1_sop.setFirstInput(add_sop)
+        attrib1_sop.parm('group').set('0')
+        attrib1_sop.parm('name1').set('instance')
+        attrib1_sop.parm('type1').set('index')
+        attrib1_sop.parm('string1').set(self.geo1.path())
+        attrib2_sop = self.instance.createNode('attribcreate')
+        attrib2_sop.setFirstInput(attrib1_sop)
+        attrib2_sop.parm('group').set('1')
+        attrib2_sop.parm('name1').set('instance')
+        attrib2_sop.parm('type1').set('index')
+        attrib2_sop.parm('string1').set(self.geo2.path())
+        attrib2_sop.setRenderFlag(True)
+        self.instance.parm('instancepath').set(self.geo1.path())
+        self.instance.parm('ptinstance').set('on')
+        self.compare_scene()
+
+    def test_fast_pt_instance(self):
+        add_sop = self.instance.createNode('add')
+        add_sop.parm('points').set(2)
+        add_sop.parm('usept0').set(True)
+        add_sop.parm('usept1').set(True)
+        add_sop.parmTuple('pt1').set([2,0,0])
+        attrib1_sop = self.instance.createNode('attribcreate')
+        attrib1_sop.setFirstInput(add_sop)
+        attrib1_sop.parm('group').set('0')
+        attrib1_sop.parm('name1').set('instance')
+        attrib1_sop.parm('type1').set('index')
+        attrib1_sop.parm('string1').set(self.geo1.path())
+        attrib2_sop = self.instance.createNode('attribcreate')
+        attrib2_sop.setFirstInput(attrib1_sop)
+        attrib2_sop.parm('group').set('1')
+        attrib2_sop.parm('name1').set('instance')
+        attrib2_sop.parm('type1').set('index')
+        attrib2_sop.parm('string1').set(self.geo2.path())
+        attrib2_sop.setRenderFlag(True)
+        self.instance.parm('instancepath').set(self.geo1.path())
+        self.instance.parm('ptinstance').set('fast')
+        self.compare_scene()
 
 class TestProperties(TestGeo):
     def setUp(self):
