@@ -5,8 +5,8 @@ from sohog import SohoGeometry
 
 import PBRTapi as api
 
-def list_instances(obj):
-    """Find and list any instances in a Soho Object"""
+def find_referenced_instances(obj):
+    """Find and list any used instances in a Soho Object"""
 
     # We will be using a hou.Node instead of a Soho Object for this
     # so we can just query the strings directly instead of having to
@@ -14,17 +14,15 @@ def list_instances(obj):
 
     obj_node = hou.node(obj.getName())
     if not obj_node:
-        return None
+        return
 
     sop_node = obj_node.renderNode()
     if sop_node is None:
-        return None
+        return
 
     geo = sop_node.geometry()
     if geo is None:
-        return None
-
-    instance_geos = set()
+        return
 
     # Get the full path to any point instance geos
     instance_attrib = geo.findPointAttrib('instance')
@@ -33,20 +31,17 @@ def list_instances(obj):
         for instance_str in instance_attrib.strings():
             instance_obj = sop_node.node(instance_str)
             if instance_obj:
-                instance_geos.add(instance_obj.path())
+                yield instance_obj.path()
 
     # Get the object's instancepath as well
     instancepath_parm = obj_node.parm('instancepath')
     if instancepath_parm:
         instance_obj = instancepath_parm.evalAsNode()
         if instance_obj:
-            instance_geos.add(instance_obj.path())
+            yield instance_obj.path()
 
-    return list(instance_geos)
-
-
-def wrangle_instances(obj, now):
-    """Output any instanced geoemtry referenced by the Soho Object"""
+def wrangle_fast_instances(obj, now):
+    """Output instanced geoemtry defined by fast instancing"""
 
     # We need hou.Node handles so we can resolve relative paths
     # since soho does not do this.

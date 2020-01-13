@@ -684,7 +684,9 @@ def wrangle_obj(obj, wrangler, now, ignore_xform=False):
         output_xform(obj, now)
 
     if has_ptinstance and ptinstance[0] == 2:
-        Instancing.wrangle_instances(obj, now)
+        # This is "fast instancing", "full instancing" results in Soho outputing
+        # actual objects which independently need to be wrangled.
+        Instancing.wrangle_fast_instances(obj, now)
         return
 
     wrangle_geo(obj, wrangler, now)

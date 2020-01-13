@@ -10,7 +10,7 @@ from sohog import SohoGeometry
 import PBRTapi as api
 from PBRTwranglers import *
 from PBRTnodes import BaseNode
-from PBRTinstancing import list_instances
+from PBRTinstancing import find_referenced_instances
 from PBRTstate import scene_state
 
 
@@ -82,7 +82,7 @@ def output_instances(obj, wrangler, now):
     will iterate over any found instances and output them so they can be
     later referenced.
     """
-    instances = list_instances(obj)
+    instances = find_referenced_instances(obj)
     if not instances:
         return
 
@@ -210,7 +210,7 @@ def render(cam, now):
 
     print()
 
-    # Output Object Instances
+    # Output Object Instances for Fast Instancing
     api.Comment('='*50)
     api.Comment('Object Instance Definitions')
     for obj in soho.objectList('objlist:instance'):
