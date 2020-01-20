@@ -22,6 +22,7 @@ tests:
 .PHONY: coverage
 coverage:
 	hython $(COVERAGE) run --branch --source=soho/python2.7 tests/tests.py
+	$(COVERAGE) html
 
 .PHONY: clean
 clean:
