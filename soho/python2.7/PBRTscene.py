@@ -10,7 +10,7 @@ from sohog import SohoGeometry
 import PBRTapi as api
 from PBRTwranglers import *
 from PBRTnodes import BaseNode
-from PBRTinstancing import find_referenced_instances
+from PBRTinstancing import find_referenced_instances, get_full_instance_info
 from PBRTstate import scene_state
 
 
@@ -44,6 +44,23 @@ def output_materials(obj, wrangler, now):
         shop_materialpaths = gdp.attribProperty(attrib_h, 'geo:allstrings')
         for shop in shop_materialpaths:
             wrangle_shading_network(shop)
+
+    # TODO / CONSIDER, for very large number of instance objects it might speed things
+    #   up to cache the fact we've already visited a source network. Store in scenestate?
+    #   (This will avoid much of the below on a per instance basis)
+    instance_info = get_full_instance_info(obj)
+    if instance_info is not None:
+        instance_source = soho.getObject(instance_info.source)
+        sourcesop_path = []
+        if not instance_source.evalString('object:soppath', now, sourcesop_path):
+            return
+        sourcesop_path = sourcesop_path[0]
+        gdp = SohoGeometry(sourcesop_path, now)
+        attrib_h = gdp.attribute('geo:point', 'shop_materialpath')
+        if attrib_h >= 0:
+            shop_materialpaths = gdp.attribProperty(attrib_h, 'geo:allstrings')
+            for shop in shop_materialpaths:
+                wrangle_shading_network(shop)
     return
 
 def output_medium(medium):

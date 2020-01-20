@@ -114,7 +114,8 @@ def wrangle_shading_network(node_path,
                             name_prefix='',
                             name_suffix='',
                             use_named= True,
-                            saved_nodes=None):
+                            saved_nodes=None,
+                            overrides=None):
 
     # Depth first, as textures/materials need to be
     # defined before they are referenced
@@ -126,6 +127,13 @@ def wrangle_shading_network(node_path,
     if saved_nodes is None:
         saved_nodes = scene_state.shading_nodes
 
+    # TODO: Currently (AFAICT) there isn't a case where prefixed and suffixed
+    #       names are required. The original intent was to handling instancing
+    #       variations, but given that fast instancing doesn't support material
+    #       variations it has become moot. The workaround for full instancing is
+    #       just to regenerate the shading network each time.
+    #       Partitioning based on the different shading overrides might still make
+    #       this useful but the current implementation doesn't need this.
     presufed_node_path = name_prefix + node_path + name_suffix
     if presufed_node_path in saved_nodes:
         return
@@ -698,7 +706,8 @@ def wrangle_geo(obj, wrangler, now):
         'ptinstance' : SohoPBRT('ptinstance', 'integer', [0], skipdefault=False),
         # NOTE: In order for shop_materialpath to evaluate correctly when using (full) instancing
         #       shop_materialpath needs to be a 'shaderhandle' and not a 'string'
-        # TODO: However this does not seem to apply to shop_materialpaths on the instance points.
+        # NOTE: However this does not seem to apply to shop_materialpaths on the instance points
+        #       and has to be done manually
         'shop_materialpath' : SohoPBRT('shop_materialpath', 'shaderhandle', skipdefault=False),
         'pbrt_rendersubd' : SohoPBRT('pbrt_rendersubd', 'bool', [False], False),
         'pbrt_subdlevels' : SohoPBRT('pbrt_subdlevels', 'integer', [3], False, key='levels'),
@@ -729,18 +738,19 @@ def wrangle_geo(obj, wrangler, now):
     else:
         shop = properties['shop_materialpath'].Value[0]
 
-    if shop:
-        if properties['ptinstance'].Value[0] == 1:
-            instance_tokens = shop.split(':')
-            instance_num = instance_tokens[-1]
-            instance_suffix = ':%s' % instance_num
-            wrangle_shading_network(shop,
-                                    name_suffix=instance_suffix,
-                                    use_named=False,
-                                    saved_nodes=set()
-                                   )
-        elif shop in scene_state.shading_nodes:
-            api.NamedMaterial(shop)
+    # NOTE: Having to track down shop_materialpaths does not seem to be a requirement
+    #       with Mantra or RenderMan. Either its because I'm missing some logic/initialization
+    #       either in Soho or in the Shading HDAs. Or there is some hardcoding in the Houdini libs
+    #       that know how to translate shop_materialpath point aassignments to shaders directly
+    #       through a SohoParm. Until that is figured out, we'll have to do it manually.
+
+    pt_shop_found = False
+    if properties['ptinstance'].Value[0] == 1:
+        pt_shop_found = Instancing.process_full_pt_instance_material(obj, now)
+
+    # If we found a point shop, don't output the default one here.
+    if shop in scene_state.shading_nodes and not pt_shop_found:
+        api.NamedMaterial(shop)
 
     interior = None
     exterior = None
