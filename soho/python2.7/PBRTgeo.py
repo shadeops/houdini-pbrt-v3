@@ -35,10 +35,10 @@ def override_to_paramset(material, override_str):
         # for the spectrum type parms. Since spectrum parms can be of different
         # types and the Material Overrides only support "rgb" we are limited
         # in the types of spectrum overrides we can do. To work around this we'll
-        # support a different style, override_name.spectrum_type. If the parm name
-        # ends in one the none "rgb/color" types then we'll handle it differently.
+        # support a different style, override_name:spectrum_type. If the parm name
+        # ends in one of the "rgb/color" types then we'll handle it differently.
         try:
-            parm_name,spectrum_type = override_name.split('.',1)
+            parm_name,spectrum_type = override_name.split(':',1)
             parm_tuple = node.parmTuple(parm_name)
         except ValueError:
             spectrum_type = None
