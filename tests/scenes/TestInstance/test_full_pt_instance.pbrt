@@ -50,8 +50,7 @@ WorldBegin	# {
     #  /obj/geo1:/obj/instance1:0
     AttributeBegin	# {
 	Transform [ 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 ]
-	Texture "/mat/pbrt_texture_checkerboard1:/mat/pbrt_material_matte1" "spectrum" "checkerboard" "rgb tex1" [ 0.1 0.1 0.1 ] "rgb tex2" [ 0.375 0.5 0.5 ] "float uscale" [ 10 ] "float vscale" [ 10 ]
-	Material "matte" "texture Kd" [ "/mat/pbrt_texture_checkerboard1" ]
+	NamedMaterial "/mat/pbrt_material_matte1"
 	TransformBegin	# {
 	    ConcatTransform [ 1 0 0 0 0 0 -1 0 0 1 0 0 0 0 0 1 ]
 	    Scale 1 1 -1
@@ -63,8 +62,7 @@ WorldBegin	# {
     #  /obj/geo2:/obj/instance1:1
     AttributeBegin	# {
 	Transform [ 1 0 0 0 0 1 0 0 0 0 1 0 2 0 0 1 ]
-	Texture "/mat/pbrt_texture_checkerboard1:/mat/pbrt_material_matte1" "spectrum" "checkerboard" "rgb tex1" [ 0.1 0.1 0.1 ] "rgb tex2" [ 0.375 0.5 0.5 ] "float uscale" [ 10 ] "float vscale" [ 10 ]
-	Material "matte" "texture Kd" [ "/mat/pbrt_texture_checkerboard1" ]
+	NamedMaterial "/mat/pbrt_material_matte1"
 	TransformBegin	# {
 	    ConcatTransform [ 1 0 0 0 0 0 -1 0 0 1 0 0 0 0 0 1 ]
 	    Scale 1 1 -1
