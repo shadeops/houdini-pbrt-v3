@@ -1,0 +1,48 @@
+Film "image" "integer xresolution" [ 320 ] "integer yresolution" [ 240 ] "string filename" [ "test_cam_mb.exr" ]
+PixelFilter "gaussian" "float xwidth" [ 2 ] "float ywidth" [ 2 ]
+Sampler "halton" "integer pixelsamples" [ 16 ]
+Integrator "path" "integer maxdepth" [ 5 ]
+Accelerator "bvh"
+
+#  /obj/cam1
+Transform [ 1 0 0 0 0 1 0 0 0 0 -1 0 0 0 10 1 ]
+Camera "perspective" "float fov" [ 45.0000428043 ] "float screenwindow" [ -1 1 -0.75 0.75 ]
+
+WorldBegin	# {
+
+    #  ==================================================
+    #  Light Definitions
+    #  /obj/envlight1
+    AttributeBegin	# {
+	Transform [ 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 ]
+	Scale 1 1 -1
+	Rotate 90 0 0 1
+	Rotate 90 0 1 0
+	LightSource "infinite" "rgb L" [ 1 1 1 ] "string mapname" [ "" ] "rgb scale" [ 0.1 0.1 0.1 ]
+    AttributeEnd	# }
+
+
+    #  ==================================================
+    #  NamedMaterial Definitions
+
+    #  ==================================================
+    #  NamedMedium Definitions
+
+    #  ==================================================
+    #  Object Instance Definitions
+
+    #  ==================================================
+    #  Object Definitions
+    #  --------------------------------------------------
+    #  /obj/geo1
+    AttributeBegin	# {
+	ActiveTransform StartTime
+	Transform [ 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 ]
+	ActiveTransform EndTime
+	Transform [ 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 ]
+	ActiveTransform All
+	#  Can not find soppath for object
+    AttributeEnd	# }
+
+
+WorldEnd	# }

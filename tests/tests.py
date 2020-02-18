@@ -47,6 +47,12 @@ def build_cam():
     cam.parmTuple('res').set([320,240])
     return cam
 
+def build_zcam():
+    cam = hou.node('/obj').createNode('cam')
+    cam.parmTuple('t').set([0,0,10])
+    cam.parmTuple('res').set([320,240])
+    return cam
+
 def build_geo():
     geo = hou.node('/obj').createNode('geo')
     for child in geo.children():
@@ -311,6 +317,45 @@ class TestProperties(TestGeo):
         ptg.append(parm)
         self.geo.setParmTemplateGroup(ptg)
         self.geo.parm('pbrt_include').set('test.pbrt')
+        self.compare_scene()
+
+class TestMotionBlur(TestBase):
+
+    @classmethod
+    def setUpClass(cls):
+        build_envlight()
+
+    @classmethod
+    def tearDownClass(cls):
+        hou.hipFile.clear(suppress_save_prompt=True)
+        if CLEANUP_FILES:
+            shutil.rmtree('tests/tmp')
+
+    def setUp(self):
+        self.cam = build_zcam()
+        self.geo = build_geo()
+        exr = '%s.exr' % self.name
+        self.rop = build_rop(filename=exr, diskfile=self.testfile)
+
+    def tearDown(self):
+        self.geo.destroy()
+        self.cam.destroy()
+        self.rop.destroy()
+        if CLEANUP_FILES:
+            os.remove(self.testfile)
+
+    def compare_scene(self):
+        self.rop.render()
+        self.assertTrue(filecmp.cmp(self.testfile,
+                                    self.basefile))
+    def test_obj_mb(self):
+        self.geo.parm('tx').setExpression('$FF-1')
+        self.rop.parm('allowmotionblur').set(True)
+        self.compare_scene()
+
+    def test_cam_mb(self):
+        self.cam.parm('tx').setExpression('$FF-1')
+        self.rop.parm('allowmotionblur').set(True)
         self.compare_scene()
 
 class TestShapes(TestGeo):
