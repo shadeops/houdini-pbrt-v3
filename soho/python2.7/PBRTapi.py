@@ -112,7 +112,7 @@ def ConcatTransform(matrix):
     _api_call_with_iter('ConcatTransform', matrix)
 
 def TransformTimes(start, end):
-    _api_call_with_args('TransfomTimes', start, end)
+    _api_call_with_args('TransformTimes', start, end)
 
 def ActiveTransform(xform_time):
     if xform_time not in ('StartTime', 'EndTime', 'All'):
