@@ -89,7 +89,17 @@ def soho_render():
     soho.lockObjects(now)
 
     with hou.undos.disabler(), scene_state:
-        PBRTscene.render(cam, now)
+        if 'SOHO_PBRT_DEV' in os.environ:
+            import cProfile
+            pr = cProfile.Profile()
+            pr.enable()
+            try:
+                PBRTscene.render(cam, now)
+            finally:
+                pr.disable()
+                pr.dump_stats('hou-prbt.stats')
+        else:
+            PBRTscene.render(cam, now)
     return
 
 if __name__ in ('__builtin__', '__main__'):
