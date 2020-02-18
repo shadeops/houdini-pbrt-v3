@@ -5,6 +5,7 @@ import collections
 
 import hou
 import soho
+from sohog import SohoGeometry
 
 import PBRTapi as api
 import PBRTgeo as Geo
@@ -110,12 +111,63 @@ def wrangle_node_parm(obj, parm_name, now):
         return None
     return BaseNode(node_path)
 
+def process_full_pt_instance_material(obj, now):
+
+    # The order of evaluation.
+    #   1. shaders attached to the actual prims (handled in PBRTgeo.py)
+    #   2. per point assignments on the instancer
+    #   3. instancer's shop_materialpath
+    #   4. object being instanced shop_materialpath
+    #   5. nothing
+    #   The choice between 3 and 4 is handled automatically by soho
+
+    full_instance_info = Instancing.get_full_instance_info(obj)
+    instancer_obj = soho.getObject(full_instance_info.source)
+    instancer_sop = []
+    if not instancer_obj.evalString('object:soppath', now, instancer_sop):
+        return False
+    instancer_sop = instancer_sop[0]
+    gdp = SohoGeometry(instancer_sop, now)
+
+    override_attrib_h = gdp.attribute('geo:point', 'material_override')
+    shop_attrib_h = gdp.attribute('geo:point', 'shop_materialpath')
+
+    if shop_attrib_h < 0:
+        return False
+
+    shop = gdp.value(shop_attrib_h, full_instance_info.number)[0]
+
+    override_str = ''
+    if override_attrib_h >= 0:
+        override_str = gdp.value(override_attrib_h, full_instance_info.number)[0]
+
+    # We can just reference a NamedMaterial since there are no overrides
+    if not override_str:
+        if shop in scene_state.shading_nodes:
+            api.NamedMaterial(shop)
+        else:
+            # This shouldn't happen, if it does there is an coding mistake
+            raise ValueError('Could not find shop in scene state')
+        return True
+
+    # override and shop should exist beyond this point
+    # Fully expand shading network since there will be uniqueness
+    suffix = ':%s[%i]' % (full_instance_info.source, full_instance_info.number)
+    wrangle_shading_network(shop,
+                            use_named=False,
+                            saved_nodes=set(),
+                            name_suffix=suffix,
+                            overrides=override_str
+                           )
+    return True
+
 def wrangle_shading_network(node_path,
                             name_prefix='',
                             name_suffix='',
                             use_named= True,
                             saved_nodes=None,
-                            overrides=None):
+                            overrides=None,
+                            root=True):
 
     # Depth first, as textures/materials need to be
     # defined before they are referenced
@@ -147,6 +199,9 @@ def wrangle_shading_network(node_path,
     if node is None:
         return
 
+    node.path_suffix = name_suffix
+    node.path_prefix = name_prefix
+
     if node.directive == 'material':
         api_call = api.MakeNamedMaterial if use_named else api.Material
     elif node.directive == 'texture':
@@ -154,12 +209,16 @@ def wrangle_shading_network(node_path,
     else:
         return
 
+    paramset = node.paramset_with_overrides(overrides)
+
     for node_input in node.inputs():
         wrangle_shading_network(node_input,
                                 name_prefix=name_prefix,
                                 name_suffix=name_suffix,
                                 use_named=use_named,
-                                saved_nodes=saved_nodes)
+                                saved_nodes=saved_nodes,
+                                overrides=overrides,
+                                root=False)
 
     coord_sys = node.coord_sys
     if coord_sys:
@@ -168,12 +227,12 @@ def wrangle_shading_network(node_path,
 
     if api_call == api.Material:
         api_call(node.directive_type,
-                 node.paramset)
+                 paramset)
     else:
-        api_call(presufed_node_path,
+        api_call(node.full_name,
                  node.output_type,
                  node.directive_type,
-                 node.paramset)
+                 paramset)
     if coord_sys:
         api.TransformEnd()
     if api_call == api.MakeNamedMaterial:
@@ -746,7 +805,7 @@ def wrangle_geo(obj, wrangler, now):
 
     pt_shop_found = False
     if properties['ptinstance'].Value[0] == 1:
-        pt_shop_found = Instancing.process_full_pt_instance_material(obj, now)
+        pt_shop_found = process_full_pt_instance_material(obj, now)
 
     # If we found a point shop, don't output the default one here.
     if shop in scene_state.shading_nodes and not pt_shop_found:

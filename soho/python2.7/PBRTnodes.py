@@ -11,138 +11,6 @@ import soho
 class HouParmException(Exception):
     pass
 
-# TODO is this the best name/location for this?
-# should some of this functionality be in _hou_parm_to_pbrt_param()
-def pbrt_param_from_ref(parm, parm_value, parm_name=None):
-    """Convert hou.ParmTuple into a PBRT string
-
-    Optional parm_name for overridding the name of a parm,
-    useful in cases where you have different parm signatures
-    """
-    if parm_name is None:
-        parm_name = parm.name()
-
-    parm_tmpl = parm.parmTemplate()
-    parm_type = parm_tmpl.type()
-    parm_scheme = parm_tmpl.namingScheme()
-
-    # PBRT: bool
-    if parm_type == hou.parmTemplateType.Toggle:
-        pbrt_type = 'bool'
-    # PBRT: string (menu)
-    elif parm_type == hou.parmTemplateType.Menu:
-        pbrt_type = 'string'
-    # PBRT: string
-    elif parm_type == hou.parmTemplateType.String:
-        pbrt_type = 'string'
-    # PBRT: integer
-    elif parm_type == hou.parmTemplateType.Int:
-        pbrt_type = 'integer'
-    # PBRT: spectrum
-    elif parm_scheme == hou.parmNamingScheme.RGBA:
-        pbrt_type = 'rgb'
-    # PBRT: point*/vector*/normal
-    elif (parm_type == hou.parmTemplateType.Float and
-          'pbrt.type' in parm_tmpl.tags()):
-        pbrt_type = parm_tmpl.tags()['pbrt.type']
-    # PBRT: float (sometimes a float is just a float)
-    elif parm_type == hou.parmTemplateType.Float:
-        pbrt_type = 'float'
-    else:
-        raise HouParmException('Can\'t convert %s to pbrt type' % (parm))
-
-    return PBRTParam(pbrt_type, parm_name, parm_value)
-
-def _hou_parm_to_pbrt_param(parm, parm_name=None):
-    """Convert hou.ParmTuple into a PBRT string
-
-    Optional parm_name for overridding the name of a parm,
-    useful in cases where you have different parm signatures
-    """
-    if parm_name is None:
-        parm_name = parm.name()
-
-    # 9 types
-    # integer, float, point2, vector2, point3, vector3, normal, spectrum,
-    # bool, and string
-    # Houdini has the concept of float arrays as well as float vectors
-    # parm0, parm1, parm2 and parmx, parmy, parmz respectively
-    # Unfortunately there isn't a way to differentiate between a
-    # point* and a vector* in the UI, to do this we'll use a parm tag,
-    # "pbrt.type"
-
-    # Additionally there is an extra pbrt.type defined which is "space"
-    # This parameter will not be output, but instead will cause
-    # the referenced parm's space to declared
-
-    # Spectrum is another special case in that its a rgb type, but if it
-    # has an input of pbrt_spectrum type then extra options are available.
-
-    parm_tmpl = parm.parmTemplate()
-    parm_type = parm_tmpl.type()
-    parm_scheme = parm_tmpl.namingScheme()
-    # Assuming there will only be a single coshader "node"
-    # per parameter.
-    coshaders = parm.node().coshaderNodes(parm_name)
-    if coshaders:
-        coshader = BaseNode.from_node(coshaders[0])
-    else:
-        coshader = None
-    # PBRT: bool
-    if parm_type == hou.parmTemplateType.Toggle:
-        pbrt_type = 'bool'
-        pbrt_value = parm.eval()
-    # PBRT: string (menu)
-    elif parm_type == hou.parmTemplateType.Menu:
-        pbrt_type = 'string'
-        pbrt_value = parm.evalAsStrings()
-    # PBRT: string
-    elif parm_type == hou.parmTemplateType.String:
-        pbrt_type = 'string'
-        pbrt_value = parm.evalAsStrings()
-    # PBRT: integer
-    elif parm_type == hou.parmTemplateType.Int:
-        pbrt_type = 'integer'
-        pbrt_value = parm.eval()
-    # PBRT: spectrum
-    elif parm_scheme == hou.parmNamingScheme.RGBA:
-        if coshader is None:
-            pbrt_type = 'rgb'
-            pbrt_value = parm.eval()
-        elif coshader.directive_type == 'pbrt_spectrum':
-            # If the coshader is a spectrum node then it will
-            # only have one param in the paramset
-            spectrum_parm = coshader.paramset.pop()
-            pbrt_type = spectrum_parm.param_type
-            pbrt_value = spectrum_parm.value
-        elif coshader.directive == 'texture':
-            pbrt_type = 'texture'
-            pbrt_value = coshader.path
-        else:
-            raise HouParmException('Can\'t convert %s to pbrt type' % (parm))
-    # PBRT: float texture
-    elif (parm_type == hou.parmTemplateType.Float and
-          coshader is not None and
-          coshader.directive == 'texture'):
-        pbrt_type = 'texture'
-        pbrt_value = coshader.path
-    # PBRT: point*/vector*/normal
-    elif (parm_type == hou.parmTemplateType.Float and
-          'pbrt.type' in parm_tmpl.tags()):
-        pbrt_type = parm_tmpl.tags()['pbrt.type']
-        pbrt_value = parm.eval()
-    # PBRT: float (sometimes a float is just a float)
-    elif parm_type == hou.parmTemplateType.Float:
-        pbrt_type = 'float'
-        pbrt_value = parm.eval()
-    # PBRT: wut is dis?
-    else:
-        raise HouParmException('Can\'t convert %s to pbrt type' % (parm))
-
-    return PBRTParam(pbrt_type, parm_name, pbrt_value)
-
-
-
 class PBRTParam(object):
     """Representation of a param in PBRT
 
@@ -400,6 +268,8 @@ class BaseNode(object):
 
         self.ignore_defaults = ignore_defaults
         self.directive = get_directive_from_nodetype(node.type())
+        self.path_prefix = ''
+        self.path_suffix = ''
 
     @property
     def directive_type(self):
@@ -414,12 +284,16 @@ class BaseNode(object):
         return self.node.type().definition().sections()['FunctionName'].contents()
 
     @property
-    def name(self):
-        return self.path
-
-    @property
     def path(self):
         return self.node.path()
+
+    @property
+    def name(self):
+        return self.node.name()
+
+    @property
+    def full_name(self):
+        return '%s%s%s' % (self.path_prefix, self.path, self.path_suffix)
 
     @property
     def coord_sys(self):
@@ -465,7 +339,7 @@ class BaseNode(object):
             parm = hou_parms[parm_name]
             # If we can't wrangle a parm type we'll skip it
             try:
-                param = _hou_parm_to_pbrt_param(parm, parm_name)
+                param = self._hou_parm_to_pbrt_param(parm, parm_name)
             except HouParmException:
                 continue
             params.add(param)
@@ -474,6 +348,194 @@ class BaseNode(object):
     @property
     def type_and_paramset(self):
         return (self.directive_type, self.paramset)
+
+    def pbrt_parm_name(self, name):
+        return name
+
+    def paramset_with_overrides(self, override_str):
+        paramset = ParamSet(self.paramset)
+        paramset.update(self.override_paramset(override_str))
+        return paramset
+
+    def override_paramset(self, override_str):
+        """Get a paramset with overrides applied
+
+        Args:
+            override_str (str): A string with the overrides (material_override)
+
+        Returns:
+            ParamSet with matching overrides applied
+        """
+
+        paramset = ParamSet()
+        if not override_str:
+            return paramset
+
+        override = eval(override_str)
+        if not override:
+            return paramset
+
+        hou_parms = self.get_used_parms()
+        # Reduce overrides to just ones relevant to this node.
+
+        for override_name in override:
+            # The override can have a node_name/parm format which allows for point
+            # instance overrides to override parms in a network.
+            try:
+                override_node,override_parm = override_name.split('/',1)
+                if override_node != self.name:
+                    continue
+            except ValueError:
+                override_parm = override_name
+
+            # There can be two style of "overrides" one is a straight parm override
+            # which is similar to what Houdini does. The other style of override is
+            # for the spectrum type parms. Since spectrum parms can be of different
+            # types and the Material Overrides only support "rgb" we are limited
+            # in the types of spectrum overrides we can do. To work around this we'll
+            # support a different style, override_parm:spectrum_type. If the parm name
+            # ends in one of the "rgb/color" types then we'll handle it differently.
+            # TODO add a comment as to what the value would look like
+            try:
+                parm_name,spectrum_type = override_parm.split(':',1)
+            except ValueError:
+                spectrum_type = None
+                parm_name = override_parm
+
+            # NOTE: The material SOP will use a parm style dictionary if there parm name matches exactly
+            #       ie) if there is a color parm you will get
+            #       {'colorb':0.372511,'colorg':0.642467,'colorr':0.632117,}
+            #       But if the parm name doesn't match (which we are allowing for you will get something
+            #       like this -
+            #       {'colora':(0.632117,0.642467,0.372511),}
+
+            override_value = override[override_name]
+            # Once we have a parm name, we need to determine what "style" it is. Whether its a
+            # hou.ParmTuple or hou.Parm style.
+            parm_tuple = self.node.parmTuple(parm_name)
+            split_tuple = False
+            if parm_tuple is None:
+                # We couldn't find a tuple of that name, so let's try a parm
+                parm = self.node.parm(parm_name)
+                if parm is None:
+                    # Nope, not valid either, let's move along
+                    continue
+                parm_tuple = parm.tuple()
+                split_tuple = True
+
+            # This is for wrangling parm names of texture nodes due to having a
+            # signature parm.
+            pbrt_parm_name = self.pbrt_parm_name(parm_tuple.name())
+
+            if spectrum_type is None and split_tuple:
+                # This is a "traditional" override, no spectrum or node name prefix
+                value = [override[x.name()] for x in parm_tuple]
+                pbrt_param = self._hou_parm_to_pbrt_param(parm_tuple, pbrt_parm_name, value)
+            elif spectrum_type in ('spectrum','xyz','blackbody'):
+                pbrt_param = PBRTParam(spectrum_type, pbrt_parm_name, override[override_name])
+            elif not split_tuple:
+                pbrt_param = self._hou_parm_to_pbrt_param(parm_tuple, pbrt_parm_name,
+                                                     override[override_name])
+            else:
+                raise ValueError('Unable to wrangle override name: %s' % override_name)
+            paramset.add(pbrt_param)
+
+        return paramset
+
+
+    def _hou_parm_to_pbrt_param(self, parm, parm_name=None, value_override=None):
+        """Convert hou.ParmTuple into a PBRT string
+
+        Optional parm_name for overridding the name of a parm,
+        useful in cases where you have different parm signatures
+        """
+        if parm_name is None:
+            parm_name = parm.name()
+
+        # 9 types
+        # integer, float, point2, vector2, point3, vector3, normal, spectrum,
+        # bool, and string
+        # Houdini has the concept of float arrays as well as float vectors
+        # parm0, parm1, parm2 and parmx, parmy, parmz respectively
+        # Unfortunately there isn't a way to differentiate between a
+        # point* and a vector* in the UI, to do this we'll use a parm tag,
+        # "pbrt.type"
+
+        # Additionally there is an extra pbrt.type defined which is "space"
+        # This parameter will not be output, but instead will cause
+        # the referenced parm's space to declared
+
+        # Spectrum is another special case in that its a rgb type, but if it
+        # has an input of pbrt_spectrum type then extra options are available.
+
+        parm_tmpl = parm.parmTemplate()
+        parm_type = parm_tmpl.type()
+        parm_scheme = parm_tmpl.namingScheme()
+        # Assuming there will only be a single coshader "node"
+        # per parameter.
+        coshaders = parm.node().coshaderNodes(parm_name)
+        if coshaders:
+            coshader = BaseNode.from_node(coshaders[0])
+            coshader.path_prefix = self.path_prefix
+            coshader.path_suffix = self.path_suffix
+        else:
+            coshader = None
+        # PBRT: bool
+        if parm_type == hou.parmTemplateType.Toggle:
+            pbrt_type = 'bool'
+            pbrt_value = parm.eval()
+        # PBRT: string (menu)
+        elif parm_type == hou.parmTemplateType.Menu:
+            pbrt_type = 'string'
+            pbrt_value = parm.evalAsStrings()
+        # PBRT: string
+        elif parm_type == hou.parmTemplateType.String:
+            pbrt_type = 'string'
+            pbrt_value = parm.evalAsStrings()
+        # PBRT: integer
+        elif parm_type == hou.parmTemplateType.Int:
+            pbrt_type = 'integer'
+            pbrt_value = parm.eval()
+        # PBRT: spectrum
+        elif parm_scheme == hou.parmNamingScheme.RGBA:
+            if coshader is None:
+                pbrt_type = 'rgb'
+                pbrt_value = parm.eval()
+            elif coshader.directive_type == 'pbrt_spectrum':
+                # If the coshader is a spectrum node then it will
+                # only have one param in the paramset
+                spectrum_parm = coshader.paramset.pop()
+                pbrt_type = spectrum_parm.param_type
+                pbrt_value = spectrum_parm.value
+            elif coshader.directive == 'texture':
+                pbrt_type = 'texture'
+                pbrt_value = coshader.full_name
+            else:
+                raise HouParmException('Can\'t convert %s to pbrt type' % (parm))
+        # PBRT: float texture
+        elif (parm_type == hou.parmTemplateType.Float and
+              coshader is not None and
+              coshader.directive == 'texture'):
+            pbrt_type = 'texture'
+            pbrt_value = coshader.full_name
+        # PBRT: point*/vector*/normal
+        elif (parm_type == hou.parmTemplateType.Float and
+              'pbrt.type' in parm_tmpl.tags()):
+            pbrt_type = parm_tmpl.tags()['pbrt.type']
+            pbrt_value = parm.eval()
+        # PBRT: float (sometimes a float is just a float)
+        elif parm_type == hou.parmTemplateType.Float:
+            pbrt_type = 'float'
+            pbrt_value = parm.eval()
+        # PBRT: wut is dis?
+        else:
+            raise HouParmException('Can\'t convert %s to pbrt type' % (parm))
+
+        # If there is a coshader we can't override the value as there is a connection
+        if value_override is not None and coshader is None:
+            pbrt_value = value_override
+
+        return PBRTParam(pbrt_type, parm_name, pbrt_value)
 
 class SpectrumNode(BaseNode):
     @property
@@ -573,6 +635,12 @@ class TextureNode(MaterialNode):
             new_parm_name = parm_name.rsplit('_', 1)[0]
             new_parms[new_parm_name] = parm
         return new_parms
+
+    def pbrt_parm_name(self, name):
+        signature = self.node.currentSignatureName()
+        if signature != 'default':
+            return name.rsplit('_', 1)[0]
+        return name
 
     @property
     def coord_sys(self):

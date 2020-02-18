@@ -8,55 +8,8 @@ import collections
 import hou
 
 import PBRTapi as api
-from PBRTnodes import BaseNode, PBRTParam, ParamSet, pbrt_param_from_ref
-
+from PBRTnodes import BaseNode, MaterialNode, PBRTParam, ParamSet
 from PBRTstate import scene_state
-
-def override_to_paramset(material, override_str):
-    """Convert a material override to a ParamSet
-
-    Args:
-        material (str): An oppath to a material node
-        override_str (str): A string with the overrides (material_override)
-
-    Returns:
-        ParamSet of the override params
-    """
-    paramset = ParamSet()
-    override = eval(override_str)
-    if not override or not material:
-        return paramset
-    node = hou.node(material)
-    if not node:
-        return paramset
-    for override_name in override:
-        # There can be two style of "overrides" one is a straight parm override
-        # which is similar to what Houdini does. The other style of override is
-        # for the spectrum type parms. Since spectrum parms can be of different
-        # types and the Material Overrides only support "rgb" we are limited
-        # in the types of spectrum overrides we can do. To work around this we'll
-        # support a different style, override_name:spectrum_type. If the parm name
-        # ends in one of the "rgb/color" types then we'll handle it differently.
-        try:
-            parm_name,spectrum_type = override_name.split(':',1)
-            parm_tuple = node.parmTuple(parm_name)
-        except ValueError:
-            spectrum_type = None
-            parm_name = override_name
-            parm = node.parm(parm_name)
-            if parm is None:
-                continue
-            parm_tuple = parm.tuple()
-
-        if spectrum_type is None:
-            value = [override[x.name()] for x in parm_tuple]
-            pbrt_param = pbrt_param_from_ref(parm_tuple, value)
-        elif spectrum_type in ('spectrum','xyz','blackbody'):
-            pbrt_param = PBRTParam(spectrum_type, parm_name, override[override_name])
-        else:
-            raise ValueError('Unable to wrangle override name: %s' % override_name)
-        paramset.add(pbrt_param)
-    return paramset
 
 def mesh_alpha_texs(properties):
     if not properties:
@@ -1110,7 +1063,9 @@ def output_geo(soppath, now, properties=None):
                 material_paramset = ParamSet()
 
                 if override and material:
-                    material_paramset.update(override_to_paramset(material, override))
+                    # material parm overrides are only valid for MaterialNodes
+                    material_node = MaterialNode(material)
+                    material_paramset.update(material_node.override_paramset(override))
 
                 shape_gdp = shape_gdps[shape]
                 #api.Comment('  %s %i' % (shape_gdp, len(shape_gdp.prims())))

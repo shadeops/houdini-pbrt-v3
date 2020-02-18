@@ -77,8 +77,8 @@ def output_medium(medium):
     if medium_vop.directive_type != 'pbrt_medium':
         return None
 
-    api.MakeNamedMedium(medium_vop.name, 'homogeneous', medium_vop.paramset)
-    return medium_vop.name
+    api.MakeNamedMedium(medium_vop.path, 'homogeneous', medium_vop.paramset)
+    return medium_vop.path
 
 
 def output_mediums(obj, wrangler, now):

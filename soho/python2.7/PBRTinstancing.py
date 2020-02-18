@@ -7,7 +7,6 @@ import soho
 from sohog import SohoGeometry
 
 import PBRTapi as api
-from PBRTstate import scene_state
 
 _FullInstance = collections.namedtuple('_FullInstance', ['instance', 'source', 'number'])
 
@@ -53,49 +52,6 @@ def find_referenced_instances(obj):
         instance_obj = instancepath_parm.evalAsNode()
         if instance_obj:
             yield instance_obj.path()
-
-def process_full_pt_instance_material(obj, now):
-
-    # The order of evaluation.
-    #   1. shaders attached to the actual prims (handled in PBRTgeo.py)
-    #   2. per point assignments on the instancer
-    #   3. instancer's shop_materialpath
-    #   4. object being instanced shop_materialpath
-    #   5. nothing
-    #   The choice between 3 and 4 is handled automatically by soho
-
-    full_instance_info = get_full_instance_info(obj)
-    instancer_obj = soho.getObject(full_instance_info.source)
-    instancer_sop = []
-    if not instancer_obj.evalString('object:soppath', now, instancer_sop):
-        return False
-    instancer_sop = instancer_sop[0]
-    gdp = SohoGeometry(instancer_sop, now)
-
-    override_attrib_h = gdp.attribute('geo:point', 'material_overrides')
-    shop_attrib_h = gdp.attribute('geo:point', 'shop_materialpath')
-
-    if shop_attrib_h < 0:
-        return False
-
-    # We can just reference a NamedMaterial since there are no overrides
-    if shop_attrib_h >= 0 and override_attrib_h < 0:
-        shop = gdp.value(shop_attrib_h, full_instance_info.number)[0]
-        if shop in scene_state.shading_nodes:
-            api.NamedMaterial(shop)
-        else:
-            raise ValueError('Could not find shop in scene state')
-        return True
-
-    # Fully expand shading network since there will be uniqueness
-    #return
-    #wrangle_shading_network(shop,
-    #                        use_named=False,
-    #                        saved_nodes=set()
-    #                       )
-
-
-    return False
 
 def wrangle_fast_instances(obj, now):
     """Output instanced geoemtry defined by fast instancing"""
