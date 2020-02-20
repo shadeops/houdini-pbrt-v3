@@ -319,6 +319,69 @@ class TestProperties(TestGeo):
         self.geo.parm('pbrt_include').set('test.pbrt')
         self.compare_scene()
 
+class TestSpectrum(TestGeo):
+
+    def setUp(self):
+        self.geo = build_geo()
+        material = hou.node('/mat').createNode('pbrt_material_matte')
+        spectrum = hou.node('/mat').createNode('pbrt_spectrum')
+        material.setNamedInput('Kd', spectrum, 'output')
+        self.spectrum = spectrum
+
+        exr = '%s.exr' % self.name
+        self.rop = build_rop(filename=exr, diskfile=self.testfile)
+
+        self.geo.parm('shop_materialpath').set(material.path())
+        self.extras = []
+
+    def tearDown(self):
+        self.geo.destroy()
+        self.rop.destroy()
+        clear_mat()
+        for extra in self.extras:
+            extra.destroy()
+        self.extras[:] = []
+        if CLEANUP_FILES:
+            os.remove(self.testfile)
+
+    def compare_scene(self):
+        self.rop.render()
+        self.assertTrue(filecmp.cmp(self.testfile,
+                                    self.basefile))
+
+    def test_rgb(self):
+        self.spectrum.parmTuple('rgb').set([0.25,0.5,.75])
+        self.spectrum.parm('type').set('rgb')
+        self.compare_scene()
+
+    def test_xyz(self):
+        self.spectrum.parmTuple('xyz').set([0.25, 0.5, .75])
+        self.spectrum.parm('type').set('xyz')
+        self.compare_scene()
+
+    def test_spd(self):
+        self.spectrum.parm('spd').set({'400':'1', '500':'0.5', '600':'0.25'})
+        self.spectrum.parm('type').set('spd')
+        self.compare_scene()
+
+    def test_file(self):
+        self.spectrum.parm('file').set('./file.spd')
+        self.spectrum.parm('type').set('file')
+        self.compare_scene()
+
+    def test_ramp(self):
+        ramp = hou.Ramp([hou.rampBasis.Linear,]*3,
+                        (400, 500, 600),
+                        (0.25, 1.0, 0.5))
+        self.spectrum.parm('ramp').set(ramp)
+        self.spectrum.parm('type').set('ramp')
+        self.compare_scene()
+
+    def test_blackbody(self):
+        self.spectrum.parmTuple('blackbody').set([5000, 0.5])
+        self.spectrum.parm('type').set('blackbody')
+        self.compare_scene()
+
 class TestMotionBlur(TestBase):
 
     @classmethod
@@ -356,6 +419,16 @@ class TestMotionBlur(TestBase):
     def test_cam_mb(self):
         self.cam.parm('tx').setExpression('$FF-1')
         self.rop.parm('allowmotionblur').set(True)
+        self.compare_scene()
+
+    def test_motion_window(self):
+        self.geo.parm('tx').setExpression('$FF-1')
+        self.rop.parm('allowmotionblur').set(True)
+        ptg = self.cam.parmTemplateGroup()
+        parm = hou.properties.parmTemplate('pbrt-v3','pbrt_motionwindow')
+        ptg.append(parm)
+        self.cam.setParmTemplateGroup(ptg)
+        self.cam.parmTuple('pbrt_motionwindow').set([0.25,0.75])
         self.compare_scene()
 
 class TestShapes(TestGeo):

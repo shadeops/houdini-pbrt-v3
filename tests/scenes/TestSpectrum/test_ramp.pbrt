@@ -1,0 +1,57 @@
+Film "image" "integer xresolution" [ 320 ] "integer yresolution" [ 240 ] "string filename" [ "test_ramp.exr" ]
+PixelFilter "gaussian" "float xwidth" [ 2 ] "float ywidth" [ 2 ]
+Sampler "halton" "integer pixelsamples" [ 16 ]
+Integrator "path" "integer maxdepth" [ 5 ]
+Accelerator "bvh"
+
+#  /obj/cam1
+Transform [ 1 0 0 0 0 0.978147600734 -0.207911690818 6.93889390391e-18 0 -0.207911690818 -0.978147600734 2.77555756156e-17 0 0.061410853355 5.09864969449 1 ]
+Camera "perspective" "float fov" [ 45.0000428043 ] "float screenwindow" [ -1 1 -0.75 0.75 ]
+
+WorldBegin	# {
+
+    #  ==================================================
+    #  Light Definitions
+    #  /obj/envlight1
+    AttributeBegin	# {
+	Transform [ 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 ]
+	Scale 1 1 -1
+	Rotate 90 0 0 1
+	Rotate 90 0 1 0
+	LightSource "infinite" "rgb L" [ 1 1 1 ] "string mapname" [ "" ] "rgb scale" [ 0.1 0.1 0.1 ]
+    AttributeEnd	# }
+
+    #  /obj/hlight1
+    AttributeBegin	# {
+	Translate 3 3 3
+	AreaLightSource "diffuse" "bool twosided" [ "true" ] "rgb L" [ 1 1 1 ] "rgb scale" [ 50 50 50 ]
+	AttributeBegin	# {
+	    Material "none"
+	    Shape "sphere" "float radius" [ 0.5 ]
+	AttributeEnd	# }
+    AttributeEnd	# }
+
+
+    #  ==================================================
+    #  NamedMaterial Definitions
+    MakeNamedMaterial "/mat/pbrt_material_matte1" "string type" "matte" "spectrum Kd" [ 380 0.25 385 0.25 390 0.25 395 0.25 400 0.25 405 0.25 410 0.25 415 0.25 420 0.25 425 0.25 430 0.25 435 0.25 440 0.25 445 0.25 450 0.25 455 0.25 460 0.25 465 0.25 470 0.25 475 0.25 480 0.25 485 0.25 490 0.25 495 0.25 500 0.25 505 0.25 510 0.25 515 0.25 520 0.25 525 0.25 530 0.25 535 0.25 540 0.25 545 0.25 550 0.25 555 0.25 560 0.25 565 0.25 570 0.25 575 0.25 580 0.25 585 0.25 590 0.25 595 0.25 600 0.25 605 0.25 610 0.25 615 0.25 620 0.25 625 0.25 630 0.25 635 0.25 640 0.25 645 0.25 650 0.25 655 0.25 660 0.25 665 0.25 670 0.25 675 0.25 680 0.25 685 0.25 690 0.25 695 0.25 700 0.25 705 0.25 710 0.25 715 0.25 720 0.25 725 0.25 730 0.25 735 0.25 740 0.25 745 0.25 750 0.25 755 0.25 760 0.25 765 0.25 770 0.25 775 0.25 780 0.25 ]
+
+
+    #  ==================================================
+    #  NamedMedium Definitions
+
+    #  ==================================================
+    #  Object Instance Definitions
+
+    #  ==================================================
+    #  Object Definitions
+    #  --------------------------------------------------
+    #  /obj/geo1
+    AttributeBegin	# {
+	Transform [ 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 ]
+	NamedMaterial "/mat/pbrt_material_matte1"
+	#  Can not find soppath for object
+    AttributeEnd	# }
+
+
+WorldEnd	# }
