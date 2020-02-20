@@ -83,13 +83,20 @@ def soho_render():
     forcelightsparm = "forcelights"
 
     if sololight:
-        stdlights = excludelights = None
+        stdlights = excludelights = ""
         forcelights = sololight
         forcelightsparm = "sololight"
 
     # First, we add objects based on their display flags or dimmer values
     soho.addObjects(
-        now, stdobject, stdlights, "", True, geo_parm="vobject", light_parm="alights"
+        now,
+        stdobject,
+        stdlights,
+        "",
+        True,
+        geo_parm="vobject",
+        light_parm="alights",
+        fog_parm="",
     )
     soho.addObjects(
         now,
@@ -99,6 +106,7 @@ def soho_render():
         False,
         geo_parm="forceobject",
         light_parm=forcelightsparm,
+        fog_parm="",
     )
     soho.removeObjects(
         now,
@@ -107,6 +115,7 @@ def soho_render():
         "",
         geo_parm="excludeobject",
         light_parm="excludelights",
+        fog_parm="",
     )
 
     # Lock off the objects we've selected
