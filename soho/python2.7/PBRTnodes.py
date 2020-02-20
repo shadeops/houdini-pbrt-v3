@@ -8,8 +8,10 @@ import collections
 import hou
 import soho
 
+
 class HouParmException(Exception):
     pass
+
 
 class PBRTParam(object):
     """Representation of a param in PBRT
@@ -36,14 +38,24 @@ class PBRTParam(object):
     #       Normal3f
     #       http://www.pbrt.org/fileformat-v3.html#parameter-lists
 
-    pbrt_types = ('texture', 'float', 'point2', 'vector2', 'point3', 'normal',
-                  'vector3', 'integer', 'spectrum', 'rgb', 'xyz', 'blackbody',
-                  'string', 'bool')
-    type_synonyms = {'point' : 'point3',
-                     'vector' : 'vector3',
-                     'color' : 'rgb',
-                    }
-    spectrum_types = set(['color', 'rgb', 'blackbody', 'xyz', 'spectrum'])
+    pbrt_types = (
+        "texture",
+        "float",
+        "point2",
+        "vector2",
+        "point3",
+        "normal",
+        "vector3",
+        "integer",
+        "spectrum",
+        "rgb",
+        "xyz",
+        "blackbody",
+        "string",
+        "bool",
+    )
+    type_synonyms = {"point": "point3", "vector": "vector3", "color": "rgb"}
+    spectrum_types = set(["color", "rgb", "blackbody", "xyz", "spectrum"])
 
     def __init__(self, param_type, param_name, param_value=None):
         """
@@ -57,9 +69,9 @@ class PBRTParam(object):
         """
         param_type = self.type_synonyms.get(param_type, param_type)
         if param_type not in self.pbrt_types:
-            raise TypeError('%s not a known PBRT type' % param_type)
+            raise TypeError("%s not a known PBRT type" % param_type)
         if param_type in self.spectrum_types:
-            self.type = 'spectrum'
+            self.type = "spectrum"
         else:
             self.type = param_type
         self.param_type = param_type
@@ -68,15 +80,15 @@ class PBRTParam(object):
 
     def __str__(self):
         if isinstance(self.value, types.GeneratorType):
-            value_str = '...'
+            value_str = "..."
         else:
             if len(self.value) > 3:
-                suffix = ' ...'
+                suffix = " ..."
             else:
-                suffix = ''
-            value_str = '%s' % (' '.join([str(x) for x in self.value[0:3]]))
+                suffix = ""
+            value_str = "%s" % (" ".join([str(x) for x in self.value[0:3]]))
             value_str += suffix
-        return '%s [ %s ]' % (self.type_name, value_str)
+        return "%s [ %s ]" % (self.type_name, value_str)
 
     def __hash__(self):
         # We only hash on the type and name, not the value
@@ -84,12 +96,12 @@ class PBRTParam(object):
 
     def __eq__(self, other):
         if not isinstance(other, PBRTParam):
-            raise TypeError('Can not compare non PBRTParam type')
+            raise TypeError("Can not compare non PBRTParam type")
         return self.type == other.type and self.name == other.name
 
     def __ne__(self, other):
         if not isinstance(other, PBRTParam):
-            raise TypeError('Can not compare non PBRTParam type')
+            raise TypeError("Can not compare non PBRTParam type")
         return self.type != other.type or self.name != other.name
 
     @property
@@ -98,25 +110,26 @@ class PBRTParam(object):
         if isinstance(self._value, types.GeneratorType):
             v = self._value
         elif not isinstance(self._value, (list, tuple, array.array)):
-            v = [self._value,]
+            v = [self._value]
         else:
             v = self._value[:]
-        if self.type == 'bool':
-            v = ('true' if (x and x != 'false') else 'false' for x in v)
+        if self.type == "bool":
+            v = ("true" if (x and x != "false") else "false" for x in v)
         return v
 
     @property
     def type_name(self):
         """The type and name of the param"""
-        return '%s %s' % (self.param_type, self.name)
+        return "%s %s" % (self.param_type, self.name)
 
     def as_str(self):
         """Returns param as a string suitable for a pbrt scene file"""
-        return soho.arrayToString('"%s" [ ' % self.type_name, self.value, ' ]')
+        return soho.arrayToString('"%s" [ ' % self.type_name, self.value, " ]")
 
     def print_str(self):
         """Prints param as a string suitable for a pbrt scene file"""
-        return soho.printArray('"%s" [ ' % self.type_name, self.value, ' ]')
+        return soho.printArray('"%s" [ ' % self.type_name, self.value, " ]")
+
 
 class ParamSet(collections.MutableSet):
     """Represents a collection of PBRTParams
@@ -148,7 +161,7 @@ class ParamSet(collections.MutableSet):
         return len(self._data)
 
     def __str__(self):
-        return ' , '.join(str(x) for x in self)
+        return " , ".join(str(x) for x in self)
 
     def add(self, param):
         """Add a param if it does not already exist"""
@@ -178,6 +191,7 @@ class ParamSet(collections.MutableSet):
         for o in other:
             self.replace(o)
 
+
 def get_directive_from_nodetype(node_type):
     """Get the 'directive' of a Houdini PBRT VOP
 
@@ -197,19 +211,19 @@ def get_directive_from_nodetype(node_type):
     user_data_str = node_type.definition().userInfo()
     if user_data_str:
         user_data = json.loads(user_data_str)
-        directive = user_data.get('directive')
+        directive = user_data.get("directive")
 
     if directive:
         return directive.lower()
 
-    typename_tokens = node_type.nameComponents()[2].lower().split('_')
+    typename_tokens = node_type.nameComponents()[2].lower().split("_")
 
-    if typename_tokens[0] != 'pbrt':
+    if typename_tokens[0] != "pbrt":
         return None
 
     try:
         if len(typename_tokens) == 2:
-            directive = 'soho_helper'
+            directive = "soho_helper"
         elif len(typename_tokens) == 3:
             directive = typename_tokens[1]
     except IndexError:
@@ -242,13 +256,13 @@ class BaseNode(object):
         if directive is None:
             return None
 
-        dtype = node.type().definition().sections()['FunctionName'].contents()
+        dtype = node.type().definition().sections()["FunctionName"].contents()
 
-        if directive == 'material':
+        if directive == "material":
             return MaterialNode(node, ignore_defaults)
-        elif directive == 'texture':
+        elif directive == "texture":
             return TextureNode(node, ignore_defaults)
-        elif dtype == 'pbrt_spectrum':
+        elif dtype == "pbrt_spectrum":
             return SpectrumNode(node)
         return BaseNode(node, ignore_defaults)
 
@@ -260,7 +274,7 @@ class BaseNode(object):
         if isinstance(node, hou.VopNode):
             self.node = node
         else:
-            raise hou.TypeError('%s is unknown type' % node)
+            raise hou.TypeError("%s is unknown type" % node)
 
         # Since we rely on hidden and disabled states for which parms
         # to export, we need to ensure these are set
@@ -268,8 +282,8 @@ class BaseNode(object):
 
         self.ignore_defaults = ignore_defaults
         self.directive = get_directive_from_nodetype(node.type())
-        self.path_prefix = ''
-        self.path_suffix = ''
+        self.path_prefix = ""
+        self.path_suffix = ""
 
     @property
     def directive_type(self):
@@ -281,7 +295,7 @@ class BaseNode(object):
         # I'm not sure why that is the case but I suspect its due to the
         # shopclerk althought further experiments are needed.
         # For now we'll brute force it
-        return self.node.type().definition().sections()['FunctionName'].contents()
+        return self.node.type().definition().sections()["FunctionName"].contents()
 
     @property
     def path(self):
@@ -293,7 +307,7 @@ class BaseNode(object):
 
     @property
     def full_name(self):
-        return '%s%s%s' % (self.path_prefix, self.path, self.path_suffix)
+        return "%s%s%s" % (self.path_prefix, self.path, self.path_suffix)
 
     @property
     def coord_sys(self):
@@ -305,7 +319,7 @@ class BaseNode(object):
             parm_tags = parm_tup.parmTemplate().tags()
             parm_name = parm_tup.name()
 
-            if 'pbrt.meta' in parm_tags:
+            if "pbrt.meta" in parm_tags:
                 # Ignore meta parameters that are used to
                 # control the UI
                 continue
@@ -319,9 +333,11 @@ class BaseNode(object):
             if parm_tup.isDisabled() or parm_tup.isHidden():
                 continue
 
-            if (parm_tup.isAtDefault() and
-                    self.ignore_defaults and
-                    'pbrt.force' not in parm_tags):
+            if (
+                parm_tup.isAtDefault()
+                and self.ignore_defaults
+                and "pbrt.force" not in parm_tags
+            ):
                 # If the parm is at its default but has an input
                 # then consider it used, otherwise skip it...
                 # unless we have metadata to says force its output
@@ -375,14 +391,11 @@ class BaseNode(object):
         if not override:
             return paramset
 
-        hou_parms = self.get_used_parms()
-        # Reduce overrides to just ones relevant to this node.
-
         for override_name in override:
             # The override can have a node_name/parm format which allows for point
             # instance overrides to override parms in a network.
             try:
-                override_node,override_parm = override_name.split('/',1)
+                override_node, override_parm = override_name.split("/", 1)
                 if override_node != self.name:
                     continue
             except ValueError:
@@ -397,21 +410,21 @@ class BaseNode(object):
             # ends in one of the "rgb/color" types then we'll handle it differently.
             # TODO add a comment as to what the value would look like
             try:
-                parm_name,spectrum_type = override_parm.split(':',1)
+                parm_name, spectrum_type = override_parm.split(":", 1)
             except ValueError:
                 spectrum_type = None
                 parm_name = override_parm
 
-            # NOTE: The material SOP will use a parm style dictionary if there parm name matches exactly
+            # NOTE: The material SOP will use a parm style dictionary if there
+            #       parm name matches exactly
             #       ie) if there is a color parm you will get
             #       {'colorb':0.372511,'colorg':0.642467,'colorr':0.632117,}
-            #       But if the parm name doesn't match (which we are allowing for you will get something
-            #       like this -
+            #       But if the parm name doesn't match (which we are allowing
+            #       for you will get something like this -
             #       {'colora':(0.632117,0.642467,0.372511),}
 
-            override_value = override[override_name]
-            # Once we have a parm name, we need to determine what "style" it is. Whether its a
-            # hou.ParmTuple or hou.Parm style.
+            # Once we have a parm name, we need to determine what "style" it is.
+            # Whether its a hou.ParmTuple or hou.Parm style.
             parm_tuple = self.node.parmTuple(parm_name)
             split_tuple = False
             if parm_tuple is None:
@@ -430,18 +443,22 @@ class BaseNode(object):
             if spectrum_type is None and split_tuple:
                 # This is a "traditional" override, no spectrum or node name prefix
                 value = [override[x.name()] for x in parm_tuple]
-                pbrt_param = self._hou_parm_to_pbrt_param(parm_tuple, pbrt_parm_name, value)
-            elif spectrum_type in ('spectrum','xyz','blackbody'):
-                pbrt_param = PBRTParam(spectrum_type, pbrt_parm_name, override[override_name])
+                pbrt_param = self._hou_parm_to_pbrt_param(
+                    parm_tuple, pbrt_parm_name, value
+                )
+            elif spectrum_type in ("spectrum", "xyz", "blackbody"):
+                pbrt_param = PBRTParam(
+                    spectrum_type, pbrt_parm_name, override[override_name]
+                )
             elif not split_tuple:
-                pbrt_param = self._hou_parm_to_pbrt_param(parm_tuple, pbrt_parm_name,
-                                                     override[override_name])
+                pbrt_param = self._hou_parm_to_pbrt_param(
+                    parm_tuple, pbrt_parm_name, override[override_name]
+                )
             else:
-                raise ValueError('Unable to wrangle override name: %s' % override_name)
+                raise ValueError("Unable to wrangle override name: %s" % override_name)
             paramset.add(pbrt_param)
 
         return paramset
-
 
     def _hou_parm_to_pbrt_param(self, parm, parm_name=None, value_override=None):
         """Convert hou.ParmTuple into a PBRT string
@@ -482,54 +499,57 @@ class BaseNode(object):
             coshader = None
         # PBRT: bool
         if parm_type == hou.parmTemplateType.Toggle:
-            pbrt_type = 'bool'
+            pbrt_type = "bool"
             pbrt_value = parm.eval()
         # PBRT: string (menu)
         elif parm_type == hou.parmTemplateType.Menu:
-            pbrt_type = 'string'
+            pbrt_type = "string"
             pbrt_value = parm.evalAsStrings()
         # PBRT: string
         elif parm_type == hou.parmTemplateType.String:
-            pbrt_type = 'string'
+            pbrt_type = "string"
             pbrt_value = parm.evalAsStrings()
         # PBRT: integer
         elif parm_type == hou.parmTemplateType.Int:
-            pbrt_type = 'integer'
+            pbrt_type = "integer"
             pbrt_value = parm.eval()
         # PBRT: spectrum
         elif parm_scheme == hou.parmNamingScheme.RGBA:
             if coshader is None:
-                pbrt_type = 'rgb'
+                pbrt_type = "rgb"
                 pbrt_value = parm.eval()
-            elif coshader.directive_type == 'pbrt_spectrum':
+            elif coshader.directive_type == "pbrt_spectrum":
                 # If the coshader is a spectrum node then it will
                 # only have one param in the paramset
                 spectrum_parm = coshader.paramset.pop()
                 pbrt_type = spectrum_parm.param_type
                 pbrt_value = spectrum_parm.value
-            elif coshader.directive == 'texture':
-                pbrt_type = 'texture'
+            elif coshader.directive == "texture":
+                pbrt_type = "texture"
                 pbrt_value = coshader.full_name
             else:
-                raise HouParmException('Can\'t convert %s to pbrt type' % (parm))
+                raise HouParmException("Can't convert %s to pbrt type" % (parm))
         # PBRT: float texture
-        elif (parm_type == hou.parmTemplateType.Float and
-              coshader is not None and
-              coshader.directive == 'texture'):
-            pbrt_type = 'texture'
+        elif (
+            parm_type == hou.parmTemplateType.Float
+            and coshader is not None
+            and coshader.directive == "texture"
+        ):
+            pbrt_type = "texture"
             pbrt_value = coshader.full_name
         # PBRT: point*/vector*/normal
-        elif (parm_type == hou.parmTemplateType.Float and
-              'pbrt.type' in parm_tmpl.tags()):
-            pbrt_type = parm_tmpl.tags()['pbrt.type']
+        elif (
+            parm_type == hou.parmTemplateType.Float and "pbrt.type" in parm_tmpl.tags()
+        ):
+            pbrt_type = parm_tmpl.tags()["pbrt.type"]
             pbrt_value = parm.eval()
         # PBRT: float (sometimes a float is just a float)
         elif parm_type == hou.parmTemplateType.Float:
-            pbrt_type = 'float'
+            pbrt_type = "float"
             pbrt_value = parm.eval()
         # PBRT: wut is dis?
         else:
-            raise HouParmException('Can\'t convert %s to pbrt type' % (parm))
+            raise HouParmException("Can't convert %s to pbrt type" % (parm))
 
         # If there is a coshader we can't override the value as there is a connection
         if value_override is not None and coshader is None:
@@ -537,41 +557,44 @@ class BaseNode(object):
 
         return PBRTParam(pbrt_type, parm_name, pbrt_value)
 
+
 class SpectrumNode(BaseNode):
     @property
     def paramset(self):
         params = ParamSet()
 
-        spectrum_type = self.node.parm('type').evalAsString()
+        spectrum_type = self.node.parm("type").evalAsString()
         values = self.node.parmTuple(spectrum_type).eval()
-        if spectrum_type == 'ramp':
+        if spectrum_type == "ramp":
             ramp = values[0]
-            samples = self.node.parm('ramp_samples').eval()
-            ramp_range = self.node.parmTuple('ramp_range').eval()
-            sample_step = 1.0/samples
-            values = [(hou.hmath.fit01(sample_step*x,
-                                       ramp_range[0],
-                                       ramp_range[1]),
-                       ramp.lookup(sample_step*x)
-                      )
-                      for x in xrange(samples+1)]
-        elif spectrum_type == 'spd':
+            samples = self.node.parm("ramp_samples").eval()
+            ramp_range = self.node.parmTuple("ramp_range").eval()
+            sample_step = 1.0 / samples
+            values = [
+                (
+                    hou.hmath.fit01(sample_step * x, ramp_range[0], ramp_range[1]),
+                    ramp.lookup(sample_step * x),
+                )
+                for x in xrange(samples + 1)
+            ]
+        elif spectrum_type == "spd":
             # TODO: Houdini bug? key/value pairs return None
             #       when evaluated as a parmTuple, so we'll
             #       reevaluate as a parm
-            spd = self.node.parm('spd').eval()
+            spd = self.node.parm("spd").eval()
             values = []
             for spec in sorted(spd, key=lambda x: float(x)):
                 values.append(float(spec))
                 values.append(float(spd[spec]))
-        if spectrum_type in ('file', 'spd', 'ramp'):
-            spectrum_type = 'spectrum'
+        if spectrum_type in ("file", "spd", "ramp"):
+            spectrum_type = "spectrum"
         params.add(PBRTParam(spectrum_type, None, values))
         return params
 
     @property
     def get_used_parms(self):
         return None
+
 
 class MaterialNode(BaseNode):
 
@@ -585,28 +608,26 @@ class MaterialNode(BaseNode):
             if input_node is None:
                 continue
             directive = get_directive_from_nodetype(input_node.type())
-            if directive not in ('material', 'texture'):
+            if directive not in ("material", "texture"):
                 continue
             yield input_node.path()
 
     @property
     def output_type(self):
-        return 'string type'
+        return "string type"
 
     @property
     def paramset(self):
         params = super(MaterialNode, self).paramset
         # Materials might have a bumpmap input
         # which doesn't exist as a parameter
-        bump_coshaders = self.node.coshaderNodes('bumpmap')
+        bump_coshaders = self.node.coshaderNodes("bumpmap")
         if bump_coshaders:
-            params.replace(PBRTParam('texture', 'bumpmap',
-                                     bump_coshaders[0].path()))
+            params.replace(PBRTParam("texture", "bumpmap", bump_coshaders[0].path()))
         return params
 
 
 class TextureNode(MaterialNode):
-
     def get_used_parms(self):
         # Special handling for Texture nodes as they have a signature parm
 
@@ -618,33 +639,33 @@ class TextureNode(MaterialNode):
         # If the signature is the default then it means
         # parms won't have a suffix so we are done.
         signature = self.node.currentSignatureName()
-        if signature == 'default':
+        if signature == "default":
             return parms
 
         # Otherwise we need to strip off the suffix
         new_parms = {}
         for parm_name, parm in parms.iteritems():
-            if parm_name == 'signature':
+            if parm_name == "signature":
                 continue
             # We could also check for name == texture_space
-            if parm.parmTemplate().tags().get('pbrt.type') == 'space':
+            if parm.parmTemplate().tags().get("pbrt.type") == "space":
                 continue
             # Foolproof way:
             # re.sub('_%s$' % signature, '', parm_name)
             # Easy way:
-            new_parm_name = parm_name.rsplit('_', 1)[0]
+            new_parm_name = parm_name.rsplit("_", 1)[0]
             new_parms[new_parm_name] = parm
         return new_parms
 
     def pbrt_parm_name(self, name):
         signature = self.node.currentSignatureName()
-        if signature != 'default':
-            return name.rsplit('_', 1)[0]
+        if signature != "default":
+            return name.rsplit("_", 1)[0]
         return name
 
     @property
     def coord_sys(self):
-        space_parm = self.node.parm('texture_space')
+        space_parm = self.node.parm("texture_space")
         if not space_parm:
             return None
         node = space_parm.evalAsNode()
@@ -659,8 +680,8 @@ class TextureNode(MaterialNode):
     def output_type(self):
         # We assume that the first output is always representative
         # of the node's output_type
-        if self.node.outputDataTypes()[0] == 'float':
-            return 'float'
-        elif self.node.outputDataTypes()[0] == 'struct_PBRTSpectrum':
-            return 'spectrum'
+        if self.node.outputDataTypes()[0] == "float":
+            return "float"
+        elif self.node.outputDataTypes()[0] == "struct_PBRTSpectrum":
+            return "spectrum"
         return None

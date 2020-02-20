@@ -1,4 +1,6 @@
 COVERAGE = coverage
+BLACK = black
+LINTER = flake8
 
 .PHONY: hda
 hda:
@@ -23,6 +25,13 @@ tests:
 coverage:
 	hython $(COVERAGE) run --branch --source=soho/python2.7 tests/tests.py
 	$(COVERAGE) html
+
+.PHONY: lint
+lint:
+	$(BLACK) soho/python2.7/*.py
+	$(BLACK) tests/tests.py
+	$(LINTER) --max-line-length=88 soho/python2.7/*.py
+	$(LINTER) --max-line-length=88 tests/tests.py
 
 .PHONY: clean
 clean:

@@ -3,15 +3,17 @@ from __future__ import print_function, division, absolute_import
 import os
 import time
 
-import hou
 import soho
 from sohog import SohoGeometry
 
 import PBRTapi as api
-from PBRTwranglers import *
+from PBRTwranglers import *  # noqa: F403
 from PBRTnodes import BaseNode
 from PBRTinstancing import find_referenced_instances, get_full_instance_info
 from PBRTstate import scene_state
+
+# Ignore the various linting errors due to the import *
+# flake8: noqa: F405
 
 
 def output_materials(obj, wrangler, now):
@@ -22,7 +24,7 @@ def output_materials(obj, wrangler, now):
     """
     # We use a shaderhandle instead of a string so Soho instances are properly
     # resolved when Full Instancing is used.
-    parms = [soho.SohoParm('shop_materialpath', 'shaderhandle', skipdefault=False)]
+    parms = [soho.SohoParm("shop_materialpath", "shaderhandle", skipdefault=False)]
     eval_parms = obj.evaluate(parms, now)
     if eval_parms:
         shop = eval_parms[0].Value[0]
@@ -30,38 +32,40 @@ def output_materials(obj, wrangler, now):
             wrangle_shading_network(shop)
 
     soppath = []
-    if not obj.evalString('object:soppath', now, soppath):
+    if not obj.evalString("object:soppath", now, soppath):
         return
     soppath = soppath[0]
 
     gdp = SohoGeometry(soppath, now)
-    global_material = gdp.globalValue('shop_materialpath')
+    global_material = gdp.globalValue("shop_materialpath")
     if global_material is not None:
         wrangle_shading_network(global_material[0])
 
-    attrib_h = gdp.attribute('geo:prim', 'shop_materialpath')
+    attrib_h = gdp.attribute("geo:prim", "shop_materialpath")
     if attrib_h >= 0:
-        shop_materialpaths = gdp.attribProperty(attrib_h, 'geo:allstrings')
+        shop_materialpaths = gdp.attribProperty(attrib_h, "geo:allstrings")
         for shop in shop_materialpaths:
             wrangle_shading_network(shop)
 
     # TODO / CONSIDER, for very large number of instance objects it might speed things
-    #   up to cache the fact we've already visited a source network. Store in scenestate?
+    #   up to cache the fact we've already visited a source network.
+    #   Store in scenestate?
     #   (This will avoid much of the below on a per instance basis)
     instance_info = get_full_instance_info(obj)
     if instance_info is not None:
         instance_source = soho.getObject(instance_info.source)
         sourcesop_path = []
-        if not instance_source.evalString('object:soppath', now, sourcesop_path):
+        if not instance_source.evalString("object:soppath", now, sourcesop_path):
             return
         sourcesop_path = sourcesop_path[0]
         gdp = SohoGeometry(sourcesop_path, now)
-        attrib_h = gdp.attribute('geo:point', 'shop_materialpath')
+        attrib_h = gdp.attribute("geo:point", "shop_materialpath")
         if attrib_h >= 0:
-            shop_materialpaths = gdp.attribProperty(attrib_h, 'geo:allstrings')
+            shop_materialpaths = gdp.attribProperty(attrib_h, "geo:allstrings")
             for shop in shop_materialpaths:
                 wrangle_shading_network(shop)
     return
+
 
 def output_medium(medium):
     """Output a NamedMedium from the input oppath"""
@@ -74,17 +78,17 @@ def output_medium(medium):
     medium_vop = BaseNode.from_node(medium)
     if medium_vop is None:
         return None
-    if medium_vop.directive_type != 'pbrt_medium':
+    if medium_vop.directive_type != "pbrt_medium":
         return None
 
-    api.MakeNamedMedium(medium_vop.path, 'homogeneous', medium_vop.paramset)
+    api.MakeNamedMedium(medium_vop.path, "homogeneous", medium_vop.paramset)
     return medium_vop.path
 
 
 def output_mediums(obj, wrangler, now):
     """Output the any mediums associated with the Soho Object"""
-    exterior = obj.wrangleString(wrangler, 'pbrt_exterior', now, [None])[0]
-    interior = obj.wrangleString(wrangler, 'pbrt_interior', now, [None])[0]
+    exterior = obj.wrangleString(wrangler, "pbrt_exterior", now, [None])[0]
+    interior = obj.wrangleString(wrangler, "pbrt_interior", now, [None])[0]
 
     exterior = output_medium(exterior)
     interior = output_medium(interior)
@@ -123,44 +127,47 @@ def output_instances(obj, wrangler, now):
         print()
     return
 
+
 def header():
     """Output informative header about state"""
     # Disable the header in the event we want to diff files for testing.
-    if 'SOHO_PBRT_NO_HEADER' in os.environ:
+    if "SOHO_PBRT_NO_HEADER" in os.environ:
         return
     if scene_state.ver is not None:
-        api.Comment('Houdini Version %s' % scene_state.ver)
-    api.Comment('Generation Time: %s' % time.strftime("%b %d, %Y at %H:%M:%S"))
+        api.Comment("Houdini Version %s" % scene_state.ver)
+    api.Comment("Generation Time: %s" % time.strftime("%b %d, %Y at %H:%M:%S"))
     if scene_state.hipfile:
-        api.Comment('Hip File: %s' % scene_state.hipfile)
+        api.Comment("Hip File: %s" % scene_state.hipfile)
     if scene_state.rop is not None:
-        api.Comment('Output Driver: %s' % scene_state.rop)
+        api.Comment("Output Driver: %s" % scene_state.rop)
     if scene_state.now is not None:
-        api.Comment('Output Time: %s' % scene_state.now)
+        api.Comment("Output Time: %s" % scene_state.now)
     if scene_state.fps:
-        api.Comment('Output FPS: %s' % scene_state.fps)
+        api.Comment("Output FPS: %s" % scene_state.fps)
     print()
     return
 
+
 def footer(start_time):
     # Disable the header in the event we want to diff files for testing.
-    if 'SOHO_PBRT_NO_HEADER' in os.environ:
+    if "SOHO_PBRT_NO_HEADER" in os.environ:
         return
     export_time = time.time() - start_time
-    api.Comment('Total export time %0.02f seconds' % export_time)
+    api.Comment("Total export time %0.02f seconds" % export_time)
 
 
 def output_transform_times(cam, now):
     """Output the TransformTimes for the scene"""
-    do_mb = cam.getDefaultedInt('allowmotionblur', now, [0])
+    do_mb = cam.getDefaultedInt("allowmotionblur", now, [0])
     if not do_mb[0]:
         return
-    window = cam.getDefaultedFloat('pbrt_motionwindow', now, [None])
+    window = cam.getDefaultedFloat("pbrt_motionwindow", now, [None])
     if window[0] is None:
         return
     api.TransformTimes(window[0], window[1])
     print()
     return
+
 
 def render(cam, now):
     """Main render entry point"""
@@ -194,7 +201,7 @@ def render(cam, now):
     scene_state.exterior = exterior
     scene_state.interior = interior
     if exterior:
-        api.MediumInterface('', exterior)
+        api.MediumInterface("", exterior)
         print()
 
     api.WorldBegin()
@@ -202,9 +209,9 @@ def render(cam, now):
     print()
 
     # Output Lights
-    api.Comment('='*50)
-    api.Comment('Light Definitions')
-    for light in soho.objectList('objlist:light'):
+    api.Comment("=" * 50)
+    api.Comment("Light Definitions")
+    for light in soho.objectList("objlist:light"):
         api.Comment(light.getName())
         with api.AttributeBlock():
             wrangle_light(light, wrangler, now)
@@ -213,34 +220,34 @@ def render(cam, now):
     print()
 
     # Output Materials
-    api.Comment('='*50)
-    api.Comment('NamedMaterial Definitions')
-    for obj in soho.objectList('objlist:instance'):
+    api.Comment("=" * 50)
+    api.Comment("NamedMaterial Definitions")
+    for obj in soho.objectList("objlist:instance"):
         output_materials(obj, wrangler, now)
 
     print()
 
     # Output NamedMediums
-    api.Comment('='*50)
-    api.Comment('NamedMedium Definitions')
-    for obj in soho.objectList('objlist:instance'):
+    api.Comment("=" * 50)
+    api.Comment("NamedMedium Definitions")
+    for obj in soho.objectList("objlist:instance"):
         output_mediums(obj, wrangler, now)
 
     print()
 
     # Output Object Instances for Fast Instancing
-    api.Comment('='*50)
-    api.Comment('Object Instance Definitions')
-    for obj in soho.objectList('objlist:instance'):
+    api.Comment("=" * 50)
+    api.Comment("Object Instance Definitions")
+    for obj in soho.objectList("objlist:instance"):
         output_instances(obj, wrangler, now)
 
     print()
 
     # Output Objects
-    api.Comment('='*50)
-    api.Comment('Object Definitions')
-    for obj in soho.objectList('objlist:instance'):
-        api.Comment('-'*50)
+    api.Comment("=" * 50)
+    api.Comment("Object Definitions")
+    for obj in soho.objectList("objlist:instance"):
+        api.Comment("-" * 50)
         api.Comment(obj.getName())
         with api.AttributeBlock():
             wrangle_obj(obj, wrangler, now)

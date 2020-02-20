@@ -3,20 +3,21 @@ from __future__ import print_function, division, absolute_import
 import collections
 
 import hou
-import soho
 from sohog import SohoGeometry
 
 import PBRTapi as api
 
-_FullInstance = collections.namedtuple('_FullInstance', ['instance', 'source', 'number'])
+_FullInstance = collections.namedtuple(
+    "_FullInstance", ["instance", "source", "number"]
+)
+
 
 def get_full_instance_info(obj):
-    tokens = obj.getName().split(':')
+    tokens = obj.getName().split(":")
     if len(tokens) != 3:
         return None
-    return _FullInstance(tokens[0],
-                         tokens[1],
-                         int(tokens[2]))
+    return _FullInstance(tokens[0], tokens[1], int(tokens[2]))
+
 
 def find_referenced_instances(obj):
     """Find and list any used instances in a Soho Object"""
@@ -38,20 +39,23 @@ def find_referenced_instances(obj):
         return
 
     # Get the full path to any point instance geos
-    instance_attrib = geo.findPointAttrib('instance')
-    if (instance_attrib is not None and
-            instance_attrib.dataType() == hou.attribData.String):
+    instance_attrib = geo.findPointAttrib("instance")
+    if (
+        instance_attrib is not None
+        and instance_attrib.dataType() == hou.attribData.String
+    ):
         for instance_str in instance_attrib.strings():
             instance_obj = sop_node.node(instance_str)
             if instance_obj:
                 yield instance_obj.path()
 
     # Get the object's instancepath as well
-    instancepath_parm = obj_node.parm('instancepath')
+    instancepath_parm = obj_node.parm("instancepath")
     if instancepath_parm:
         instance_obj = instancepath_parm.evalAsNode()
         if instance_obj:
             yield instance_obj.path()
+
 
 def wrangle_fast_instances(obj, now):
     """Output instanced geoemtry defined by fast instancing"""
@@ -59,45 +63,46 @@ def wrangle_fast_instances(obj, now):
     # We need hou.Node handles so we can resolve relative paths
     # since soho does not do this.
     # NOTE: the above isn't true, some cleverness from RIBsettings shows
-                # if len(shop_path) > 0:
-                #   if not posixpath.isabs(shop_path):
-                #     # make the shop_path absolute
-                #     obj_path = obj.getDefaultedString("object:name", now, [''])[0]
-                #     shop_path = posixpath.normpath(posixpath.join(obj_path, shop_path))
+    # if len(shop_path) > 0:
+    #   if not posixpath.isabs(shop_path):
+    #     # make the shop_path absolute
+    #     obj_path = obj.getDefaultedString("object:name", now, [''])[0]
+    #     shop_path = posixpath.normpath(posixpath.join(obj_path, shop_path))
     soppath = []
-    if not obj.evalString('object:soppath', now, soppath):
-        api.Comment('Can not find soppath for object')
+    if not obj.evalString("object:soppath", now, soppath):
+        api.Comment("Can not find soppath for object")
         return
     sop = soppath[0]
 
     obj_node = hou.node(obj.getName())
     sop_node = hou.node(sop)
     if obj_node is None or sop_node is None:
-        api.Comment('Can not resolve obj or geo')
+        api.Comment("Can not resolve obj or geo")
         return
 
     # Exit out quick if we can't fetch the proper instance attribs.
     geo = SohoGeometry(sop, now)
     if geo.Handle < 0:
-        api.Comment('No geometry available, skipping')
+        api.Comment("No geometry available, skipping")
         return
 
-    num_pts = geo.globalValue('geo:pointcount')[0]
+    num_pts = geo.globalValue("geo:pointcount")[0]
     if not num_pts:
-        api.Comment('No points, skipping')
+        api.Comment("No points, skipping")
         return
 
-    pt_attribs = ('geo:pointxform',
-                  'instance',
-                  # NOTE: Materials can not be applied to ObjectInstances
-                  # ( or setting material params (overrides) for that matter
-                  # See Excersise B.2 in 'The Book'
-                  # same applies for medium interfaces as well.
-                  # Applying them to the ObjectInstances does nothing
-                  # works on the base instance defintion
-                  # 'shop_materialpath',
-                  # 'material_override',
-                 )
+    pt_attribs = (
+        "geo:pointxform",
+        "instance",
+        # NOTE: Materials can not be applied to ObjectInstances
+        # ( or setting material params (overrides) for that matter
+        # See Excersise B.2 in 'The Book'
+        # same applies for medium interfaces as well.
+        # Applying them to the ObjectInstances does nothing
+        # works on the base instance defintion
+        # 'shop_materialpath',
+        # 'material_override',
+    )
 
     # NOTE: Homogenous volumes work when applied to a ObjectBegin/End however
     #       Heterogenous volumes do not. The p0 p1 params aren't being
@@ -105,27 +110,26 @@ def wrangle_fast_instances(obj, now):
 
     pt_attrib_map = {}
     for attrib in pt_attribs:
-        attrib_h = geo.attribute('geo:point', attrib)
+        attrib_h = geo.attribute("geo:point", attrib)
         if attrib_h >= 0:
             pt_attrib_map[attrib] = attrib_h
 
-    if 'geo:pointxform' not in pt_attrib_map:
-        api.Comment('Can not find instance xform attribs, skipping')
+    if "geo:pointxform" not in pt_attrib_map:
+        api.Comment("Can not find instance xform attribs, skipping")
         return
 
     instancepath = []
-    obj.evalString('instancepath', now, instancepath)
+    obj.evalString("instancepath", now, instancepath)
     instance_node = obj_node.node(instancepath[0])
     if instance_node is not None:
         default_instance_geo = instance_node.path()
     else:
-        default_instance_geo = ''
-
+        default_instance_geo = ""
 
     for pt in xrange(num_pts):
         instance_geo = default_instance_geo
-        if 'instance' in pt_attrib_map:
-            pt_instance_geo = geo.value(pt_attrib_map['instance'], pt)[0]
+        if "instance" in pt_attrib_map:
+            pt_instance_geo = geo.value(pt_attrib_map["instance"], pt)[0]
             pt_instance_node = sop_node.node(pt_instance_geo)
             if pt_instance_node is not None:
                 instance_geo = pt_instance_node.path()
@@ -134,8 +138,8 @@ def wrangle_fast_instances(obj, now):
             continue
 
         with api.AttributeBlock():
-            api.Comment('%s:[%i]' % (sop, pt))
-            xform = geo.value(pt_attrib_map['geo:pointxform'], pt)
+            api.Comment("%s:[%i]" % (sop, pt))
+            xform = geo.value(pt_attrib_map["geo:pointxform"], pt)
             api.ConcatTransform(xform)
             api.ObjectInstance(instance_geo)
     return

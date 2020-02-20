@@ -11,24 +11,27 @@ import PBRTapi as api
 from PBRTnodes import BaseNode, MaterialNode, PBRTParam, ParamSet
 from PBRTstate import scene_state
 
+
 def mesh_alpha_texs(properties):
     if not properties:
         return
     paramset = ParamSet()
-    for prop in ('alpha', 'shadowalpha'):
+    for prop in ("alpha", "shadowalpha"):
         if prop not in properties:
             continue
         tex = properties[prop].Value[0]
         if not tex:
             continue
-        paramset.add(PBRTParam('texture', prop, tex))
+        paramset.add(PBRTParam("texture", prop, tex))
     return paramset
+
 
 # The following generators could be simplified if we
 # assume that each gdp will always have 3 verts thus
 # removing the need to constantly fetch the
 # geo:vertexcount. (Could be passed as a parm, and if the
 # default is None, then compute)
+
 
 def vtx_attrib_gen(gdp, attrib):
     """Per prim, per vertex fetching vertex/point values
@@ -42,9 +45,9 @@ def vtx_attrib_gen(gdp, attrib):
     """
     for prim in gdp.prims():
         for vtx in prim.vertices():
-        # TODO Don't test each time through the inner loop
-        # TODO reverse order?
-        # for vtx in xrange(num_vtx-1,-1,-1):
+            # TODO Don't test each time through the inner loop
+            # TODO reverse order?
+            # for vtx in xrange(num_vtx-1,-1,-1):
             if attrib is None:
                 yield vtx.point().number()
             elif attrib.type() == hou.attribType.Vertex:
@@ -52,7 +55,8 @@ def vtx_attrib_gen(gdp, attrib):
             elif attrib.type() == hou.attribType.Point:
                 yield vtx.point().attribValue(attrib)
 
-def prim_pt2vtx_attrib_gen(prim, attrib='P'):
+
+def prim_pt2vtx_attrib_gen(prim, attrib="P"):
     """Output point attrib values for a prim
 
     Args:
@@ -65,6 +69,7 @@ def prim_pt2vtx_attrib_gen(prim, attrib='P'):
     for vtx in prim.vertices():
         pt = vtx.point()
         yield pt.attribValue(attrib)
+
 
 def linear_vtx_gen(gdp):
     """Generate the linearvertex for input geometry
@@ -89,6 +94,7 @@ def linear_vtx_gen(gdp):
             yield i
             i += 1
 
+
 def pt_attrib_gen(gdp, attrib):
     """Fetch point values for input geometry
 
@@ -105,12 +111,13 @@ def pt_attrib_gen(gdp, attrib):
 
 def prim_transform(prim):
     """Return a tuple representing the Matrix4 of the transform intrinsic"""
-    rot_mat = hou.Matrix3(prim.intrinsicValue('transform'))
+    rot_mat = hou.Matrix3(prim.intrinsicValue("transform"))
     vtx = prim.vertex(0)
     pt = vtx.point()
     pos = pt.position()
     xlate = hou.hmath.buildTranslate(pos)
     return (hou.Matrix4(rot_mat) * xlate).asTuple()
+
 
 def sphere_wrangler(gdp, paramset=None, properties=None):
     """Outputs a "sphere" Shapes for the input geometry
@@ -127,8 +134,9 @@ def sphere_wrangler(gdp, paramset=None, properties=None):
             api.ConcatTransform(xform)
             # Scale required to match Houdini's uvs
             api.Scale(1, 1, -1)
-            api.Shape('sphere', paramset)
+            api.Shape("sphere", paramset)
     return
+
 
 def disk_wrangler(gdp, paramset=None, properties=None):
     """Outputs "disk" Shapes for the input geometry
@@ -146,8 +154,9 @@ def disk_wrangler(gdp, paramset=None, properties=None):
         with api.TransformBlock():
             xform = prim_transform(prim)
             api.ConcatTransform(xform)
-            api.Shape('disk', paramset)
+            api.Shape("disk", paramset)
     return
+
 
 def packeddisk_wrangler(gdp, paramset=None, properties=None):
     """Outputs "ply" Shapes for the input geometry
@@ -161,18 +170,19 @@ def packeddisk_wrangler(gdp, paramset=None, properties=None):
     alpha_paramset = mesh_alpha_texs(properties)
     for prim in gdp.prims():
         shape_paramset = ParamSet(paramset)
-        filename = prim.intrinsicValue('filename')
+        filename = prim.intrinsicValue("filename")
         if not filename:
             continue
-        if os.path.splitext(filename)[1].lower() != '.ply':
+        if os.path.splitext(filename)[1].lower() != ".ply":
             continue
-        shape_paramset.replace(PBRTParam('string', 'filename', filename))
+        shape_paramset.replace(PBRTParam("string", "filename", filename))
         shape_paramset.update(alpha_paramset)
         with api.TransformBlock():
             xform = prim_transform(prim)
             api.ConcatTransform(xform)
-            api.Shape('plymesh', shape_paramset)
+            api.Shape("plymesh", shape_paramset)
     return
+
 
 def tube_wrangler(gdp, paramset=None, properties=None):
     """Outputs "cone" or "cylinder" Shapes for the input geometry
@@ -190,24 +200,26 @@ def tube_wrangler(gdp, paramset=None, properties=None):
 
         with api.TransformBlock():
             xform = prim_transform(prim)
-            taper = prim.intrinsicValue('tubetaper')
+            taper = prim.intrinsicValue("tubetaper")
 
             # workaround, see TODO below in the else: pass
             if not (taper == 0 or taper == 1):
-                api.Comment('Skipping tube, prim # %i, with non-conforming taper of %f' %
-                            (prim.number(), taper))
+                api.Comment(
+                    "Skipping tube, prim # %i, with non-conforming taper of %f"
+                    % (prim.number(), taper)
+                )
                 continue
 
-            closed = prim.intrinsicValue('closed')
+            closed = prim.intrinsicValue("closed")
             api.ConcatTransform(xform)
             api.Rotate(-90, 1, 0, 0)
             if taper == 0:
-                shape = 'cone'
+                shape = "cone"
                 api.Translate(0, 0, -0.5)
             elif taper == 1:
-                shape = 'cylinder'
-                shape_paramset.add(PBRTParam('float', 'zmin', -0.5))
-                shape_paramset.add(PBRTParam('float', 'zmax', 0.5))
+                shape = "cylinder"
+                shape_paramset.add(PBRTParam("float", "zmin", -0.5))
+                shape_paramset.add(PBRTParam("float", "zmax", 0.5))
             else:
                 # TODO support hyperboloid, however pbrt currently
                 # has no ends of trouble with this shape type
@@ -220,15 +232,16 @@ def tube_wrangler(gdp, paramset=None, properties=None):
 
             if closed:
                 disk_paramset = ParamSet(paramset)
-                if shape == 'cylinder':
-                    disk_paramset.add(PBRTParam('float', 'height', 0.5))
-                    api.Shape('disk', disk_paramset)
-                    disk_paramset.add(PBRTParam('float', 'height', -0.5))
-                    api.Shape('disk', disk_paramset)
+                if shape == "cylinder":
+                    disk_paramset.add(PBRTParam("float", "height", 0.5))
+                    api.Shape("disk", disk_paramset)
+                    disk_paramset.add(PBRTParam("float", "height", -0.5))
+                    api.Shape("disk", disk_paramset)
                 else:
-                    disk_paramset.add(PBRTParam('float', 'height', 0))
-                    api.Shape('disk', disk_paramset)
+                    disk_paramset.add(PBRTParam("float", "height", 0))
+                    api.Shape("disk", disk_paramset)
     return
+
 
 def mesh_wrangler(gdp, paramset=None, properties=None):
     """Outputs meshes (trianglemesh or loopsubdiv) depending on properties
@@ -267,19 +280,19 @@ def mesh_wrangler(gdp, paramset=None, properties=None):
 
     # If subdivs are turned on, instead of running the
     # trianglemesh wrangler, use the loop subdiv one instead
-    shape = 'trianglemesh'
-    if 'pbrt_rendersubd' in properties:
-        if properties['pbrt_rendersubd'].Value[0]:
-            shape = 'loopsubdiv'
+    shape = "trianglemesh"
+    if "pbrt_rendersubd" in properties:
+        if properties["pbrt_rendersubd"].Value[0]:
+            shape = "loopsubdiv"
 
-    if shape == 'loopsubdiv':
+    if shape == "loopsubdiv":
         wrangler_paramset = loopsubdiv_params(mesh_gdp)
-        if 'levels' in properties:
-            wrangler_paramset.replace(properties['levels'].to_pbrt())
+        if "levels" in properties:
+            wrangler_paramset.replace(properties["levels"].to_pbrt())
     else:
         computeN = True
-        if 'pbrt_computeN' in properties:
-            computeN = properties['pbrt_computeN'].Value[0]
+        if "pbrt_computeN" in properties:
+            computeN = properties["pbrt_computeN"].Value[0]
         wrangler_paramset = trianglemesh_params(mesh_gdp, computeN)
         alpha_paramset = mesh_alpha_texs(properties)
         wrangler_paramset.update(alpha_paramset)
@@ -289,6 +302,7 @@ def mesh_wrangler(gdp, paramset=None, properties=None):
     api.Shape(shape, mesh_paramset)
 
     return None
+
 
 def trianglemesh_params(mesh_gdp, computeN=True):
     """Generates a ParamSet for a trianglemesh
@@ -311,34 +325,34 @@ def trianglemesh_params(mesh_gdp, computeN=True):
     unique_points = False
 
     # Required
-    P_attrib = mesh_gdp.findPointAttrib('P')
+    P_attrib = mesh_gdp.findPointAttrib("P")
 
     # Optional
-    N_attrib = mesh_gdp.findVertexAttrib('N')
+    N_attrib = mesh_gdp.findVertexAttrib("N")
     if N_attrib is None:
-        N_attrib = mesh_gdp.findPointAttrib('N')
+        N_attrib = mesh_gdp.findPointAttrib("N")
 
     # If there are no vertex or point normals and we need to compute
     # them with a SopVerb
     if N_attrib is None and computeN:
-        normal_verb = hou.sopNodeTypeCategory().nodeVerb('normal')
-        normal_verb.setParms({'type':0})
+        normal_verb = hou.sopNodeTypeCategory().nodeVerb("normal")
+        normal_verb.setParms({"type": 0})
         normals_gdp = hou.Geometry()
-        normal_verb.execute(normals_gdp, [mesh_gdp,])
+        normal_verb.execute(normals_gdp, [mesh_gdp])
         mesh_gdp.clear()
         del mesh_gdp
         mesh_gdp = normals_gdp
-        N_attrib = mesh_gdp.findPointAttrib('N')
+        N_attrib = mesh_gdp.findPointAttrib("N")
 
-    uv_attrib = mesh_gdp.findVertexAttrib('uv')
+    uv_attrib = mesh_gdp.findVertexAttrib("uv")
     if uv_attrib is None:
-        uv_attrib = mesh_gdp.findPointAttrib('uv')
+        uv_attrib = mesh_gdp.findPointAttrib("uv")
 
-    S_attrib = mesh_gdp.findVertexAttrib('S')
+    S_attrib = mesh_gdp.findVertexAttrib("S")
     if S_attrib is None:
-        S_attrib = mesh_gdp.findPointAttrib('S')
+        S_attrib = mesh_gdp.findPointAttrib("S")
 
-    faceIndices_attrib = mesh_gdp.findPrimAttrib('faceIndices')
+    faceIndices_attrib = mesh_gdp.findPrimAttrib("faceIndices")
 
     # TODO: If uv's don't exist, check for 'st', we'll assume uvs are a float[3]
     #       in Houdini and st are a float[2], or we could just auto-convert as
@@ -360,7 +374,7 @@ def trianglemesh_params(mesh_gdp, computeN=True):
 
     if faceIndices_attrib is not None:
         faceIndices = array.array("i")
-        faceIndices.fromstring(mesh_gdp.primIntAttribValuesAsString('faceIndices'))
+        faceIndices.fromstring(mesh_gdp.primIntAttribValuesAsString("faceIndices"))
 
     # We will unique points (verts in PBRT) if any of the attributes are
     # per vertex instead of per point.
@@ -379,34 +393,35 @@ def trianglemesh_params(mesh_gdp, computeN=True):
         #       fetch all the values at once compactly, while faster, this
         #       will take more RAM than a generator approach. If this becomes
         #       and issue we can change it.
-        P = array.array('f')
-        P.fromstring(mesh_gdp.pointFloatAttribValuesAsString('P'))
+        P = array.array("f")
+        P.fromstring(mesh_gdp.pointFloatAttribValuesAsString("P"))
         indices = vtx_attrib_gen(mesh_gdp, None)
         if N_attrib is not None:
-            N = array.array('f')
-            N.fromstring(mesh_gdp.pointFloatAttribValuesAsString('N'))
+            N = array.array("f")
+            N.fromstring(mesh_gdp.pointFloatAttribValuesAsString("N"))
         if S_attrib is not None:
-            S = array.array('f')
-            S.fromstring(mesh_gdp.pointFloatAttribValuesAsString('S'))
+            S = array.array("f")
+            S.fromstring(mesh_gdp.pointFloatAttribValuesAsString("S"))
         if uv_attrib is not None:
             uv = pt_attrib_gen(mesh_gdp, uv_attrib)
 
-    mesh_paramset.add(PBRTParam('integer', 'indices', indices))
-    mesh_paramset.add(PBRTParam('point', 'P', P))
+    mesh_paramset.add(PBRTParam("integer", "indices", indices))
+    mesh_paramset.add(PBRTParam("point", "P", P))
     if N is not None:
-        mesh_paramset.add(PBRTParam('normal', 'N', N))
+        mesh_paramset.add(PBRTParam("normal", "N", N))
     if S is not None:
-        mesh_paramset.add(PBRTParam('vector', 'S', S))
+        mesh_paramset.add(PBRTParam("vector", "S", S))
     if faceIndices is not None:
-        mesh_paramset.add(PBRTParam('integer', 'faceIndices', faceIndices))
+        mesh_paramset.add(PBRTParam("integer", "faceIndices", faceIndices))
     if uv is not None:
         # Houdini's uvs are stored as 3 floats, but pbrt only needs two
         # We'll use a generator comprehension to strip off the extra
         # float.
         uv2 = (x[0:2] for x in uv)
-        mesh_paramset.add(PBRTParam('float', 'uv', uv2))
+        mesh_paramset.add(PBRTParam("float", "uv", uv2))
 
     return mesh_paramset
+
 
 def loopsubdiv_params(mesh_gdp):
     """Generates a ParamSet for a loopsubdiv
@@ -421,15 +436,16 @@ def loopsubdiv_params(mesh_gdp):
 
     mesh_paramset = ParamSet()
 
-    P = array.array('f')
-    P.fromstring(mesh_gdp.pointFloatAttribValuesAsString('P'))
+    P = array.array("f")
+    P.fromstring(mesh_gdp.pointFloatAttribValuesAsString("P"))
 
     indices = vtx_attrib_gen(mesh_gdp, None)
 
-    mesh_paramset.add(PBRTParam('integer', 'indices', indices))
-    mesh_paramset.add(PBRTParam('point', 'P', P))
+    mesh_paramset.add(PBRTParam("integer", "indices", indices))
+    mesh_paramset.add(PBRTParam("point", "P", P))
 
     return mesh_paramset
+
 
 def volume_wrangler(gdp, paramset=None, properties=None):
     """Call either the smoke_prim_wrangler or heightfield_wrangler"""
@@ -443,20 +459,19 @@ def volume_wrangler(gdp, paramset=None, properties=None):
     heightfield_prims = []
     density_prims = []
     density_name = None
-    name_attrib = gdp.findPrimAttrib('name')
+    name_attrib = gdp.findPrimAttrib("name")
     if name_attrib:
-        if 'density' in name_attrib.strings():
-            density_name = 'density'
+        if "density" in name_attrib.strings():
+            density_name = "density"
         else:
-            density_name = ''
+            density_name = ""
     for prim in gdp.prims():
         if prim.isSDF():
             continue
         if prim.isHeightField():
             heightfield_prims.append(prim)
             continue
-        if (name_attrib is not None and
-                prim.attribValue('name') != density_name):
+        if name_attrib is not None and prim.attribValue("name") != density_name:
             continue
         density_prims.append(prim)
 
@@ -475,37 +490,96 @@ def volume_wrangler(gdp, paramset=None, properties=None):
 
     return None
 
+
 def bounds_to_api_box(b):
     """Output a trianglemesh Shape of box based on the input bounds"""
 
     paramset = ParamSet()
-    paramset.add(PBRTParam('point', 'P', [ b[1], b[2], b[5],
-                                           b[0], b[2], b[5],
-                                           b[1], b[3], b[5],
-                                           b[0], b[3], b[5],
-                                           b[0], b[2], b[4],
-                                           b[1], b[2], b[4],
-                                           b[0], b[3], b[4],
-                                           b[1], b[3], b[4] ]))
-    paramset.add(PBRTParam('integer', 'indices', [0, 3, 1,
-                                                  0, 2, 3,
-                                                  4, 7, 5,
-                                                  4, 6, 7,
-                                                  6, 2, 7,
-                                                  6, 3, 2,
-                                                  5, 1, 4,
-                                                  5, 0, 1,
-                                                  5, 2, 0,
-                                                  5, 7, 2,
-                                                  1, 6, 4,
-                                                  1, 3, 6]))
-    api.Shape('trianglemesh', paramset)
+    paramset.add(
+        PBRTParam(
+            "point",
+            "P",
+            [
+                b[1],
+                b[2],
+                b[5],
+                b[0],
+                b[2],
+                b[5],
+                b[1],
+                b[3],
+                b[5],
+                b[0],
+                b[3],
+                b[5],
+                b[0],
+                b[2],
+                b[4],
+                b[1],
+                b[2],
+                b[4],
+                b[0],
+                b[3],
+                b[4],
+                b[1],
+                b[3],
+                b[4],
+            ],
+        )
+    )
+    paramset.add(
+        PBRTParam(
+            "integer",
+            "indices",
+            [
+                0,
+                3,
+                1,
+                0,
+                2,
+                3,
+                4,
+                7,
+                5,
+                4,
+                6,
+                7,
+                6,
+                2,
+                7,
+                6,
+                3,
+                2,
+                5,
+                1,
+                4,
+                5,
+                0,
+                1,
+                5,
+                2,
+                0,
+                5,
+                7,
+                2,
+                1,
+                6,
+                4,
+                1,
+                3,
+                6,
+            ],
+        )
+    )
+    api.Shape("trianglemesh", paramset)
+
 
 # NOTE: In pbrt the medium interface and shading parameters
 #       are strongly coupled unlike in Houdini/Mantra where
 #       the volume shaders define the volume properties and
 #       and the volume primitives only define grids.
 #
+
 
 def medium_prim_paramset(prim, paramset=None):
     """Build a ParamSet of medium values based off of hou.Prim attribs"""
@@ -520,48 +594,49 @@ def medium_prim_paramset(prim, paramset=None):
 
     # Initialize with the interior shader on the prim, if it exists.
     try:
-        interior = prim.stringAttribValue('pbrt_interior')
+        interior = prim.stringAttribValue("pbrt_interior")
         interior = BaseNode.from_node(interior)
     except hou.OperationFailed:
         interior = None
 
-    if interior and interior.directive_type == 'pbrt_medium':
+    if interior and interior.directive_type == "pbrt_medium":
         medium_paramset |= interior.paramset
 
     try:
-        preset_value = prim.stringAttribValue('preset')
+        preset_value = prim.stringAttribValue("preset")
         if preset_value:
-            medium_paramset.replace(PBRTParam('string', 'preset', preset_value))
+            medium_paramset.replace(PBRTParam("string", "preset", preset_value))
     except hou.OperationFailed:
         pass
 
     try:
-        g_value = prim.floatAttribValue('g')
-        medium_paramset.replace(PBRTParam('float', 'g', g_value))
+        g_value = prim.floatAttribValue("g")
+        medium_paramset.replace(PBRTParam("float", "g", g_value))
     except hou.OperationFailed:
         pass
 
     try:
-        scale_value = prim.floatAttribValue('scale')
-        medium_paramset.replace(PBRTParam('float', 'scale', scale_value))
+        scale_value = prim.floatAttribValue("scale")
+        medium_paramset.replace(PBRTParam("float", "scale", scale_value))
     except hou.OperationFailed:
         pass
 
     try:
-        sigma_a_value = prim.floatListAttribValue('sigma_a')
+        sigma_a_value = prim.floatListAttribValue("sigma_a")
         if len(sigma_a_value) == 3:
-            medium_paramset.replace(PBRTParam('rgb', 'sigma_a', sigma_a_value))
+            medium_paramset.replace(PBRTParam("rgb", "sigma_a", sigma_a_value))
     except hou.OperationFailed:
         pass
 
     try:
-        sigma_s_value = prim.floatListAttribValue('sigma_s')
+        sigma_s_value = prim.floatListAttribValue("sigma_s")
         if len(sigma_s_value) == 3:
-            medium_paramset.replace(PBRTParam('rgb', 'sigma_s', sigma_s_value))
+            medium_paramset.replace(PBRTParam("rgb", "sigma_s", sigma_s_value))
     except hou.OperationFailed:
         pass
 
     return medium_paramset
+
 
 def smoke_prim_wrangler(prims, paramset=None, properties=None):
     """Outputs a "heterogeneous" Medium and bounding Shape for the input geometry
@@ -591,36 +666,35 @@ def smoke_prim_wrangler(prims, paramset=None, properties=None):
     if properties is None:
         properties = {}
 
-    if ('pbrt_ignorevolumes' in properties and
-            properties['pbrt_ignorevolumes'].Value[0]):
-        api.Comment('Ignoring volumes because pbrt_ignorevolumes is enabled')
+    if "pbrt_ignorevolumes" in properties and properties["pbrt_ignorevolumes"].Value[0]:
+        api.Comment("Ignoring volumes because pbrt_ignorevolumes is enabled")
         return
 
     medium_paramset = ParamSet()
-    if 'pbrt_interior' in properties:
-        interior = BaseNode.from_node(properties['pbrt_interior'].Value[0])
-        if interior is not None and interior.directive_type == 'pbrt_medium':
+    if "pbrt_interior" in properties:
+        interior = BaseNode.from_node(properties["pbrt_interior"].Value[0])
+        if interior is not None and interior.directive_type == "pbrt_medium":
             medium_paramset |= interior.paramset
 
     exterior = None
-    if 'pbrt_exterior' in properties:
-        exterior = properties['pbrt_exterior'].Value[0]
-    exterior = '' if exterior is None else exterior
+    if "pbrt_exterior" in properties:
+        exterior = properties["pbrt_exterior"].Value[0]
+    exterior = "" if exterior is None else exterior
 
     for prim in prims:
         smoke_paramset = ParamSet()
 
-        name = '%s[%i]' % (properties['object:soppath'].Value[0], prim.number())
+        name = "%s[%i]" % (properties["object:soppath"].Value[0], prim.number())
         resolution = prim.resolution()
         # TODO: Benchmark this vs other methods like fetching volumeSlices
-        voxeldata = array.array('f')
+        voxeldata = array.array("f")
         voxeldata.fromstring(prim.allVoxelsAsString())
-        smoke_paramset.add(PBRTParam('integer', 'nx', resolution[0]))
-        smoke_paramset.add(PBRTParam('integer', 'ny', resolution[1]))
-        smoke_paramset.add(PBRTParam('integer', 'nz', resolution[2]))
-        smoke_paramset.add(PBRTParam('point', 'p0', [-1, -1, -1]))
-        smoke_paramset.add(PBRTParam('point', 'p1', [1, 1, 1]))
-        smoke_paramset.add(PBRTParam('float', 'density', voxeldata))
+        smoke_paramset.add(PBRTParam("integer", "nx", resolution[0]))
+        smoke_paramset.add(PBRTParam("integer", "ny", resolution[1]))
+        smoke_paramset.add(PBRTParam("integer", "nz", resolution[2]))
+        smoke_paramset.add(PBRTParam("point", "p0", [-1, -1, -1]))
+        smoke_paramset.add(PBRTParam("point", "p1", [1, 1, 1]))
+        smoke_paramset.add(PBRTParam("float", "density", voxeldata))
 
         medium_prim_overrides = medium_prim_paramset(prim, medium_paramset)
         smoke_paramset.update(medium_prim_overrides)
@@ -629,21 +703,23 @@ def smoke_prim_wrangler(prims, paramset=None, properties=None):
         # By default we'll set a sigma_a and sigma_s to be more Houdini-like
         # however the object's pbrt_interior, or prim's pbrt_interior
         # or prim attribs will override these.
-        if ( (PBRTParam('color', 'sigma_a') not in smoke_paramset and
-              PBRTParam('color', 'sigma_s') not in smoke_paramset) and
-             PBRTParam('string', 'preset') not in smoke_paramset ):
-            smoke_paramset.add(PBRTParam('color', 'sigma_a', [1, 1, 1]))
-            smoke_paramset.add(PBRTParam('color', 'sigma_s', [1, 1, 1]))
+        if (
+            PBRTParam("color", "sigma_a") not in smoke_paramset
+            and PBRTParam("color", "sigma_s") not in smoke_paramset
+        ) and PBRTParam("string", "preset") not in smoke_paramset:
+            smoke_paramset.add(PBRTParam("color", "sigma_a", [1, 1, 1]))
+            smoke_paramset.add(PBRTParam("color", "sigma_s", [1, 1, 1]))
 
         with api.AttributeBlock():
             xform = prim_transform(prim)
             api.ConcatTransform(xform)
-            api.MakeNamedMedium(name, 'heterogeneous', smoke_paramset)
-            api.Material('none')
+            api.MakeNamedMedium(name, "heterogeneous", smoke_paramset)
+            api.Material("none")
             api.MediumInterface(name, exterior)
             # Pad this slightly?
             bounds_to_api_box([-1, 1, -1, 1, -1, 1])
     return
+
 
 def heightfield_prim_wrangler(prims, paramset=None, properties=None):
     """Outputs a "heightfield" Shapes for the input geometry
@@ -666,7 +742,7 @@ def heightfield_prim_wrangler(prims, paramset=None, properties=None):
         # Similar to trianglemesh, this is more compact fast, however it might
         # be a memory issue and a generator per voxel or per slice might be a
         # better approach.
-        voxeldata = array.array('f')
+        voxeldata = array.array("f")
         voxeldata.fromstring(prim.allVoxelsAsString())
 
         with api.TransformBlock():
@@ -681,23 +757,24 @@ def heightfield_prim_wrangler(prims, paramset=None, properties=None):
             # be the exact height, no scales are applied to the prim xform.
             # We also need to scale up heightfield since in Houdini by default
             # the size is -1,-1,-1 to 1,1,1 where in pbrt its 0,0,0 to 1,1,1
-            api.Translate(*srt['translate'])
-            rot = srt['rotate']
+            api.Translate(*srt["translate"])
+            rot = srt["rotate"]
             if rot.z():
                 api.Rotate(rot[2], 0, 0, 1)
             if rot.y():
                 api.Rotate(rot[1], 0, 1, 0)
             if rot.x():
                 api.Rotate(rot[0], 1, 0, 0)
-            api.Scale(srt['scale'][0]*2.0, srt['scale'][1]*2.0, 1.0)
+            api.Scale(srt["scale"][0] * 2.0, srt["scale"][1] * 2.0, 1.0)
             api.Translate(-0.5, -0.5, 0)
-            hf_paramset.add(PBRTParam('integer', 'nu', resolution[0]))
-            hf_paramset.add(PBRTParam('integer', 'nv', resolution[1]))
-            hf_paramset.add(PBRTParam('float', 'Pz', voxeldata))
+            hf_paramset.add(PBRTParam("integer", "nu", resolution[0]))
+            hf_paramset.add(PBRTParam("integer", "nv", resolution[1]))
+            hf_paramset.add(PBRTParam("float", "Pz", voxeldata))
             hf_paramset |= paramset
 
-            api.Shape('heightfield', hf_paramset)
+            api.Shape("heightfield", hf_paramset)
     return
+
 
 # TODO: While over all this works, there is an issue where pbrt will crash
 #       with prims 12,29-32 of a NURBS teapot. (Plantoic solids)
@@ -719,65 +796,64 @@ def nurbs_wrangler(gdp, paramset=None, properties=None):
     has_Pw = False
 
     # TODO   - Figure out how to query [uv]_extent in hou
-    #u_extent_h = gdp.attribute('geo:prim', 'geo:ubasisextent')
-    #v_extent_h = gdp.attribute('geo:prim', 'geo:vbasisextent')
-
+    # u_extent_h = gdp.attribute('geo:prim', 'geo:ubasisextent')
+    # v_extent_h = gdp.attribute('geo:prim', 'geo:vbasisextent')
 
     for prim in gdp.prims():
 
         nurbs_paramset = ParamSet()
 
-        row = prim.intrinsicValue('nu')
-        col = prim.intrinsicValue('nv')
-        u_order = prim.intrinsicValue('uorder')
-        v_order = prim.intrinsicValue('vorder')
-        u_wrap = prim.intrinsicValue('uwrap')
-        v_wrap = prim.intrinsicValue('vwrap')
-        u_knots = prim.intrinsicValue('uknots')
-        v_knots = prim.intrinsicValue('vknots')
+        row = prim.intrinsicValue("nu")
+        col = prim.intrinsicValue("nv")
+        u_order = prim.intrinsicValue("uorder")
+        v_order = prim.intrinsicValue("vorder")
+        u_wrap = prim.intrinsicValue("uwrap")
+        v_wrap = prim.intrinsicValue("vwrap")
+        u_knots = prim.intrinsicValue("uknots")
+        v_knots = prim.intrinsicValue("vknots")
 
         if u_wrap:
-            row += u_order-1
+            row += u_order - 1
         if v_wrap:
-            col += v_order-1
-        nurbs_paramset.add(PBRTParam('integer', 'nu', row))
-        nurbs_paramset.add(PBRTParam('integer', 'nv', col))
-        nurbs_paramset.add(PBRTParam('integer', 'uorder', u_order))
-        nurbs_paramset.add(PBRTParam('integer', 'vorder', v_order))
-        nurbs_paramset.add(PBRTParam('float', 'uknots', u_knots))
-        nurbs_paramset.add(PBRTParam('float', 'vknots', v_knots))
+            col += v_order - 1
+        nurbs_paramset.add(PBRTParam("integer", "nu", row))
+        nurbs_paramset.add(PBRTParam("integer", "nv", col))
+        nurbs_paramset.add(PBRTParam("integer", "uorder", u_order))
+        nurbs_paramset.add(PBRTParam("integer", "vorder", v_order))
+        nurbs_paramset.add(PBRTParam("float", "uknots", u_knots))
+        nurbs_paramset.add(PBRTParam("float", "vknots", v_knots))
         # NOTE: Currently not sure how these are set within Houdini
         #       but they are queryable
         #       The Platonic SOP, Teapot -> Convert to NURBS can make these.
-        #nurbs_paramset.add(PBRTParam('float', 'u0', u_extent[0]))
-        #nurbs_paramset.add(PBRTParam('float', 'v0', v_extent[0]))
-        #nurbs_paramset.add(PBRTParam('float', 'u1', u_extent[1]))
-        #nurbs_paramset.add(PBRTParam('float', 'v1', v_extent[1]))
+        # nurbs_paramset.add(PBRTParam('float', 'u0', u_extent[0]))
+        # nurbs_paramset.add(PBRTParam('float', 'v0', v_extent[0]))
+        # nurbs_paramset.add(PBRTParam('float', 'u1', u_extent[1]))
+        # nurbs_paramset.add(PBRTParam('float', 'v1', v_extent[1]))
 
-        #if row + u_order != len(u_knots):
+        # if row + u_order != len(u_knots):
         #    api.Comment('Invalid U')
-        #if col + v_order != len(v_knots):
+        # if col + v_order != len(v_knots):
         #    api.Comment('Invalid V')
 
         P = []
         for v in xrange(col):
             for u in xrange(row):
-                vtx = prim.vertex(u % prim.numCols(),
-                                  v % prim.numRows())
+                vtx = prim.vertex(u % prim.numCols(), v % prim.numRows())
                 pt = vtx.point()
-                P.append(pt.attribValue('P'))
+                P.append(pt.attribValue("P"))
         if not has_Pw:
-            nurbs_paramset.add(PBRTParam('point', 'P', P))
+            nurbs_paramset.add(PBRTParam("point", "P", P))
         else:
             # TODO: While the pbrt scene file looks right, the render
             #       is a bit odd. Scaled up geo? Not what I was expecting.
             #       Perhaps compare to RMan.
-            w = prim_pt2vtx_attrib_gen(prim, 'Pw')
+            w = prim_pt2vtx_attrib_gen(prim, "Pw")
             Pw = itertools.izip(P, w)
-            nurbs_paramset.add(PBRTParam('float', 'Pw', Pw))
+            nurbs_paramset.add(PBRTParam("float", "Pw", Pw))
 
         nurbs_paramset |= paramset
-        api.Shape('nurbs', nurbs_paramset)
+        api.Shape("nurbs", nurbs_paramset)
+
 
 def curve_wrangler(gdp, paramset=None, properties=None):
     """Outputs a "curve" Shape for input geometry
@@ -802,30 +878,30 @@ def curve_wrangler(gdp, paramset=None, properties=None):
         properties = {}
 
     curve_type = None
-    if 'pbrt_curvetype' in properties:
-        curve_type = properties['pbrt_curvetype'].Value[0]
-        paramset.add(PBRTParam('string', 'type', curve_type))
-    if 'splitdepth' in properties:
-        paramset.add(properties['splitdepth'].to_pbrt())
+    if "pbrt_curvetype" in properties:
+        curve_type = properties["pbrt_curvetype"].Value[0]
+        paramset.add(PBRTParam("string", "type", curve_type))
+    if "splitdepth" in properties:
+        paramset.add(properties["splitdepth"].to_pbrt())
 
-    has_vtx_width = False if gdp.findVertexAttrib('width') is None else True
-    has_pt_width = False if gdp.findPointAttrib('width') is None else True
-    has_prim_width = False if gdp.findPrimAttrib('width') is None else True
+    has_vtx_width = False if gdp.findVertexAttrib("width") is None else True
+    has_pt_width = False if gdp.findPointAttrib("width") is None else True
+    has_prim_width = False if gdp.findPrimAttrib("width") is None else True
 
-    has_curvetype = False if gdp.findPrimAttrib('curvetype') is None else True
+    has_curvetype = False if gdp.findPrimAttrib("curvetype") is None else True
 
-    has_vtx_N = False if gdp.findVertexAttrib('N') is None else True
-    has_pt_N = False if gdp.findPointAttrib('N') is None else True
+    has_vtx_N = False if gdp.findVertexAttrib("N") is None else True
+    has_pt_N = False if gdp.findPointAttrib("N") is None else True
 
     for prim in gdp.prims():
         curve_paramset = ParamSet()
         prim_curve_type = curve_type
 
         # Closed curve surfaces are not supported
-        if prim.intrinsicValue('closed'):
+        if prim.intrinsicValue("closed"):
             continue
 
-        order = prim.intrinsicValue('order')
+        order = prim.intrinsicValue("order")
         degree = order - 1
         # PBRT only supports degree 2 or 3 curves
         # TODO: We could possibly convert the curves to a format that
@@ -834,101 +910,106 @@ def curve_wrangler(gdp, paramset=None, properties=None):
         # https://www.codeproject.com/Articles/996281/NURBS-crve-made-easy
         if degree not in (2, 3):
             continue
-        curve_paramset.add(PBRTParam('integer', 'degree', degree))
+        curve_paramset.add(PBRTParam("integer", "degree", degree))
 
-        if prim.intrinsicValue('typename') == 'BezierCurve':
-            basis = 'bezier'
+        if prim.intrinsicValue("typename") == "BezierCurve":
+            basis = "bezier"
         else:
-            basis = 'bspline'
-        curve_paramset.add(PBRTParam('string', 'basis', [basis]))
+            basis = "bspline"
+        curve_paramset.add(PBRTParam("string", "basis", [basis]))
 
         P = prim_pt2vtx_attrib_gen(prim)
-        curve_paramset.add(PBRTParam('point', 'P', P))
+        curve_paramset.add(PBRTParam("point", "P", P))
 
         if has_curvetype:
-            prim_val = prim.attribValue('curvetype')
+            prim_val = prim.attribValue("curvetype")
             prim_curve_type = prim_val if prim_val else curve_type
 
         if prim_curve_type is not None:
-            curve_paramset.add(PBRTParam('string', 'type', [prim_curve_type]))
+            curve_paramset.add(PBRTParam("string", "type", [prim_curve_type]))
 
-        if prim_curve_type == 'ribbon':
+        if prim_curve_type == "ribbon":
 
             if has_vtx_N or has_pt_N:
-                N = ( prim.attribValueAt('N', u) for u in prim.intrinsicValue('knots') )
+                N = (prim.attribValueAt("N", u) for u in prim.intrinsicValue("knots"))
             else:
                 # If ribbon, normals must exist
                 # TODO: Let pbrt error? Or put default values?
-                N = [ (0, 0, 1), ] * len(prim.intrinsicValue('knots'))
+                N = [(0, 0, 1)] * len(prim.intrinsicValue("knots"))
 
             if N is not None:
-                curve_paramset.add(PBRTParam('normal', 'N', N))
+                curve_paramset.add(PBRTParam("normal", "N", N))
 
         if has_vtx_width:
-            curve_paramset.add(PBRTParam('float',
-                                         'width0',
-                                         prim.vertex(0).attribValue('width')))
-            curve_paramset.add(PBRTParam('float',
-                                         'width1',
-                                         prim.vertex(-1).attribValue('width')))
+            curve_paramset.add(
+                PBRTParam("float", "width0", prim.vertex(0).attribValue("width"))
+            )
+            curve_paramset.add(
+                PBRTParam("float", "width1", prim.vertex(-1).attribValue("width"))
+            )
         elif has_pt_width:
-            curve_paramset.add(PBRTParam('float',
-                                         'width0',
-                                         prim.vertex(0).point().attribValue('width')))
-            curve_paramset.add(PBRTParam('float',
-                                         'width1',
-                                         prim.vertex(-1).point().attribValue('width')))
+            curve_paramset.add(
+                PBRTParam(
+                    "float", "width0", prim.vertex(0).point().attribValue("width")
+                )
+            )
+            curve_paramset.add(
+                PBRTParam(
+                    "float", "width1", prim.vertex(-1).point().attribValue("width")
+                )
+            )
         elif has_prim_width:
-            curve_paramset.add(PBRTParam('float',
-                                         'width',
-                                         prim.attribValue('width')))
+            curve_paramset.add(PBRTParam("float", "width", prim.attribValue("width")))
         else:
             # Houdini's default matches a width of 0.05
-            curve_paramset.add(PBRTParam('float',
-                                         'width',
-                                         0.05))
+            curve_paramset.add(PBRTParam("float", "width", 0.05))
 
         curve_paramset |= paramset
-        api.Shape('curve', curve_paramset)
+        api.Shape("curve", curve_paramset)
     return
+
 
 def tesselated_wrangler(gdp, paramset=None, properties=None):
     """Wrangler for any geo that needs to be tesselated"""
-    prim_name = gdp.iterPrims()[0].intrinsicValue('typename')
-    api.Comment('%s prims is are not directly supported, they will be tesselated' %
-                prim_name)
+    prim_name = gdp.iterPrims()[0].intrinsicValue("typename")
+    api.Comment(
+        "%s prims is are not directly supported, they will be tesselated" % prim_name
+    )
     mesh_wrangler(gdp, paramset, properties)
     return
+
 
 def not_supported(gdp, paramset=None, properties=None):
     """Wrangler for unsupported prim types"""
     num_prims = len(gdp.prims())
-    prim_name = gdp.iterPrims()[0].intrinsicValue('typename')
-    api.Comment('Ignoring %i prims, %s is not supported' %
-                (num_prims, prim_name))
+    prim_name = gdp.iterPrims()[0].intrinsicValue("typename")
+    api.Comment("Ignoring %i prims, %s is not supported" % (num_prims, prim_name))
     return
 
-shape_wranglers = {'Sphere': sphere_wrangler,
-                   'Circle' : disk_wrangler,
-                   'Tube' : tube_wrangler,
-                   'Poly' : mesh_wrangler,
-                   'Mesh' : mesh_wrangler,
-                   'PolySoup' : mesh_wrangler,
-                   'NURBMesh' : nurbs_wrangler,
-                   'BezierCurve' : curve_wrangler,
-                   # TODO, Figure out mapping between NURBS and bsplines
-                   #'NURBCurve' : curve_wrangler,
-                   'Volume' : volume_wrangler,
-                   'PackedDisk' : packeddisk_wrangler,
-                   'TriFan' : tesselated_wrangler,
-                   'TriStrip' : tesselated_wrangler,
-                   'TriBezier' : tesselated_wrangler,
-                   'BezierMesh' : tesselated_wrangler,
-                   'PasteSurf' : tesselated_wrangler,
-                   'MetaBall' : tesselated_wrangler,
-                   'MetaSQuad' : tesselated_wrangler,
-                   'Tetrahedron' : tesselated_wrangler,
-                  }
+
+shape_wranglers = {
+    "Sphere": sphere_wrangler,
+    "Circle": disk_wrangler,
+    "Tube": tube_wrangler,
+    "Poly": mesh_wrangler,
+    "Mesh": mesh_wrangler,
+    "PolySoup": mesh_wrangler,
+    "NURBMesh": nurbs_wrangler,
+    "BezierCurve": curve_wrangler,
+    # TODO, Figure out mapping between NURBS and bsplines
+    # "NURBCurve" : curve_wrangler,
+    "Volume": volume_wrangler,
+    "PackedDisk": packeddisk_wrangler,
+    "TriFan": tesselated_wrangler,
+    "TriStrip": tesselated_wrangler,
+    "TriBezier": tesselated_wrangler,
+    "BezierMesh": tesselated_wrangler,
+    "PasteSurf": tesselated_wrangler,
+    "MetaBall": tesselated_wrangler,
+    "MetaSQuad": tesselated_wrangler,
+    "Tetrahedron": tesselated_wrangler,
+}
+
 
 def partition_by_attrib(input_gdp, attrib, intrinsic=False):
     """Partition the input geo based on a attribute
@@ -963,6 +1044,7 @@ def partition_by_attrib(input_gdp, attrib, intrinsic=False):
         split_gdps[prim_value] = gdp
     return split_gdps
 
+
 def output_geo(soppath, now, properties=None):
     """Output the geometry by calling the appropriate wrangler
 
@@ -977,8 +1059,8 @@ def output_geo(soppath, now, properties=None):
         None
     """
     # split by material
-        # split by material override #
-            # split by geo type
+    # split by material override #
+    # split by geo type
     # NOTE: We won't be splitting based on medium interior/exterior
     #       those will be left as a object level assignment only.
     #       Note, that in the case of Houdini Volumes they will look
@@ -988,8 +1070,8 @@ def output_geo(soppath, now, properties=None):
         properties = {}
 
     ignore_materials = False
-    if 'pbrt_ignorematerials' in properties:
-        ignore_materials = properties['pbrt_ignorematerials'].Value[0]
+    if "pbrt_ignorematerials" in properties:
+        ignore_materials = properties["pbrt_ignorematerials"].Value[0]
 
     # PBRT allows setting Material parameters on the Shapes in order to
     #       override a material's settings.  (Shapes get checked first)
@@ -1015,26 +1097,27 @@ def output_geo(soppath, now, properties=None):
     global_material = None
     if not ignore_materials:
         try:
-            global_material = gdp.stringAttribValue('shop_materialpath')
+            global_material = gdp.stringAttribValue("shop_materialpath")
         except hou.OperationFailed:
             pass
 
-    attrib_h = gdp.findPrimAttrib('shop_materialpath')
+    attrib_h = gdp.findPrimAttrib("shop_materialpath")
     if attrib_h is not None and not ignore_materials:
         material_gdps = partition_by_attrib(gdp, attrib_h)
     else:
-        material_gdps = {global_material : gdp}
+        material_gdps = {global_material: gdp}
 
     global_override = None
     if not ignore_materials:
         try:
-            global_override = gdp.stringAttribValue('material_override')
+            global_override = gdp.stringAttribValue("material_override")
         except hou.OperationFailed:
             pass
 
     # Further partition based on material overrides
-    has_prim_overrides = bool(not ignore_materials and
-                              gdp.findPrimAttrib('material_override') is not None)
+    has_prim_overrides = bool(
+        not ignore_materials and gdp.findPrimAttrib("material_override") is not None
+    )
 
     for material in material_gdps:
         if material:
@@ -1042,10 +1125,10 @@ def output_geo(soppath, now, properties=None):
             api.NamedMaterial(material)
 
         material_gdp = material_gdps[material]
-        #api.Comment('%s %i' % (material_gdp,len(material_gdp.prims())))
+        # api.Comment('%s %i' % (material_gdp,len(material_gdp.prims())))
 
         if has_prim_overrides:
-            attrib_h = material_gdp.findPrimAttrib('material_override')
+            attrib_h = material_gdp.findPrimAttrib("material_override")
             override_gdps = partition_by_attrib(material_gdp, attrib_h)
             # Clean up post partition
             material_gdp.clear()
@@ -1054,9 +1137,9 @@ def output_geo(soppath, now, properties=None):
 
         for override in override_gdps:
             override_gdp = override_gdps[override]
-            #api.Comment(' %s %i' % (override_gdp, len(override_gdp.prims())))
+            # api.Comment(' %s %i' % (override_gdp, len(override_gdp.prims())))
 
-            shape_gdps = partition_by_attrib(override_gdp, 'typename', intrinsic=True)
+            shape_gdps = partition_by_attrib(override_gdp, "typename", intrinsic=True)
             override_gdp.clear()
 
             for shape in shape_gdps:
@@ -1068,7 +1151,7 @@ def output_geo(soppath, now, properties=None):
                     material_paramset.update(material_node.override_paramset(override))
 
                 shape_gdp = shape_gdps[shape]
-                #api.Comment('  %s %i' % (shape_gdp, len(shape_gdp.prims())))
+                # api.Comment('  %s %i' % (shape_gdp, len(shape_gdp.prims())))
 
                 shape_wrangler = shape_wranglers.get(shape, not_supported)
                 if shape_wrangler:
