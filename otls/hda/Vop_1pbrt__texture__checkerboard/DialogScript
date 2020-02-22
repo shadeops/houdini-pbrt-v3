@@ -96,7 +96,7 @@
     group {
         name    "folder0"
         label   "2D Mapping"
-        disablewhen "{ dimension != 2 }"
+        disablewhentab "{ dimension != 2 }"
 
         parm {
             name    "mapping"
