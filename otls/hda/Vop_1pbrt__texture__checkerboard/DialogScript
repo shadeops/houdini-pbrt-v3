@@ -39,13 +39,14 @@
     parm {
         name    "dimension"
         label   "Dimension"
-        type    ordinal
-        default { "0" }
+        type    integer
+        default { "2" }
         help    "Sets the dimension of the checkerboard texture. "
-        menu {
+        menu usetokenvalue {
             "2" "2D"
             "3" "3D"
         }
+        range   { 0 10 }
     }
     parm {
         name    "tex1"
