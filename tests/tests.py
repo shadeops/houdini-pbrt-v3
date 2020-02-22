@@ -303,6 +303,40 @@ class TestInstance(TestGeo):
         self.compare_scene()
 
 
+class TestMediums(TestGeo):
+    def setUp(self):
+        self.geo = build_geo()
+        self.geo.createNode("sphere")
+        ptg = self.geo.parmTemplateGroup()
+        interior = hou.properties.parmTemplate("pbrt-v3", "pbrt_interior")
+        exterior = hou.properties.parmTemplate("pbrt-v3", "pbrt_exterior")
+        ptg.append(interior)
+        ptg.append(exterior)
+        self.geo.setParmTemplateGroup(ptg)
+        self.none = hou.node("/mat").createNode("pbrt_material_none")
+        self.medium = hou.node("/mat").createNode("pbrt_medium")
+
+        exr = "%s.exr" % self.name
+        self.rop = build_rop(filename=exr, diskfile=self.testfile)
+
+    def tearDown(self):
+        self.geo.destroy()
+        self.rop.destroy()
+        clear_mat()
+        if CLEANUP_FILES:
+            os.remove(self.testfile)
+
+    def compare_scene(self):
+        self.rop.render()
+        self.assertTrue(filecmp.cmp(self.testfile, self.basefile))
+
+    def test_interior(self):
+        self.geo.parm("pbrt_interior").set(self.medium.path())
+        self.geo.parm("pbrt_exterior").set("")
+        self.geo.parm("shop_materialpath").set(self.none.path())
+        self.compare_scene()
+
+
 class TestProperties(TestGeo):
     def setUp(self):
         self.geo = build_geo()
