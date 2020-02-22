@@ -808,6 +808,51 @@ class TestShapes(TestGeo):
         material.setRenderFlag(True)
         self.compare_scene()
 
+    def test_geo_material_overrides_spectrum_xyz(self):
+        disney = hou.node("/mat").createNode(
+            "pbrt_material_disney", run_init_scripts=False
+        )
+        box = self.geo.createNode("box")
+        material = self.geo.createNode("material")
+        material.parm("shop_materialpath1").set(disney.path())
+        material.parm("num_local1").set(1)
+        material.parm("local1_name1").set("color:xyz")
+        material.parm("local1_type1").set("vector3")
+        material.parmTuple("local1_vval1").set([0.9, 0.5, 0.1, 0.0])
+        material.setFirstInput(box)
+        material.setRenderFlag(True)
+        self.compare_scene()
+
+    def test_geo_material_overrides_spectrum_file(self):
+        disney = hou.node("/mat").createNode(
+            "pbrt_material_disney", run_init_scripts=False
+        )
+        box = self.geo.createNode("box")
+        material = self.geo.createNode("material")
+        material.parm("shop_materialpath1").set(disney.path())
+        material.parm("num_local1").set(1)
+        material.parm("local1_name1").set("color:spectrum")
+        material.parm("local1_type1").set("string")
+        material.parmTuple("local1_sval1").set(["myfile.spd"])
+        material.setFirstInput(box)
+        material.setRenderFlag(True)
+        self.compare_scene()
+
+    def test_geo_material_overrides_spectrum_spd(self):
+        disney = hou.node("/mat").createNode(
+            "pbrt_material_disney", run_init_scripts=False
+        )
+        box = self.geo.createNode("box")
+        material = self.geo.createNode("material")
+        material.parm("shop_materialpath1").set(disney.path())
+        material.parm("num_local1").set(1)
+        material.parm("local1_name1").set("color:spectrum")
+        material.parm("local1_type1").set("string")
+        material.parmTuple("local1_sval1").set(["[400, 0.5, 500, 1, 600, 0.5]"])
+        material.setFirstInput(box)
+        material.setRenderFlag(True)
+        self.compare_scene()
+
     def test_geo_ignore_materials(self):
         parm = hou.properties.parmTemplate("pbrt-v3", "pbrt_ignorematerials")
         ptg = self.geo.parmTemplateGroup()
