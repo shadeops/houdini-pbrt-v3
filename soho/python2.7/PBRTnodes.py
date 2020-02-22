@@ -70,6 +70,17 @@ class PBRTParam(object):
         param_type = self.type_synonyms.get(param_type, param_type)
         if param_type not in self.pbrt_types:
             raise TypeError("%s not a known PBRT type" % param_type)
+
+        if param_type == "spectrum" and isinstance(param_value, basestring):
+            # for convience these might either be a file path or an array
+            # of wavelengths/values. Here we'll convert a string representation
+            # of the array to an actual array if it
+            try:
+                param_value = eval(param_value, {}, {})
+            except:  # noqa: E722
+                # Be aggressive and catch anything
+                pass
+
         if param_type in self.spectrum_types:
             self.type = "spectrum"
         else:
@@ -387,7 +398,7 @@ class BaseNode(object):
         if not override_str:
             return paramset
 
-        override = eval(override_str)
+        override = eval(override_str, {}, {})
         if not override:
             return paramset
 
