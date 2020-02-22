@@ -328,6 +328,33 @@ class TestProperties(TestGeo):
         self.compare_scene()
 
 
+class TestMaterials(TestGeo):
+    def setUp(self):
+        self.geo = build_geo()
+        exr = "%s.exr" % self.name
+        self.rop = build_rop(filename=exr, diskfile=self.testfile)
+
+    def tearDown(self):
+        self.geo.destroy()
+        self.rop.destroy()
+        clear_mat()
+        if CLEANUP_FILES:
+            os.remove(self.testfile)
+
+    def compare_scene(self):
+        self.rop.render()
+        self.assertTrue(filecmp.cmp(self.testfile, self.basefile))
+
+    def test_mix_material(self):
+        matte1 = hou.node("/mat").createNode("pbrt_material_matte")
+        matte2 = hou.node("/mat").createNode("pbrt_material_matte")
+        mix = hou.node("/mat").createNode("pbrt_material_mix")
+        mix.setNamedInput("namedmaterial1", matte1, "material")
+        mix.setNamedInput("namedmaterial2", matte2, "material")
+        self.geo.parm("shop_materialpath").set(mix.path())
+        self.compare_scene()
+
+
 class TestSpectrum(TestGeo):
     def setUp(self):
         self.geo = build_geo()

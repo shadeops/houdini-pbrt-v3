@@ -9,8 +9,8 @@
     externalshader 1
     shadertype	generic
     input	struct_PBRTSpectrum	amount	amount
-    input	struct_PBRTMaterial	material1	material1
-    input	struct_PBRTMaterial	material2	material2
+    input	struct_PBRTMaterial	namedmaterial1	namedmaterial1
+    input	struct_PBRTMaterial	namedmaterial2	namedmaterial2
     output	struct_PBRTMaterial	material	material
     inputflags	amount	0
     inputflags	material1	0

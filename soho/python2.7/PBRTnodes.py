@@ -619,11 +619,29 @@ class MaterialNode(BaseNode):
     @property
     def paramset(self):
         params = super(MaterialNode, self).paramset
-        # Materials might have a bumpmap input
-        # which doesn't exist as a parameter
-        bump_coshaders = self.node.coshaderNodes("bumpmap")
-        if bump_coshaders:
-            params.replace(PBRTParam("texture", "bumpmap", bump_coshaders[0].path()))
+
+        # Materials might inputs that don't exist as parms
+        # (bumpmap float textures, and materials for example)
+        input_names = self.node.inputNames()
+        input_types = self.node.inputDataTypes()
+
+        for idx, input_node in enumerate(self.node.inputs()):
+            if input_node is None:
+                continue
+            input_name = input_names[idx]
+            if self.node.parmTuple(input_name) is not None:
+                continue
+            coshaders = self.node.coshaderNodes(input_name)
+            if not coshaders:
+                continue
+            pbrt_parm_type = "texture"
+            if input_types[idx] == "struct_PBRTMaterial":
+                pbrt_parm_type = "string"
+            coshader = BaseNode.from_node(coshaders[0])
+            coshader.path_prefix = self.path_prefix
+            coshader.path_suffix = self.path_suffix
+            params.replace(PBRTParam(pbrt_parm_type, input_name, coshader.full_name))
+
         return params
 
 
