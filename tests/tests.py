@@ -354,6 +354,27 @@ class TestMaterials(TestGeo):
         self.geo.parm("shop_materialpath").set(mix.path())
         self.compare_scene()
 
+    def test_bumpmap_material(self):
+        matte = hou.node("/mat").createNode("pbrt_material_matte")
+        bump = hou.node("/mat").createNode("pbrt_texture_wrinkled")
+        matte.setNamedInput("bumpmap", bump, "output")
+        self.geo.parm("shop_materialpath").set(matte.path())
+        self.compare_scene()
+
+    def test_checker_material(self):
+        space = hou.node("/obj").createNode("null")
+        space.parmTuple("t").set([1, 2, 3])
+        space.parmTuple("s").set([5, 10, 20])
+        matte = hou.node("/mat").createNode("pbrt_material_matte")
+        checks = hou.node("/mat").createNode("pbrt_texture_checkerboard")
+        checks.parm("signature").set("s")
+        checks.parm("dimension").set(3)
+        checks.parm("texture_space").set(space.path())
+        matte.setNamedInput("Kd", checks, "output")
+
+        self.geo.parm("shop_materialpath").set(matte.path())
+        self.compare_scene()
+
 
 class TestSpectrum(TestGeo):
     def setUp(self):
