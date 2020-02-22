@@ -38,7 +38,9 @@ def _apiclosure(api_call, *args, **kwargs):
     return api_func
 
 
-def get_wrangler(obj, now, style):
+# This function is not being used currently but is a common pattern
+# with other SOHO exporters
+def get_wrangler(obj, now, style):  # pragma: no coverage
     wrangler = obj.getDefaultedString(style, now, [""])[0]
     wrangler = "%s-PBRT" % wrangler
     if style == "light_wrangler":

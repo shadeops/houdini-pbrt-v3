@@ -128,7 +128,7 @@ def output_instances(obj, wrangler, now):
     return
 
 
-def header():
+def header():  # pragma: no coverage
     """Output informative header about state"""
     # Disable the header in the event we want to diff files for testing.
     if "SOHO_PBRT_NO_HEADER" in os.environ:
@@ -148,7 +148,7 @@ def header():
     return
 
 
-def footer(start_time):
+def footer(start_time):  # pragma: no coverage
     # Disable the header in the event we want to diff files for testing.
     if "SOHO_PBRT_NO_HEADER" in os.environ:
         return
