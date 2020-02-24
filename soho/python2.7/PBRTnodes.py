@@ -196,7 +196,7 @@ class ParamSet(collections.MutableSet):
         return None
 
     def update(self, other):
-        """Update (and replace) the this ParamSet with another ParamSet"""
+        """Update (and replace) this ParamSet with another ParamSet"""
         if not other:
             return
         for o in other:

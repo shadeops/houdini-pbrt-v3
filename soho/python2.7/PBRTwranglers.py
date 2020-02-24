@@ -203,13 +203,12 @@ def wrangle_shading_network(
     if saved_nodes is None:
         saved_nodes = scene_state.shading_nodes
 
-    # TODO: Currently (AFAICT) there isn't a case where prefixed and suffixed
-    #       names are required. The original intent was to handling instancing
-    #       variations, but given that fast instancing doesn't support material
-    #       variations it has become moot. The workaround for full instancing is
-    #       just to regenerate the shading network each time.
-    #       Partitioning based on the different shading overrides might still make
-    #       this useful but the current implementation doesn't need this.
+    # NOTE: We prefix and suffix names here so that there are not collisions when
+    #       using full point instancing. There is some possible redundancy as the same
+    #       network maybe recreated multiple times under different names if the overrides
+    #       are the same. A possible optimization for export and PBRT is to do a prepass
+    #       and build the networks before and keep a map to the pre-built networkds.
+    #       For now we'll brute force it.
     presufed_node_path = name_prefix + node_path + name_suffix
     if presufed_node_path in saved_nodes:
         return

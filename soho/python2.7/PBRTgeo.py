@@ -586,7 +586,7 @@ def medium_prim_paramset(prim, paramset=None):
     medium_paramset = ParamSet(paramset)
 
     # NOTE:
-    # Testing for prim attribs on each prim is a bit redudant but
+    # Testing for prim attribs on each prim is a bit redundat but
     # in general its not an issue as you won't have huge numbers of
     # volumes. If this does become an issue, attribs can be stored in
     # a dict and searched from there. (This includes evaluating the
