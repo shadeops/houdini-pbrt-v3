@@ -91,6 +91,75 @@ def build_rop(filename=None, diskfile=None):
     return rop
 
 
+class TestParamBase(unittest.TestCase):
+
+    # In order to import the Soho related PBRT modules we need to
+    # invoke a render first. While hacky this avoids having to setup
+    # custom python path.
+    @classmethod
+    def setUpClass(cls):
+        cls.cam = build_cam()
+        cls.rop = build_rop()
+        cls.rop.parm("filename").set("/dev/null")
+
+    @classmethod
+    def tearDownClass(cls):
+        hou.hipFile.clear(suppress_save_prompt=True)
+        if CLEANUP_FILES:
+            shutil.rmtree("tests/tmp")
+
+    def setUp(self):
+        self.rop.render()
+        from PBRTnodes import PBRTParam
+
+        self.PBRTParam = PBRTParam
+
+    def test_invalid_type(self):
+        with self.assertRaises(TypeError):
+            self.PBRTParam("cake", "my_name", "foo")
+
+    def test_invalid_equal(self):
+        a = self.PBRTParam("float", "my_name", 1)
+        with self.assertRaises(TypeError):
+            a == "dog"
+
+    def test_invalid_notequal(self):
+        a = self.PBRTParam("float", "my_name", 1)
+        with self.assertRaises(TypeError):
+            a != "dog"
+
+    def test_rgb_is_spectrum(self):
+        param = self.PBRTParam("rgb", "my_name", [1, 2, 3])
+        self.assertEqual(param.type, "spectrum")
+
+    def test_rgb_string_is_equal(self):
+        param = self.PBRTParam("rgb", "my_name", [1, 2, 3])
+        self.assertEqual(str(param), "rgb my_name [ 1 2 3 ]")
+
+    def test_rgb_string_is_notequal(self):
+        param = self.PBRTParam("rgb", "my_name", [1, 2, 3])
+        self.assertNotEqual(str(param), "spectrum my_name [ 0 0 0 ]")
+
+    def test_rgb_is_equal(self):
+        a = self.PBRTParam("rgb", "my_name", [1, 2, 3])
+        b = self.PBRTParam("xyz", "my_name", [0, 1, 0])
+        self.assertEqual(a, b)
+
+    def test_rgb_is_notequal(self):
+        a = self.PBRTParam("rgb", "my_name", [1, 2, 3])
+        b = self.PBRTParam("float", "my_name", [0])
+        self.assertNotEqual(a, b)
+
+    def test_shorten_str(self):
+        param = self.PBRTParam("spectrum", "my_name", [400, 1, 500, 1, 600, 1])
+        self.assertEqual(str(param), "spectrum my_name [ 400 1 500 ... ]")
+
+    def test_shorten_generator(self):
+        gen = (x for x in [400, 1, 500, 1, 600, 1])
+        param = self.PBRTParam("spectrum", "my_name", gen)
+        self.assertEqual(str(param), "spectrum my_name [ ... ]")
+
+
 class TestBase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
