@@ -51,19 +51,16 @@ def output_materials(obj, wrangler, now):
     #   up to cache the fact we've already visited a source network.
     #   Store in scenestate?
     #   (This will avoid much of the below on a per instance basis)
-    instance_info = get_full_instance_info(obj)
-    if instance_info is not None:
-        instance_source = soho.getObject(instance_info.source)
-        sourcesop_path = []
-        if not instance_source.evalString("object:soppath", now, sourcesop_path):
-            return
-        sourcesop_path = sourcesop_path[0]
-        gdp = SohoGeometry(sourcesop_path, now)
-        attrib_h = gdp.attribute("geo:point", "shop_materialpath")
-        if attrib_h >= 0:
-            shop_materialpaths = gdp.attribProperty(attrib_h, "geo:allstrings")
-            for shop in shop_materialpaths:
-                wrangle_shading_network(shop)
+    instance_info = get_full_instance_info(obj, now)
+    if instance_info is None:
+        return
+    attrib_h = instance_info.gdp.attribute("geo:point", "shop_materialpath")
+    if attrib_h >= 0:
+        shop_materialpaths = instance_info.gdp.attribProperty(
+            attrib_h, "geo:allstrings"
+        )
+        for shop in shop_materialpaths:
+            wrangle_shading_network(shop)
     return
 
 

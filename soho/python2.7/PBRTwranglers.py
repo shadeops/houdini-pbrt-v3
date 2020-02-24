@@ -5,7 +5,6 @@ import collections
 
 import hou
 import soho
-from sohog import SohoGeometry
 
 import PBRTapi as api
 import PBRTgeo as Geo
@@ -131,7 +130,60 @@ def wrangle_node_parm(obj, parm_name, now):
     return BaseNode(node_path)
 
 
-def process_full_pt_instance_material(obj, now):
+def process_full_pt_instance_medium(instance_info, medium_type):
+    gdp = instance_info.gdp
+
+    if medium_type not in ("interior", "exterior"):
+        return None, None
+
+    medium_attrib_h = gdp.attribute("geo:point", "pbrt_" + medium_type)
+    if medium_attrib_h < 0:
+        return None, None
+
+    medium = gdp.value(medium_attrib_h, instance_info.number)[0]
+
+    # an empty string is valid here as it means no medium
+    if medium == "":
+        return medium, ParamSet()
+
+    suffix = ":%s[%i]" % (instance_info.source, instance_info.number)
+    medium_node = BaseNode.from_node(medium)
+    medium_node.path_suffix = suffix
+
+    if not (medium_node and medium_node.directive_type == "pbrt_medium"):
+        return None, None
+
+    medium_paramset = ParamSet(medium_node.paramset)
+
+    # TODO: Currently both this and the geometry overrides
+    #       for mediums only support "rgb" and not spectrums.
+    parms = {
+        "sigma_a": "rgb",
+        "sigma_s": "rgb",
+        "preset": "string",
+        "g": "float",
+        "scale": "float",
+    }
+
+    for parm, ptype in parms.iteritems():
+        attrib_name = "%s_%s" % (medium_type, parm)
+        attrib_h = gdp.attribute("geo:point", attrib_name)
+        if attrib_h < 0:
+            continue
+        # TODO: Checks?
+        # attrib_size = gdp.attribProperty(attrib_h, "geo:vectorsize")[0]
+        # attrib_storage = gdp.attribProperty(attrib_h, "geo:storage")[0]
+        val = gdp.value(attrib_h, instance_info.number)
+        medium_paramset.replace(PBRTParam(ptype, parm, val))
+
+    # We might be outputing a named medium even if its not going to be needed
+    # as in the case of instancing volume prims
+    api.MakeNamedMedium(medium_node.full_name, "homogeneous", medium_paramset)
+
+    return medium_node.full_name, medium_paramset
+
+
+def process_full_pt_instance_material(instance_info):
 
     # The order of evaluation.
     #   1. shaders attached to the actual prims (handled in PBRTgeo.py)
@@ -141,13 +193,7 @@ def process_full_pt_instance_material(obj, now):
     #   5. nothing
     #   The choice between 3 and 4 is handled automatically by soho
 
-    full_instance_info = Instancing.get_full_instance_info(obj)
-    instancer_obj = soho.getObject(full_instance_info.source)
-    instancer_sop = []
-    if not instancer_obj.evalString("object:soppath", now, instancer_sop):
-        return False
-    instancer_sop = instancer_sop[0]
-    gdp = SohoGeometry(instancer_sop, now)
+    gdp = instance_info.gdp
 
     override_attrib_h = gdp.attribute("geo:point", "material_override")
     shop_attrib_h = gdp.attribute("geo:point", "shop_materialpath")
@@ -155,11 +201,11 @@ def process_full_pt_instance_material(obj, now):
     if shop_attrib_h < 0:
         return False
 
-    shop = gdp.value(shop_attrib_h, full_instance_info.number)[0]
+    shop = gdp.value(shop_attrib_h, instance_info.number)[0]
 
     override_str = ""
     if override_attrib_h >= 0:
-        override_str = gdp.value(override_attrib_h, full_instance_info.number)[0]
+        override_str = gdp.value(override_attrib_h, instance_info.number)[0]
 
     # We can just reference a NamedMaterial since there are no overrides
     if not override_str:
@@ -172,7 +218,7 @@ def process_full_pt_instance_material(obj, now):
 
     # override and shop should exist beyond this point
     # Fully expand shading network since there will be uniqueness
-    suffix = ":%s[%i]" % (full_instance_info.source, full_instance_info.number)
+    suffix = ":%s[%i]" % (instance_info.source, instance_info.number)
     wrangle_shading_network(
         shop,
         use_named=False,
@@ -859,20 +905,31 @@ def wrangle_geo(obj, wrangler, now):
     #       shop_materialpath point aassignments to shaders directly through a
     #       SohoParm. Until that is figured out, we'll have to do it manually.
 
-    pt_shop_found = False
-    if properties["ptinstance"].Value[0] == 1:
-        pt_shop_found = process_full_pt_instance_material(obj, now)
-
-    # If we found a point shop, don't output the default one here.
-    if shop in scene_state.shading_nodes and not pt_shop_found:
-        api.NamedMaterial(shop)
-
     interior = None
     exterior = None
     if "pbrt_interior" in properties:
         interior = properties["pbrt_interior"].Value[0]
     if "pbrt_exterior" in properties:
         exterior = properties["pbrt_exterior"].Value[0]
+
+    pt_shop_found = False
+    if properties["ptinstance"].Value[0] == 1:
+        instance_info = Instancing.get_full_instance_info(obj, now)
+        properties[".instance_info"] = instance_info
+        if instance_info is not None:
+            pt_shop_found = process_full_pt_instance_material(instance_info)
+            interior, interior_paramset = process_full_pt_instance_medium(
+                instance_info, "interior"
+            )
+            exterior, exterior_paramset = process_full_pt_instance_medium(
+                instance_info, "exterior"
+            )
+            if interior_paramset is not None:
+                properties[".interior_overrides"] = interior_paramset
+
+    # If we found a point shop, don't output the default one here.
+    if shop in scene_state.shading_nodes and not pt_shop_found:
+        api.NamedMaterial(shop)
 
     # We only output a MediumInterface if one or both of the parms exist
     if interior is not None or exterior is not None:

@@ -3,20 +3,29 @@ from __future__ import print_function, division, absolute_import
 import collections
 
 import hou
+import soho
 from sohog import SohoGeometry
 
 import PBRTapi as api
 
 _FullInstance = collections.namedtuple(
-    "_FullInstance", ["instance", "source", "number"]
+    "_FullInstance", ["instance", "source", "number", "gdp"]
 )
 
 
-def get_full_instance_info(obj):
+def get_full_instance_info(obj, now):
     tokens = obj.getName().split(":")
     if len(tokens) != 3:
         return None
-    return _FullInstance(tokens[0], tokens[1], int(tokens[2]))
+    instancer_obj = soho.getObject(tokens[1])
+    instancer_sop = []
+    if not instancer_obj.evalString("object:soppath", now, instancer_sop):
+        return None
+    instancer_sop = instancer_sop[0]
+    gdp = SohoGeometry(instancer_sop, now)
+    if gdp is None:
+        return None
+    return _FullInstance(tokens[0], tokens[1], int(tokens[2]), gdp)
 
 
 def find_referenced_instances(obj):

@@ -675,6 +675,16 @@ def smoke_prim_wrangler(prims, paramset=None, properties=None):
         interior = BaseNode.from_node(properties["pbrt_interior"].Value[0])
         if interior is not None and interior.directive_type == "pbrt_medium":
             medium_paramset |= interior.paramset
+        # These are special overrides that come from full point instancing.
+        # It allows "per point" medium values to be "stamped" out to volume prims.
+        interior_paramset = properties.get(".interior_overrides")
+        if interior_paramset is not None:
+            medium_paramset.update(interior_paramset)
+
+    medium_suffix = ""
+    instance_info = properties.get(".instance_info")
+    if instance_info is not None:
+        medium_suffix = ":%s[%i]" % (instance_info.source, instance_info.number)
 
     exterior = None
     if "pbrt_exterior" in properties:
@@ -684,7 +694,11 @@ def smoke_prim_wrangler(prims, paramset=None, properties=None):
     for prim in prims:
         smoke_paramset = ParamSet()
 
-        name = "%s[%i]" % (properties["object:soppath"].Value[0], prim.number())
+        medium_name = "%s[%i]%s" % (
+            properties["object:soppath"].Value[0],
+            prim.number(),
+            medium_suffix,
+        )
         resolution = prim.resolution()
         # TODO: Benchmark this vs other methods like fetching volumeSlices
         voxeldata = array.array("f")
@@ -713,9 +727,9 @@ def smoke_prim_wrangler(prims, paramset=None, properties=None):
         with api.AttributeBlock():
             xform = prim_transform(prim)
             api.ConcatTransform(xform)
-            api.MakeNamedMedium(name, "heterogeneous", smoke_paramset)
+            api.MakeNamedMedium(medium_name, "heterogeneous", smoke_paramset)
             api.Material("none")
-            api.MediumInterface(name, exterior)
+            api.MediumInterface(medium_name, exterior)
             # Pad this slightly?
             bounds_to_api_box([-1, 1, -1, 1, -1, 1])
     return
