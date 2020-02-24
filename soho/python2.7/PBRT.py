@@ -122,7 +122,7 @@ def soho_render():
     soho.lockObjects(now)
 
     with hou.undos.disabler(), scene_state:
-        if "SOHO_PBRT_DEV" in os.environ:
+        if "SOHO_PBRT_DEV" in os.environ:  # pragma: no coverage
             import cProfile
 
             pr = cProfile.Profile()
