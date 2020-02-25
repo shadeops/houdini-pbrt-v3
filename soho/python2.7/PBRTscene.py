@@ -257,3 +257,60 @@ def render(cam, now):
     footer(start_time)
 
     return
+
+
+def archive(now):
+    """Main archive entry point"""
+
+    start_time = time.time()
+
+    # For now we will not be using wranglers
+    wrangler = None
+
+    header()
+
+    api.AttributeBegin()
+
+    print()
+
+    # Output Materials
+    api.Comment("=" * 50)
+    api.Comment("NamedMaterial Definitions")
+    for obj in soho.objectList("objlist:instance"):
+        output_materials(obj, wrangler, now)
+
+    print()
+
+    # Output NamedMediums
+    api.Comment("=" * 50)
+    api.Comment("NamedMedium Definitions")
+    for obj in soho.objectList("objlist:instance"):
+        output_mediums(obj, wrangler, now)
+
+    print()
+
+    # Output Object Instances for Fast Instancing
+    api.Comment("=" * 50)
+    api.Comment("Object Instance Definitions")
+    for obj in soho.objectList("objlist:instance"):
+        output_instances(obj, wrangler, now)
+
+    print()
+
+    # Output Objects
+    api.Comment("=" * 50)
+    api.Comment("Object Definitions")
+    for obj in soho.objectList("objlist:instance"):
+        api.Comment("-" * 50)
+        api.Comment(obj.getName())
+        with api.AttributeBlock():
+            wrangle_obj(obj, wrangler, now)
+        print()
+
+    print()
+
+    api.AttributeEnd()
+
+    footer(start_time)
+
+    return

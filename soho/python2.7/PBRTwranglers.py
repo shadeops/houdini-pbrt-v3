@@ -251,10 +251,10 @@ def wrangle_shading_network(
 
     # NOTE: We prefix and suffix names here so that there are not collisions when
     #       using full point instancing. There is some possible redundancy as the same
-    #       network maybe recreated multiple times under different names if the overrides
-    #       are the same. A possible optimization for export and PBRT is to do a prepass
-    #       and build the networks before and keep a map to the pre-built networkds.
-    #       For now we'll brute force it.
+    #       network maybe recreated multiple times under different names if the
+    #       overrides are the same. A possible optimization for export and PBRT is to
+    #       do a prepass and build the networks before and keep a map to the pre-built
+    #       networks. For now we'll brute force it.
     presufed_node_path = name_prefix + node_path + name_suffix
     if presufed_node_path in saved_nodes:
         return

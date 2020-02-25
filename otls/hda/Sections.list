@@ -2,6 +2,7 @@
 INDEX__SECTION	INDEX_SECTION
 houdini.hdalibrary	houdini.hdalibrary
 Driver_1pbrt	Driver/pbrt
+Driver_1pbrtarchive	Driver/pbrtarchive
 Vop_1pbrt__spectrum	Vop/pbrt_spectrum
 Vop_1pbrt__camera__environment	Vop/pbrt_camera_environment
 Vop_1pbrt__camera__perspective	Vop/pbrt_camera_perspective
