@@ -869,6 +869,24 @@ def nurbs_wrangler(gdp, paramset=None, properties=None):
         api.Shape("nurbs", nurbs_paramset)
 
 
+def _convert_nurbs_to_bezier(gdp):
+    """Convert any NURBS Curves to Beziers
+
+    Due to how knots are interrupted between Houdini and PBRT we won't be able to
+    map NURBS to B-Splines. To work around this we just convert to Bezier degree 4
+    curves, which is what PBRT is doing internally as well. "yolo"
+
+    Args:
+        gdp (hou.Geometry): Input geo
+    Returns: hou.Geometry: Replaces input gdp
+    """
+    convert_verb = hou.sopNodeTypeCategory().nodeVerb("convert")
+    # fromtype: "nurbCurve", totype: "bezCurve"
+    convert_verb.setParms({"fromtype": 9, "totype": 2})
+    convert_verb.execute(gdp, [gdp])
+    return gdp
+
+
 def curve_wrangler(gdp, paramset=None, properties=None):
     """Outputs a "curve" Shape for input geometry
 
@@ -897,6 +915,8 @@ def curve_wrangler(gdp, paramset=None, properties=None):
         paramset.add(PBRTParam("string", "type", curve_type))
     if "splitdepth" in properties:
         paramset.add(properties["splitdepth"].to_pbrt())
+
+    gdp = _convert_nurbs_to_bezier(gdp)
 
     has_vtx_width = False if gdp.findVertexAttrib("width") is None else True
     has_pt_width = False if gdp.findPointAttrib("width") is None else True
@@ -929,6 +949,7 @@ def curve_wrangler(gdp, paramset=None, properties=None):
         if prim.intrinsicValue("typename") == "BezierCurve":
             basis = "bezier"
         else:
+            # We should not see these as they are being converted to BezierCurves
             basis = "bspline"
         curve_paramset.add(PBRTParam("string", "basis", [basis]))
 
@@ -1010,8 +1031,7 @@ shape_wranglers = {
     "PolySoup": mesh_wrangler,
     "NURBMesh": nurbs_wrangler,
     "BezierCurve": curve_wrangler,
-    # TODO, Figure out mapping between NURBS and bsplines
-    # "NURBCurve" : curve_wrangler,
+    "NURBCurve": curve_wrangler,
     "Volume": volume_wrangler,
     "PackedDisk": packeddisk_wrangler,
     "TriFan": tesselated_wrangler,
