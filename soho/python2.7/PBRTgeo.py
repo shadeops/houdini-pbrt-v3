@@ -927,7 +927,21 @@ def curve_wrangler(gdp, paramset=None, properties=None):
     has_vtx_N = False if gdp.findVertexAttrib("N") is None else True
     has_pt_N = False if gdp.findPointAttrib("N") is None else True
 
+    material_node = None
+    overrides_h = None
+
+    if '.prim_overrides' in properties:
+        overrides_h = gdp.findPrimAttrib("material_override")
+        material_node = properties[".material_node"]
+    api.Comment('OVERRIDES')
+
     for prim in gdp.prims():
+
+        if overrides_h is not None:
+            override = prim.attribValue(overrides_h)
+            if override:
+                paramset.update(material_node.override_paramset(override))
+
         curve_paramset = ParamSet()
         prim_curve_type = curve_type
 
@@ -1044,6 +1058,12 @@ shape_wranglers = {
     "Tetrahedron": tesselated_wrangler,
 }
 
+# These are the types that the primtives form an aggregate.
+# For example you can have a single polygon or combine multiple into
+# a poly mesh. We'll want to combine the same overrides into a single
+# mesh to save on creating a mesh per poly face.
+requires_override_partition = set([ "Poly", ])
+
 
 def partition_by_attrib(input_gdp, attrib, intrinsic=False):
     """Partition the input geo based on a attribute
@@ -1153,44 +1173,82 @@ def output_geo(soppath, now, properties=None):
         not ignore_materials and gdp.findPrimAttrib("material_override") is not None
     )
 
-    for material in material_gdps:
+    for material,material_gdp in material_gdps.iteritems():
+
+        if material and material not in scene_state.shading_nodes:
+            material = ""
+
+        material_node = None
         if material:
             api.AttributeBegin()
             api.NamedMaterial(material)
+            material_node = MaterialNode(material)
 
-        material_gdp = material_gdps[material]
         # api.Comment('%s %i' % (material_gdp,len(material_gdp.prims())))
 
-        if has_prim_overrides:
-            attrib_h = material_gdp.findPrimAttrib("material_override")
-            override_gdps = partition_by_attrib(material_gdp, attrib_h)
-            # Clean up post partition
-            material_gdp.clear()
-        else:
-            override_gdps = {global_override: material_gdp}
+# START
+        shape_gdps = partition_by_attrib(material_gdp, "typename", intrinsic=True)
+        material_gdp.clear()
 
-        for override in override_gdps:
-            override_gdp = override_gdps[override]
-            # api.Comment(' %s %i' % (override_gdp, len(override_gdp.prims())))
+        for shape,shape_gdp in shape_gdps.iteritems():
 
-            shape_gdps = partition_by_attrib(override_gdp, "typename", intrinsic=True)
-            override_gdp.clear()
 
-            for shape in shape_gdps:
-                material_paramset = ParamSet()
+            if has_prim_overrides and shape in requires_override_partition:
+                override_attrib_h = material_gdp.findPrimAttrib("material_override")
+                override_gdps = partition_by_attrib(shape_gdp, override_attrib_h)
+                # Clean up post partition
+                shape_gdp.clear()
+            else:
+                override_gdps = {global_override: shape_gdp}
 
-                if override and material:
+            for override, override_gdp in override_gdps.iteritems():
+                override_paramset = ParamSet()
+                if override and material_node is not None:
                     # material parm overrides are only valid for MaterialNodes
-                    material_node = MaterialNode(material)
-                    material_paramset.update(material_node.override_paramset(override))
+                    override_paramset |= material_node.override_paramset(override)
 
-                shape_gdp = shape_gdps[shape]
-                # api.Comment('  %s %i' % (shape_gdp, len(shape_gdp.prims())))
+                if has_prim_overrides:
+                    api.Comment("PRIM OVERRIDES")
+                    properties[".prim_overrides"] = True
+                    properties[".material_node"] = material_node
 
                 shape_wrangler = shape_wranglers.get(shape, not_supported)
                 if shape_wrangler:
-                    shape_wrangler(shape_gdp, material_paramset, properties)
-                shape_gdp.clear()
+                    shape_wrangler(override_gdp, override_paramset, properties)
+                override_gdp.clear()
+
+# END
+
+#        if has_prim_overrides:
+#            attrib_h = material_gdp.findPrimAttrib("material_override")
+#            override_gdps = partition_by_attrib(material_gdp, attrib_h)
+#            # Clean up post partition
+#            material_gdp.clear()
+#        else:
+#            override_gdps = {global_override: material_gdp}
+#
+#        for override in override_gdps:
+#            override_gdp = override_gdps[override]
+#            # api.Comment(' %s %i' % (override_gdp, len(override_gdp.prims())))
+#
+#            shape_gdps = partition_by_attrib(override_gdp, "typename", intrinsic=True)
+#            override_gdp.clear()
+#
+#            for shape in shape_gdps:
+#                material_paramset = ParamSet()
+#
+#                if override and material:
+#                    # material parm overrides are only valid for MaterialNodes
+#                    material_node = MaterialNode(material)
+#                    material_paramset.update(material_node.override_paramset(override))
+#
+#                shape_gdp = shape_gdps[shape]
+#                # api.Comment('  %s %i' % (shape_gdp, len(shape_gdp.prims())))
+#
+#                shape_wrangler = shape_wranglers.get(shape, not_supported)
+#                if shape_wrangler:
+#                    shape_wrangler(shape_gdp, material_paramset, properties)
+#                shape_gdp.clear()
 
         if material:
             api.AttributeEnd()
