@@ -1,5 +1,6 @@
 from __future__ import print_function, division, absolute_import
 
+import re
 import json
 import types
 import array
@@ -251,6 +252,10 @@ class BaseNode(object):
     node.
     """
 
+    override_pat = re.compile(
+        "((?P<node>\w+)/)?" "(?P<parm>\w+)" "(:(?P<spectrum>\w+))?"  # noqa: W605
+    )
+
     @staticmethod
     def from_node(node, ignore_defaults=True):
         """Factory method for creating *Node classes based on the input node"""
@@ -295,6 +300,7 @@ class BaseNode(object):
         self.directive = get_directive_from_nodetype(node.type())
         self.path_prefix = ""
         self.path_suffix = ""
+        self.override_cache = {}
 
     @property
     def directive_type(self):
@@ -405,12 +411,32 @@ class BaseNode(object):
         for override_name in override:
             # The override can have a node_name/parm format which allows for point
             # instance overrides to override parms in a network.
-            try:
-                override_node, override_parm = override_name.split("/", 1)
-                if override_node != self.name:
+
+            cached_override = self.override_cache.get(override_name, None)
+            if cached_override is not None:
+                # Hint to just skip
+                if cached_override == -1:
                     continue
-            except ValueError:
-                override_parm = override_name
+                if isinstance(cached_override, PBRTParam):
+                    # textures which can't be overriden
+                    paramset.add(cached_override)
+                    continue
+                pbrt_name, pbrt_type, tuple_names = cached_override
+                if tuple_names:
+                    value = [override[x] for x in tuple_names]
+                else:
+                    value = override[override_name]
+                pbrt_param = PBRTParam(pbrt_type, pbrt_name, value)
+                paramset.add(pbrt_param)
+                continue
+
+            override_match = self.override_pat.match(override_name)
+            spectrum_type = override_match.group("spectrum")
+            parm_name = override_match.group("parm")
+            override_node = override_match.group("node")
+            if override_node is not None and override_node != self.name:
+                self.override_cache[override_name] = -1
+                continue
 
             # There can be two style of "overrides" one is a straight parm override
             # which is similar to what Houdini does. The other style of override is
@@ -420,11 +446,6 @@ class BaseNode(object):
             # support a different style, override_parm:spectrum_type. If the parm name
             # ends in one of the "rgb/color" types then we'll handle it differently.
             # TODO add a comment as to what the value would look like
-            try:
-                parm_name, spectrum_type = override_parm.split(":", 1)
-            except ValueError:
-                spectrum_type = None
-                parm_name = override_parm
 
             # NOTE: The material SOP will use a parm style dictionary if there
             #       parm name matches exactly
@@ -436,24 +457,29 @@ class BaseNode(object):
 
             # Once we have a parm name, we need to determine what "style" it is.
             # Whether its a hou.ParmTuple or hou.Parm style.
+            tuple_names = tuple()
             parm_tuple = self.node.parmTuple(parm_name)
-            split_tuple = False
             if parm_tuple is None:
                 # We couldn't find a tuple of that name, so let's try a parm
                 parm = self.node.parm(parm_name)
                 if parm is None:
                     # Nope, not valid either, let's move along
+                    self.override_cache[override_name] = -1
                     continue
+                # if its a parm but not a parmtuple it must be a split.
                 parm_tuple = parm.tuple()
-                split_tuple = True
+                # we need to "combine" these and process them all at once and
+                # then skip any other occurances. The skipping is handled by
+                # the overall caching mechanism. self.override_cache
+                tuple_names = tuple([x.name() for x in parm_tuple])
 
             # This is for wrangling parm names of texture nodes due to having a
             # signature parm.
             pbrt_parm_name = self.pbrt_parm_name(parm_tuple.name())
 
-            if spectrum_type is None and split_tuple:
+            if spectrum_type is None and tuple_names:
                 # This is a "traditional" override, no spectrum or node name prefix
-                value = [override[x.name()] for x in parm_tuple]
+                value = [override[x] for x in tuple_names]
                 pbrt_param = self._hou_parm_to_pbrt_param(
                     parm_tuple, pbrt_parm_name, value
                 )
@@ -461,14 +487,37 @@ class BaseNode(object):
                 pbrt_param = PBRTParam(
                     spectrum_type, pbrt_parm_name, override[override_name]
                 )
-            elif not split_tuple:
+            elif not tuple_names:
                 pbrt_param = self._hou_parm_to_pbrt_param(
                     parm_tuple, pbrt_parm_name, override[override_name]
                 )
             else:
                 raise ValueError("Unable to wrangle override name: %s" % override_name)
+
             paramset.add(pbrt_param)
 
+            # From here to the end of the loop is to allow for caching
+
+            if pbrt_param.type == "texture":
+                self.override_cache[override_name] = pbrt_param
+                continue
+
+            # we are making an assumption a split parm will never be a spectrum
+            # or have a node prefix. The Material SOP doesn't allow for it as well.
+            for name in tuple_names:
+                # The -1 means "continue"
+                self.override_cache[name] = -1
+            # Sanity check
+            if tuple_names and override_name not in tuple_names:
+                raise ValueError(
+                    "Override name: %s, not valid for a parmTuple" % override_name
+                )
+            # override_name must match one of the tuple_names
+            self.override_cache[override_name] = (
+                pbrt_param.name,
+                pbrt_param.param_type,
+                tuple_names,
+            )
         return paramset
 
     def _hou_parm_to_pbrt_param(self, parm, parm_name=None, value_override=None):
