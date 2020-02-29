@@ -66,9 +66,17 @@ def prim_pt2vtx_attrib_gen(prim, attrib="P"):
     Yields:
         Values of attrib for each point on the prim
     """
-    for vtx in prim.vertices():
-        pt = vtx.point()
-        yield pt.attribValue(attrib)
+    # SPEED consideration: use prim.points() instead of .vertices()
+    # to skip a step
+
+    # for vtx in prim.vertices():
+    #     pt = vtx.point()
+    #     yield pt.attribValue(attrib)
+
+    # SPEED consideration: Just have the following inline in the calling
+    # function. This avoids an expensive function call for a 1 liner.
+    # espcially in cases where its called 100,000s of times.
+    return (pt.attribValue(attrib) for pt in prim.points())
 
 
 def linear_vtx_gen(gdp):
@@ -978,7 +986,9 @@ def curve_wrangler(gdp, paramset=None, properties=None, override_node=None):
             basis = "bspline"
         curve_paramset.add(PBRTParam("string", "basis", [basis]))
 
-        P = prim_pt2vtx_attrib_gen(prim)
+        # SPEED consideration, run inline:
+        # P = prim_pt2vtx_attrib_gen(prim)
+        P = [pt.attribValue("P") for pt in prim.points()]
         curve_paramset.add(PBRTParam("point", "P", P))
 
         if has_curvetype:
