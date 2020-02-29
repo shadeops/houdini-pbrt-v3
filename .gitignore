@@ -3,6 +3,7 @@
 *.hip
 *.hda
 *.exr
+*.stats
 */tmp/
 
 backup/
@@ -11,5 +12,7 @@ render/
 issues/
 htmlcov/
 
-scene.pbrt
+scene*.pbrt
 .coverage
+build.sh
+TODO
