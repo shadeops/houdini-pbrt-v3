@@ -953,6 +953,10 @@ def curve_wrangler(gdp, paramset=None, properties=None, override_node=None):
     has_vtx_width = False if gdp.findVertexAttrib("width") is None else True
     has_pt_width = False if gdp.findPointAttrib("width") is None else True
     has_prim_width = False if gdp.findPrimAttrib("width") is None else True
+    has_prim_width01 = False
+    if ( gdp.findPrimAttrib("width0") is not None and
+            gdp.findPrimAttrib("width1") is not None ):
+        has_prim_width01 = True
 
     has_curvetype = False if gdp.findPrimAttrib("curvetype") is None else True
 
@@ -1028,6 +1032,9 @@ def curve_wrangler(gdp, paramset=None, properties=None, override_node=None):
                     "float", "width1", prim.vertex(-1).point().attribValue("width")
                 )
             )
+        elif has_prim_width01:
+            curve_paramset.add(PBRTParam("float", "width0", prim.attribValue("width0")))
+            curve_paramset.add(PBRTParam("float", "width1", prim.attribValue("width1")))
         elif has_prim_width:
             curve_paramset.add(PBRTParam("float", "width", prim.attribValue("width")))
         else:
