@@ -5,8 +5,8 @@ Integrator "path" "integer maxdepth" [ 5 ]
 Accelerator "bvh"
 
 #  /obj/cam1
-Transform [ 1 0 0 0 0 0.978147600734 -0.207911690818 6.93889390391e-18 0 -0.207911690818 -0.978147600734 2.77555756156e-17 0 0.061410853355 5.09864969449 1 ]
-Camera "perspective" "float fov" [ 45.0000428043 ] "float screenwindow" [ -1 1 -0.75 0.75 ]
+Transform [ 1 0 0 0 0 0.9781 -0.2079 0 0 -0.2079 -0.9781 0 0 0.06141 5.099 1 ]
+Camera "perspective" "float fov" [ 45 ] "float screenwindow" [ -1 1 -0.75 0.75 ]
 
 WorldBegin	# {
 

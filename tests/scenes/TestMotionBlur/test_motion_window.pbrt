@@ -6,7 +6,7 @@ Accelerator "bvh"
 
 #  /obj/cam1
 Transform [ 1 0 0 0 0 1 0 0 0 0 -1 0 0 0 10 1 ]
-Camera "perspective" "float fov" [ 45.0000428043 ] "float screenwindow" [ -1 1 -0.75 0.75 ]
+Camera "perspective" "float fov" [ 45 ] "float screenwindow" [ -1 1 -0.75 0.75 ]
 
 TransformTimes 0.25 0.75
 

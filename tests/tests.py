@@ -83,6 +83,14 @@ def build_ground():
 
 def build_rop(filename=None, diskfile=None):
     rop = hou.node("/out").createNode("pbrt")
+    ptg = rop.parmTemplateGroup()
+    precision = hou.properties.parmTemplate("pbrt-v3", "soho_precision")
+    almostzero = hou.properties.parmTemplate("pbrt-v3", "soho_almostzero")
+    ptg.append(precision)
+    ptg.append(almostzero)
+    rop.setParmTemplateGroup(ptg)
+    rop.parm("soho_precision").set(2)
+    rop.parm("soho_almostzero").set(0.001)
     rop.parm("soho_outputmode").set(1)
     if diskfile:
         rop.parm("soho_diskfile").set(diskfile)
