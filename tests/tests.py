@@ -536,7 +536,7 @@ class TestSpectrum(TestGeo):
         self.compare_scene()
 
     def test_ramp(self):
-        ramp = hou.Ramp([hou.rampBasis.Linear] * 3, (400, 500, 600), (0.25, 1.0, 0.5))
+        ramp = hou.Ramp([hou.rampBasis.Linear] * 3, (0.0, 0.5, 1.0), (0.25, 1.0, 0.5))
         self.spectrum.parm("ramp").set(ramp)
         self.spectrum.parm("type").set("ramp")
         self.compare_scene()
