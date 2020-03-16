@@ -65,6 +65,9 @@
         SOHO_TOGGLE(pbrt_computeN, "Auto Create Normals if Missing (pbrt)", "Geometry", 1)
     }
     parm {
+        SOHO_TOGGLE(pbrt_reverseorientation, "Reverse Orientation (pbrt)", "Geometry", 0)
+    }
+    parm {
         SOHO_TOGGLE(pbrt_ignorevolumes, "Ignore Volumes", "Geometry", 0)
         help "Skip output of Volumes in objects, useful for defining mediums manually"
     }
