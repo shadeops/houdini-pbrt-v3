@@ -76,16 +76,21 @@
         range   { 0 10 }
     }
     parm {
+        name    "auto_gamma"
+        label   "Auto Gamma"
+        type    toggle
+        default { "1" }
+        help    "Toggles whether PBRT should automatically determine if texture is sRGB or not. When off, the gamma parameter is forced exported. Otherwise no parameter is output and PBRT auto determines."
+        parmtag { "pbrt.meta" "1" }
+    }
+    parm {
         name    "gamma"
         label   "Gamma"
-        type    ordinal
-        default { "auto" }
+        type    toggle
+        default { "1" }
         help    "Indicates whether texel values should be converted from sRGB gamma space to linear space. This parameter is \"true\" by default for textures stored in 8-bit formats like TGA and PNG, and \"false\" for floating-point formats like EXR and PFM."
-        menu {
-            "auto"  "Auto"
-            "true"  "Convert from sRGB"
-            "false" "Do not convert"
-        }
+        disablewhen "{ auto_gamma 1 }"
+        parmtag { "pbrt.force" "1" }
     }
     group {
         name    "folder0"
