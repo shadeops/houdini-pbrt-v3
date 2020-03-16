@@ -50,7 +50,7 @@ def soho_render():
     now = parms["now"].Value[0]
     camera = None
 
-    options = {"state:precision": 6}
+    options = {}
     if not soho.initialize(now, camera, options):
         soho.error("Unable to initialize rendering module with given camera")
 
