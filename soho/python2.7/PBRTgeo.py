@@ -154,6 +154,8 @@ def sphere_wrangler(gdp, paramset=None, properties=None, override_node=None):
             api.ConcatTransform(xform)
             # Scale required to match Houdini's uvs
             api.Scale(1, 1, -1)
+            # The inverted z-axis scale means we need to now reverse orientation
+            api.ReverseOrientation()
             api.Shape("sphere", shape_paramset)
     return
 
@@ -252,7 +254,8 @@ def tube_wrangler(gdp, paramset=None, properties=None, override_node=None):
                 # has no ends of trouble with this shape type
                 # crashes or hangs
                 api.Comment("Hyperboloid skipped due to PBRT instability")
-            with api.TransformBlock():
+            with api.AttributeBlock():
+                api.ReverseOrientation()
                 # Flip in Y so parameteric UV's match Houdini's
                 api.Scale(1, -1, 1)
                 api.Shape(shape, side_paramset)
@@ -262,11 +265,14 @@ def tube_wrangler(gdp, paramset=None, properties=None, override_node=None):
                 if shape == "cylinder":
                     disk_paramset.add(PBRTParam("float", "height", 0.5))
                     api.Shape("disk", disk_paramset)
-                    disk_paramset.add(PBRTParam("float", "height", -0.5))
-                    api.Shape("disk", disk_paramset)
+                    disk_paramset.replace(PBRTParam("float", "height", -0.5))
+                    with api.AttributeBlock():
+                        api.ReverseOrientation()
+                        api.Shape("disk", disk_paramset)
                 else:
-                    disk_paramset.add(PBRTParam("float", "height", 0))
-                    api.Shape("disk", disk_paramset)
+                    with api.AttributeBlock():
+                        api.ReverseOrientation()
+                        api.Shape("disk", disk_paramset)
     return
 
 
