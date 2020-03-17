@@ -864,7 +864,9 @@ def wrangle_geo(obj, wrangler, now):
             "pbrt_subdlevels", "integer", [3], False, key="levels"
         ),
         "pbrt_computeN": SohoPBRT("pbrt_computeN", "bool", [True], False),
-        "pbrt_reverseorientation": SohoPBRT("pbrt_reverseorientation", "bool", [False], True),
+        "pbrt_reverseorientation": SohoPBRT(
+            "pbrt_reverseorientation", "bool", [False], True
+        ),
         # The combination of None as a default as well as ignore defaults being False
         # is important. 'None' implying the parm is missing and not available,
         # and '' meaning a vacuum medium.

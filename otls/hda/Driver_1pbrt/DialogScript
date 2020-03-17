@@ -1029,7 +1029,7 @@
                 hidewhen "{ accelerator != bvh }"
                 menu {
                     "sah"       "Surface Area Heuristic"
-                    "middle"    "Midpoin"
+                    "middle"    "Midpoint"
                     "equal"     "Equal Sets"
                     "hlbvh"     "HLBVH"
                 }
