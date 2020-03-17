@@ -54,6 +54,7 @@ WorldBegin	# {
 	TransformBegin	# {
 	    ConcatTransform [ 0.1768 0.3062 -0.3536 0 -0.5544 -0.2102 -0.4593 0 -0.1433 0.1848 0.08839 0 0.1 0.2 0.3 1 ]
 	    Scale 1 1 -1
+	    ReverseOrientation
 	    Shape "sphere"
 	TransformEnd	# }
     AttributeEnd	# }

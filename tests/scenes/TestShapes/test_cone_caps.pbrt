@@ -55,11 +55,15 @@ WorldBegin	# {
 	    ConcatTransform [ 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 ]
 	    Rotate -90 1 0 0
 	    Translate 0 0 -0.5
-	    TransformBegin	# {
+	    AttributeBegin	# {
+		ReverseOrientation
 		Scale 1 -1 1
 		Shape "cone"
-	    TransformEnd	# }
-	    Shape "disk" "float height" [ 0 ]
+	    AttributeEnd	# }
+	    AttributeBegin	# {
+		ReverseOrientation
+		Shape "disk"
+	    AttributeEnd	# }
 	TransformEnd	# }
     AttributeEnd	# }
 

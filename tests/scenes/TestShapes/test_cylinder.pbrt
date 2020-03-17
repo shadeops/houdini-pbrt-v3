@@ -54,10 +54,11 @@ WorldBegin	# {
 	TransformBegin	# {
 	    ConcatTransform [ 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 ]
 	    Rotate -90 1 0 0
-	    TransformBegin	# {
+	    AttributeBegin	# {
+		ReverseOrientation
 		Scale 1 -1 1
 		Shape "cylinder" "float zmin" [ -0.5 ] "float zmax" [ 0.5 ]
-	    TransformEnd	# }
+	    AttributeEnd	# }
 	TransformEnd	# }
     AttributeEnd	# }
 
