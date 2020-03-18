@@ -92,28 +92,40 @@ def xform_to_api_srt(xform, scale=True, rotate=True, trans=True):
 
 
 def output_xform(
-    obj, now, no_motionblur=False, invert=False, flipx=False, flipy=False, flipz=False
+    obj,
+    now,
+    no_motionblur=False,
+    invert=False,
+    flipx=False,
+    flipy=False,
+    flipz=False,
+    concat=False,
 ):
     if no_motionblur:
         shutter_range = None
     else:
         shutter_range = wrangle_motionblur(obj, now)
+
+    api_call = api.Transform
+    if concat:
+        api_call = api.ConcatTransform
+
     if shutter_range is None:
         xform = get_transform(
             obj, now, invert=invert, flipx=flipx, flipy=flipy, flipz=flipz
         )
-        api.Transform(xform)
+        api_call(xform)
         return
     api.ActiveTransform("StartTime")
     xform = get_transform(
         obj, shutter_range.open, invert=invert, flipx=flipx, flipy=flipy, flipz=flipz
     )
-    api.Transform(xform)
+    api_call(xform)
     api.ActiveTransform("EndTime")
     xform = get_transform(
         obj, shutter_range.close, invert=invert, flipx=flipx, flipy=flipy, flipz=flipz
     )
-    api.Transform(xform)
+    api_call(xform)
     api.ActiveTransform("All")
     return
 
@@ -829,13 +841,13 @@ def wrangle_light(light, wrangler, now):
     return
 
 
-def wrangle_obj(obj, wrangler, now, ignore_xform=False):
+def wrangle_obj(obj, wrangler, now, ignore_xform=False, concat_xform=False):
 
     ptinstance = []
     has_ptinstance = obj.evalInt("ptinstance", now, ptinstance)
 
     if not ignore_xform:
-        output_xform(obj, now)
+        output_xform(obj, now, concat=concat_xform)
 
     if has_ptinstance and ptinstance[0] == 2:
         # This is "fast instancing", "full instancing" results in Soho outputing

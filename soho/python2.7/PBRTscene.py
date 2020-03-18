@@ -304,7 +304,7 @@ def archive(now):
         api.Comment("-" * 50)
         api.Comment(obj.getName())
         with api.AttributeBlock():
-            wrangle_obj(obj, wrangler, now)
+            wrangle_obj(obj, wrangler, now, concat_xform=True)
         print()
 
     print()
