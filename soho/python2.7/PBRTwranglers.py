@@ -251,6 +251,9 @@ def wrangle_shading_network(
     root=True,
 ):
 
+    if node_path in scene_state.invalid_shading_nodes:
+        return
+
     # Depth first, as textures/materials need to be
     # defined before they are referenced
 
@@ -271,14 +274,16 @@ def wrangle_shading_network(
     if presufed_node_path in saved_nodes:
         return
 
-    saved_nodes.add(presufed_node_path)
-
     hnode = hou.node(node_path)
 
     # Material or Texture?
     node = BaseNode.from_node(hnode)
     if node is None:
+        api.Comment("Skipping %s since its not a Material or Texture node" % node_path)
+        scene_state.invalid_shading_nodes.add(node_path)
         return
+    else:
+        saved_nodes.add(presufed_node_path)
 
     node.path_suffix = name_suffix
     node.path_prefix = name_prefix

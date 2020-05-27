@@ -220,7 +220,12 @@ def get_directive_from_nodetype(node_type):
 
     directive = None
 
-    user_data_str = node_type.definition().userInfo()
+    node_definition = node_type.definition()
+    if node_definition is None:
+        # PBRT nodes will always have a definition since they are HDAs.
+        return None
+
+    user_data_str = node_definition.userInfo()
     if user_data_str:
         user_data = json.loads(user_data_str)
         directive = user_data.get("directive")

@@ -23,6 +23,7 @@ if gdp is not None:
 
     def __init__(self):
         self.shading_nodes = set()
+        self.invalid_shading_nodes = set()
         self.medium_nodes = set()
         self.instanced_geo = set()
         # We do not interior/exterior these directly but are handy as
@@ -84,6 +85,7 @@ if gdp is not None:
         self.now = None
         self.inv_fps = None
         self.shading_nodes.clear()
+        self.invalid_shading_nodes.clear()
         self.medium_nodes.clear()
         self.instanced_geo.clear()
         self.interior = None

@@ -1233,6 +1233,8 @@ def output_geo(soppath, now, properties=None):
     for material, material_gdp in material_gdps.iteritems():
 
         if material not in scene_state.shading_nodes:
+            if material in scene_state.invalid_shading_nodes:
+                api.Comment("Did not apply %s as it was not a PBRT material" % material)
             material = ""
             material_node = None
         else:
