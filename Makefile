@@ -37,3 +37,4 @@ lint:
 clean:
 	/bin/rm -fv ./soho/python2.7/*.pyc
 	/bin/rm -fvr ./package
+	/bin/rm -fvr ./tests/tmp
