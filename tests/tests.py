@@ -99,6 +99,21 @@ def build_rop(filename=None, diskfile=None):
     return rop
 
 
+def build_archive(diskfile=None):
+    rop = hou.node("/out").createNode("pbrtarchive")
+    ptg = rop.parmTemplateGroup()
+    precision = hou.properties.parmTemplate("pbrt-v3", "soho_precision")
+    almostzero = hou.properties.parmTemplate("pbrt-v3", "soho_almostzero")
+    ptg.append(precision)
+    ptg.append(almostzero)
+    rop.setParmTemplateGroup(ptg)
+    rop.parm("soho_precision").set(2)
+    rop.parm("soho_almostzero").set(0.001)
+    if diskfile:
+        rop.parm("soho_diskfile").set(diskfile)
+    return rop
+
+
 class TestParamBase(unittest.TestCase):
 
     # In order to import the Soho related PBRT modules we need to
@@ -192,6 +207,65 @@ class TestBase(unittest.TestCase):
         return self.id().split(".")[-1]
 
 
+class TestROP(TestBase):
+    def setUp(self):
+        exr = "%s.exr" % self.name
+        self.rop = build_rop(filename=exr, diskfile=self.testfile)
+
+    def tearDown(self):
+        self.rop.destroy()
+        if CLEANUP_FILES:
+            os.remove(self.testfile)
+
+    def compare_scene(self):
+        self.rop.render()
+        self.assertTrue(filecmp.cmp(self.testfile, self.basefile))
+
+    def test_filter_gaussian(self):
+        self.rop.parm("filter").set("gaussian")
+        self.rop.parm("gauss_alpha").set(3)
+        self.compare_scene()
+
+    def test_filter_mitchell(self):
+        self.rop.parm("filter").set("mitchell")
+        self.rop.parm("mitchell_B").set(0.3)
+        self.rop.parm("mitchell_C").set(0.3)
+        self.compare_scene()
+
+    def test_filter_sinc(self):
+        self.rop.parm("filter").set("sinc")
+        self.rop.parm("sinc_tau").set(4)
+        self.compare_scene()
+
+    def test_sampler_stratified(self):
+        self.rop.parm("sampler").set("stratified")
+        self.compare_scene()
+
+    def test_accelerator_kdtree(self):
+        self.rop.parm("accelerator").set("kdtree")
+        self.compare_scene()
+
+
+class TestArchive(TestBase):
+    def setUp(self):
+        self.geo = build_ground()
+        self.rop = build_archive(diskfile=self.testfile)
+
+    def tearDown(self):
+        self.geo.destroy()
+        self.rop.destroy()
+        if CLEANUP_FILES:
+            os.remove(self.testfile)
+
+    def compare_scene(self):
+        self.rop.render()
+        self.assertTrue(filecmp.cmp(self.testfile, self.basefile))
+
+    def test_singlegeo(self):
+        self.rop.parm("vobject").set(self.geo.path())
+        self.compare_scene()
+
+
 class TestLights(TestBase):
     @classmethod
     def setUpClass(cls):
@@ -249,6 +323,12 @@ class TestLights(TestBase):
         self.light.parm("light_intensity").set(5)
         self.compare_scene()
 
+    def test_spherelight_rotated(self):
+        self.light.parm("light_type").set("sphere")
+        self.light.parm("light_intensity").set(5)
+        self.light.parmTuple("r").set([15, 30, 45])
+        self.compare_scene()
+
     def test_tubelight(self):
         self.light.parm("light_type").set("tube")
         self.light.parm("light_intensity").set(5)
@@ -261,6 +341,51 @@ class TestLights(TestBase):
 
     def test_gridlight(self):
         self.light.parm("light_type").set("grid")
+        self.light.parm("light_intensity").set(5)
+        self.compare_scene()
+
+    def test_sunlight(self):
+        self.light.parm("light_type").set("sun")
+        self.light.parm("light_intensity").set(5)
+        self.compare_scene()
+
+
+class TestGeoLight(TestBase):
+    @classmethod
+    def setUpClass(cls):
+        build_cam()
+        build_ground()
+
+    def compare_scene(self):
+        self.rop.render()
+        self.assertTrue(filecmp.cmp(self.testfile, self.basefile))
+
+    def setUp(self):
+        self.light = hou.node("/obj").createNode("hlight")
+        self.light.parm("ty").set(1.5)
+        self.light.parm("rx").set(-90)
+        exr = "%s.exr" % self.name
+        self.rop = build_rop(filename=exr, diskfile=self.testfile)
+        self.box = hou.node("/obj").createNode("geo")
+        self.box.createNode("box")
+        self.box.setDisplayFlag(False)
+
+    def tearDown(self):
+        self.box.destroy()
+        self.light.destroy()
+        self.rop.destroy()
+        if CLEANUP_FILES:
+            os.remove(self.testfile)
+
+    def test_geolight(self):
+        self.light.parm("light_type").set("geo")
+        self.light.parm("areageometry").set(self.box.path())
+        self.light.parm("light_intensity").set(5)
+        self.compare_scene()
+
+    def test_geolight_no_geo(self):
+        self.light.parm("light_type").set("geo")
+        self.light.parm("areageometry").set("")
         self.light.parm("light_intensity").set(5)
         self.compare_scene()
 

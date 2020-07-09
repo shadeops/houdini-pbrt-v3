@@ -1,0 +1,28 @@
+Film "image" "integer xresolution" [ 320 ] "integer yresolution" [ 240 ] "string filename" [ "test_filter_mitchell.exr" ]
+PixelFilter "mitchell" "float xwidth" [ 2 ] "float ywidth" [ 2 ] "float C" [ 0.3 ] "float B" [ 0.3 ]
+Sampler "halton" "integer pixelsamples" [ 16 ]
+Integrator "path" "integer maxdepth" [ 5 ]
+Accelerator "bvh"
+
+#  /obj/cam1
+Transform [ 1 0 0 0 0 0.9781 -0.2079 0 0 -0.2079 -0.9781 0 0 0.06141 5.099 1 ]
+Camera "perspective" "float fov" [ 45 ] "float screenwindow" [ -1 1 -0.75 0.75 ]
+
+WorldBegin	# {
+
+    #  ==================================================
+    #  Light Definitions
+
+    #  ==================================================
+    #  NamedMaterial Definitions
+
+    #  ==================================================
+    #  NamedMedium Definitions
+
+    #  ==================================================
+    #  Object Instance Definitions
+
+    #  ==================================================
+    #  Object Definitions
+
+WorldEnd	# }
