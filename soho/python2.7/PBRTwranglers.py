@@ -407,9 +407,9 @@ def wrangle_filter(obj, wrangler, now):
 
     if filter_name == "gaussian" and "alpha" in parms:
         paramset.add(parms["alpha"].to_pbrt())
-    if filter_name == "mitchell" and "mitchell_B" in parms:
+    if filter_name == "mitchell" and "B" in parms:
         paramset.add(parms["B"].to_pbrt())
-    if filter_name == "mitchell" and "mitchell_C" in parms:
+    if filter_name == "mitchell" and "C" in parms:
         paramset.add(parms["C"].to_pbrt())
     if filter_name == "sinc" and "tau" in parms:
         paramset.add(parms["tau"].to_pbrt())
