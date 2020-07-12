@@ -43,17 +43,22 @@ def vtx_attrib_gen(gdp, attrib):
     Yields:
         Values of attrib for each vertex
     """
-    for prim in gdp.prims():
-        for vtx in prim.vertices():
-            # TODO Don't test each time through the inner loop
-            # TODO reverse order?
-            # for vtx in xrange(num_vtx-1,-1,-1):
-            if attrib is None:
-                yield vtx.point().number()
-            elif attrib.type() == hou.attribType.Vertex:
-                yield vtx.attribValue(attrib)
-            elif attrib.type() == hou.attribType.Point:
-                yield vtx.point().attribValue(attrib)
+    # NOTE: Having one loop with a conditional inside is a significant cost.
+    #       We'll pull the conditional out of the loop so its computed once
+    #       at the expense of some code dupilcation.
+    vtx_per_prim = ( vtx for prim in gdp.iterPrims() for vtx in prim.vertices() )
+    if attrib is None:
+        for vtx in vtx_per_prim:
+            yield vtx.point().number()
+    elif attrib.type() == hou.attribType.Vertex:
+        # TODO: Starting with Houdini 17, there is a
+        # hou.Geometry.vertex{Type}AttribValues} that we can use to
+        # fetch all vertex data at once, which is much faster.
+        for vtx in vtx_per_prim:
+            yield vtx.attribValue(attrib)
+    elif attrib.type() == hou.attribType.Point:
+        for vtx in vtx_per_prim:
+            yield vtx.point().attribValue(attrib)
 
 
 def prim_pt2vtx_attrib_gen(prim, attrib="P"):
