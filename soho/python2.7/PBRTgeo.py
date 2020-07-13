@@ -9,7 +9,7 @@ import hou
 
 import PBRTapi as api
 from PBRTnodes import BaseNode, MaterialNode, PBRTParam, ParamSet
-from PBRTstate import scene_state
+from PBRTstate import scene_state, HVER_17_5, HVER_18
 
 
 def mesh_alpha_texs(properties):
@@ -46,7 +46,7 @@ def vtx_attrib_gen(gdp, attrib):
     # NOTE: Having one loop with a conditional inside is a significant cost.
     #       We'll pull the conditional out of the loop so its computed once
     #       at the expense of some code dupilcation.
-    vtx_per_prim = ( vtx for prim in gdp.iterPrims() for vtx in prim.vertices() )
+    vtx_per_prim = (vtx for prim in gdp.iterPrims() for vtx in prim.vertices())
     if attrib is None:
         for vtx in vtx_per_prim:
             yield vtx.point().number()
@@ -99,13 +99,14 @@ def linear_vtx_gen(gdp):
     Yields:
         Linear vertex number for every vertex
     """
-    # NOTE: If this is only used for trianglemeshes we could just do
-    #       xrange(len(prims)*3 +1)
-    i = 0
-    for prim in gdp.prims():
-        for vtx in prim.vertices():
-            yield i
-            i += 1
+    # NOTE: This is only used for trianglemeshes we could just do
+    return range(len(gdp.iterPrims()) * 3)
+
+    # i = 0
+    # for prim in gdp.prims():
+    #    for vtx in prim.vertices():
+    #        yield i
+    #        i += 1
 
 
 def pt_attrib_gen(gdp, attrib):
@@ -310,28 +311,25 @@ def mesh_wrangler(gdp, paramset=None, properties=None, override_node=None):
     # We can only deal with triangles, where Houdini is a bit more
     # general, so we'll need to tesselate
 
-    mesh_gdp = scene_state.tesselate_geo(gdp)
-    gdp.clear()
-
-    if not mesh_gdp:
-        return None
-
     # If subdivs are turned on, instead of running the
     # trianglemesh wrangler, use the loop subdiv one instead
+
     shape = "trianglemesh"
     if "pbrt_rendersubd" in properties:
         if properties["pbrt_rendersubd"].Value[0]:
             shape = "loopsubdiv"
 
+    gdp = scene_state.tesselate_geo(gdp)
+
     if shape == "loopsubdiv":
-        wrangler_paramset = loopsubdiv_params(mesh_gdp)
+        wrangler_paramset = loopsubdiv_params(gdp)
         if "levels" in properties:
             wrangler_paramset.replace(properties["levels"].to_pbrt())
     else:
         computeN = True
         if "pbrt_computeN" in properties:
             computeN = properties["pbrt_computeN"].Value[0]
-        wrangler_paramset = trianglemesh_params(mesh_gdp, computeN)
+        wrangler_paramset = trianglemesh_params(gdp, computeN)
         alpha_paramset = mesh_alpha_texs(properties)
         wrangler_paramset.update(alpha_paramset)
 
@@ -362,10 +360,7 @@ def trianglemesh_params(mesh_gdp, computeN=True):
     mesh_paramset = ParamSet()
     unique_points = False
 
-    # Required
-    P_attrib = mesh_gdp.findPointAttrib("P")
-
-    # Optional
+    # Optional Attributes
     N_attrib = mesh_gdp.findVertexAttrib("N")
     if N_attrib is None:
         N_attrib = mesh_gdp.findPointAttrib("N")
@@ -374,12 +369,9 @@ def trianglemesh_params(mesh_gdp, computeN=True):
     # them with a SopVerb
     if N_attrib is None and computeN:
         normal_verb = hou.sopNodeTypeCategory().nodeVerb("normal")
+        # type 0 is point normals
         normal_verb.setParms({"type": 0})
-        normals_gdp = hou.Geometry()
-        normal_verb.execute(normals_gdp, [mesh_gdp])
-        mesh_gdp.clear()
-        del mesh_gdp
-        mesh_gdp = normals_gdp
+        normal_verb.execute(mesh_gdp, [mesh_gdp])
         N_attrib = mesh_gdp.findPointAttrib("N")
 
     uv_attrib = mesh_gdp.findVertexAttrib("uv")
@@ -398,12 +390,14 @@ def trianglemesh_params(mesh_gdp, computeN=True):
 
     # We need to unique the points if any of the handles
     # to vtx attributes exists.
+    to_promote = []
     for attrib in (N_attrib, uv_attrib, S_attrib):
         if attrib is None:
             continue
         if attrib.type() == hou.attribType.Vertex:
-            unique_points = True
-            break
+            to_promote.append(attrib.name())
+    if to_promote:
+        unique_points = True
 
     S = None
     uv = None
@@ -414,34 +408,51 @@ def trianglemesh_params(mesh_gdp, computeN=True):
         faceIndices = array.array("i")
         faceIndices.fromstring(mesh_gdp.primIntAttribValuesAsString("faceIndices"))
 
-    # We will unique points (verts in PBRT) if any of the attributes are
-    # per vertex instead of per point.
     if unique_points:
-        P = vtx_attrib_gen(mesh_gdp, P_attrib)
-        indices = linear_vtx_gen(mesh_gdp)
+        if hou.applicationVersion() >= HVER_18:
+            unique_verb = hou.sopNodeTypeCategory().nodeVerb("splitpoints")
+        else:
+            unique_verb = hou.sopNodeTypeCategory().nodeVerb("facet")
+            unique_verb.setParms({"unique": True})
+        unique_verb.execute(mesh_gdp, [mesh_gdp])
 
-        if N_attrib is not None:
-            N = vtx_attrib_gen(mesh_gdp, N_attrib)
-        if uv_attrib is not None:
-            uv = vtx_attrib_gen(mesh_gdp, uv_attrib)
-        if S_attrib is not None:
-            S = vtx_attrib_gen(mesh_gdp, S_attrib)
+        promote_verb = hou.sopNodeTypeCategory().nodeVerb("attribpromote")
+        # inclass 3 = vertex, method 8 = first match
+        promote_str = " ".join(to_promote)
+        promote_verb.setParms({"inclass": 3, "method": 8, "inname": promote_str})
+        promote_verb.execute(mesh_gdp, [mesh_gdp])
+
+        # If we sort the points by their vtx number we can just get a simple
+        # range, the C++ Sort is much faster than looking up the actual point
+        # numbers from the verts. The previous implementation of this was doing
+        # the sort indirectly by iterator per vert per prim.
+        if True:
+            sort_verb = hou.sopNodeTypeCategory().nodeVerb("sort")
+            sort_verb.setParms({"ptsort": 1})
+            sort_verb.execute(mesh_gdp, [mesh_gdp])
+
+            indices = linear_vtx_gen(mesh_gdp)
+        else:
+            indices = vtx_attrib_gen(mesh_gdp, None)
+
     else:
-        # NOTE: We are using arrays here for very fast access since we can
-        #       fetch all the values at once compactly, while faster, this
-        #       will take more RAM than a generator approach. If this becomes
-        #       and issue we can change it.
-        P = array.array("f")
-        P.fromstring(mesh_gdp.pointFloatAttribValuesAsString("P"))
         indices = vtx_attrib_gen(mesh_gdp, None)
-        if N_attrib is not None:
-            N = array.array("f")
-            N.fromstring(mesh_gdp.pointFloatAttribValuesAsString("N"))
-        if S_attrib is not None:
-            S = array.array("f")
-            S.fromstring(mesh_gdp.pointFloatAttribValuesAsString("S"))
-        if uv_attrib is not None:
-            uv = pt_attrib_gen(mesh_gdp, uv_attrib)
+
+    # NOTE: We are using arrays here for very fast access since we can
+    #       fetch all the values at once compactly, while faster, this
+    #       will take more RAM than a generator approach. If this becomes
+    #       and issue we can change it.
+    P = array.array("f")
+    P.fromstring(mesh_gdp.pointFloatAttribValuesAsString("P"))
+    if N_attrib is not None:
+        N = array.array("f")
+        N.fromstring(mesh_gdp.pointFloatAttribValuesAsString("N"))
+    if S_attrib is not None:
+        S = array.array("f")
+        S.fromstring(mesh_gdp.pointFloatAttribValuesAsString("S"))
+    if uv_attrib is not None:
+        uv = array.array("f")
+        uv.fromstring(mesh_gdp.pointFloatAttribValuesAsString("uv"))
 
     mesh_paramset.add(PBRTParam("integer", "indices", indices))
     mesh_paramset.add(PBRTParam("point", "P", P))
@@ -455,8 +466,13 @@ def trianglemesh_params(mesh_gdp, computeN=True):
         # Houdini's uvs are stored as 3 floats, but pbrt only needs two
         # We'll use a generator comprehension to strip off the extra
         # float.
-        uv2 = (x[0:2] for x in uv)
-        mesh_paramset.add(PBRTParam("float", "uv", uv2))
+        uv_x = uv[::3]
+        uv_y = uv[1::3]
+        uv_xy = array.array("f", uv_x + uv_y)
+        uv_xy[::2] = uv_x
+        uv_xy[1::2] = uv_y
+        # uv_xy = (x for i, x in enumerate(uv) if i % 3 != 2)
+        mesh_paramset.add(PBRTParam("float", "uv", uv_xy))
 
     return mesh_paramset
 
@@ -921,13 +937,18 @@ def _convert_nurbs_to_bezier(gdp):
 
     Args:
         gdp (hou.Geometry): Input geo
-    Returns: hou.Geometry: Replaces input gdp
+    Returns: None (Replaces input gdp)
     """
+
+    # The Convert SOP is only available as a Verb in H17.5 and greater
+    if hou.applicationVersion() < HVER_17_5:
+        return
+
     convert_verb = hou.sopNodeTypeCategory().nodeVerb("convert")
     # fromtype: "nurbCurve", totype: "bezCurve"
     convert_verb.setParms({"fromtype": 9, "totype": 2})
     convert_verb.execute(gdp, [gdp])
-    return gdp
+    return
 
 
 def curve_wrangler(gdp, paramset=None, properties=None, override_node=None):
@@ -959,7 +980,7 @@ def curve_wrangler(gdp, paramset=None, properties=None, override_node=None):
     if "splitdepth" in properties:
         shape_paramset.add(properties["splitdepth"].to_pbrt())
 
-    gdp = _convert_nurbs_to_bezier(gdp)
+    _convert_nurbs_to_bezier(gdp)
 
     has_vtx_width = False if gdp.findVertexAttrib("width") is None else True
     has_pt_width = False if gdp.findPointAttrib("width") is None else True
@@ -999,8 +1020,10 @@ def curve_wrangler(gdp, paramset=None, properties=None, override_node=None):
         if prim.intrinsicValue("typename") == "BezierCurve":
             basis = "bezier"
         else:
-            # We should not see these as they are being converted to BezierCurves
-            basis = "bspline"
+            # In Houdini 17.5 and greater we convert everything to bezier,
+            # for Houdini 17 this isn't possible so we instead we skip them
+            # basis = "bspline"
+            continue
         curve_paramset.add(PBRTParam("string", "basis", [basis]))
 
         # SPEED consideration, run inline:

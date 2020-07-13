@@ -3,6 +3,17 @@ from __future__ import print_function, division, absolute_import
 import hou
 import soho
 
+# Baseline Support is Houdini 17.0
+
+# Houdini 17.5:
+#   Supports Convert SOP as a Verb (this allows for the tesselator to be verb chain)
+HVER_17_5 = (17, 5, 0)
+
+# Houdini 18.0:
+#   Changes from a Fuse SOP to a Split Points SOP
+#   Support for getting full vertex lists directly from the gdp
+HVER_18 = (18, 0, 0)
+
 
 class PBRTState(object):
     """Holds the global state of the render session.
@@ -94,6 +105,26 @@ if gdp is not None:
         return
 
     def tesselate_geo(self, geo):
+        if hou.applicationVersion() >= HVER_17_5:
+            return self.tesselate_geo_with_verbs(geo)
+        return self.tesselate_geo_with_network(geo)
+
+    def tesselate_geo_with_verbs(self, gdp):
+
+        # Delete open primitives as PBRT does not support them
+        convert_verb = hou.sopNodeTypeCategory().nodeVerb("convert")
+        convert_verb.setParms({"lodu": 1, "lodv": 1})
+        convert_verb.execute(gdp, [gdp])
+
+        divide_verb = hou.sopNodeTypeCategory().nodeVerb("divide")
+        divide_verb.execute(gdp, [gdp])
+
+        open_prims = [prim for prim in gdp.iterPrims() if not prim.isClosed()]
+        gdp.deletePrims(open_prims)
+
+        return gdp
+
+    def tesselate_geo_with_network(self, geo):
         """Takes an hou.Geometry and returns a tesselated version"""
 
         if self.tesselator is None:
@@ -105,6 +136,10 @@ if gdp is not None:
 
     def create_tesselator(self):
         """Builds a SOP network for the tesselating geometry"""
+
+        if hou.applicationVersion() >= HVER_17_5:
+            return None
+
         # A network is created instead of a chain of Verbs because currently
         # the Convert SOP doesn't exist in Verb form.
         sopnet = hou.node("/out").createNode("sopnet")
