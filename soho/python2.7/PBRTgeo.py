@@ -51,29 +51,6 @@ def vtx_attrib_gen(gdp, attrib):
             yield vtx.point().attribValue(attrib)
 
 
-def prim_pt2vtx_attrib_gen(prim, attrib="P"):
-    """Output point attrib values for a prim
-
-    Args:
-        prim (hou.Prim): Input primitive
-        attrib (hou.Attrib, str): Attribute to evaluate (defaults to 'P')
-
-    Yields:
-        Values of attrib for each point on the prim
-    """
-    # SPEED consideration: use prim.points() instead of .vertices()
-    # to skip a step
-
-    # for vtx in prim.vertices():
-    #     pt = vtx.point()
-    #     yield pt.attribValue(attrib)
-
-    # SPEED consideration: Just have the following inline in the calling
-    # function. This avoids an expensive function call for a 1 liner.
-    # espcially in cases where its called 100,000s of times.
-    return (pt.attribValue(attrib) for pt in prim.points())
-
-
 def linear_vtx_gen(gdp):
     """Generate the linearvertex for input geometry
 
@@ -893,7 +870,7 @@ def nurbs_wrangler(gdp, paramset=None, properties=None, override_node=None):
             # TODO: While the pbrt scene file looks right, the render
             #       is a bit odd. Scaled up geo? Not what I was expecting.
             #       Perhaps compare to RMan.
-            w = prim_pt2vtx_attrib_gen(prim, "Pw")
+            w = [prim_pt.attribValue("Pw") for prim_pt in prim.points()]
             Pw = itertools.izip(P, w)
             nurbs_paramset.add(PBRTParam("float", "Pw", Pw))
 
@@ -1000,8 +977,6 @@ def curve_wrangler(gdp, paramset=None, properties=None, override_node=None):
             continue
         curve_paramset.add(PBRTParam("string", "basis", [basis]))
 
-        # SPEED consideration, run inline:
-        # P = prim_pt2vtx_attrib_gen(prim)
         P = [pt.attribValue("P") for pt in prim.points()]
         curve_paramset.add(PBRTParam("point", "P", P))
 
