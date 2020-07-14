@@ -26,13 +26,6 @@ def mesh_alpha_texs(properties):
     return paramset
 
 
-# The following generators could be simplified if we
-# assume that each gdp will always have 3 verts thus
-# removing the need to constantly fetch the
-# geo:vertexcount. (Could be passed as a parm, and if the
-# default is None, then compute)
-
-
 def vtx_attrib_gen(gdp, attrib):
     """Per prim, per vertex fetching vertex/point values
 
@@ -51,9 +44,6 @@ def vtx_attrib_gen(gdp, attrib):
         for vtx in vtx_per_prim:
             yield vtx.point().number()
     elif attrib.type() == hou.attribType.Vertex:
-        # TODO: Starting with Houdini 17, there is a
-        # hou.Geometry.vertex{Type}AttribValues} that we can use to
-        # fetch all vertex data at once, which is much faster.
         for vtx in vtx_per_prim:
             yield vtx.attribValue(attrib)
     elif attrib.type() == hou.attribType.Point:
@@ -99,28 +89,14 @@ def linear_vtx_gen(gdp):
     Yields:
         Linear vertex number for every vertex
     """
-    # NOTE: This is only used for trianglemeshes we could just do
-    return range(len(gdp.iterPrims()) * 3)
-
+    # NOTE: The follow can be skipped reduced down to a simple range since we
+    #       know that the trianglemeshes will always have 3 verts
     # i = 0
     # for prim in gdp.prims():
     #    for vtx in prim.vertices():
     #        yield i
     #        i += 1
-
-
-def pt_attrib_gen(gdp, attrib):
-    """Fetch point values for input geometry
-
-    Args:
-        gdp (hou.Geometry): Input geometry
-        attrib (hou.Attrib): Attribute to evaluate
-
-    Yields:
-        Values of attrib for each point in geo
-    """
-    for pt in gdp.points():
-        yield pt.attribValue(attrib)
+    return range(len(gdp.iterPrims()) * 3)
 
 
 def prim_transform(prim):
@@ -384,10 +360,6 @@ def trianglemesh_params(mesh_gdp, computeN=True):
 
     faceIndices_attrib = mesh_gdp.findPrimAttrib("faceIndices")
 
-    # TODO: If uv's don't exist, check for 'st', we'll assume uvs are a float[3]
-    #       in Houdini and st are a float[2], or we could just auto-convert as
-    #       needed.
-
     # We need to unique the points if any of the handles
     # to vtx attributes exists.
     to_promote = []
@@ -466,12 +438,14 @@ def trianglemesh_params(mesh_gdp, computeN=True):
         # Houdini's uvs are stored as 3 floats, but pbrt only needs two
         # We'll use a generator comprehension to strip off the extra
         # float.
+        # The follow is the equivalent of
+        # uv_xy = (x for i, x in enumerate(uv) if i % 3 != 2)
+        # but avoids having to do a mod for N times.
         uv_x = uv[::3]
         uv_y = uv[1::3]
         uv_xy = array.array("f", uv_x + uv_y)
         uv_xy[::2] = uv_x
         uv_xy[1::2] = uv_y
-        # uv_xy = (x for i, x in enumerate(uv) if i % 3 != 2)
         mesh_paramset.add(PBRTParam("float", "uv", uv_xy))
 
     return mesh_paramset
@@ -1095,7 +1069,7 @@ def tesselated_wrangler(gdp, paramset=None, properties=None, override_node=None)
 
 def not_supported(gdp, paramset=None, properties=None, override_node=None):
     """Wrangler for unsupported prim types"""
-    num_prims = len(gdp.prims())
+    num_prims = len(gdp.iterPrims())
     prim_name = gdp.iterPrims()[0].intrinsicValue("typename")
     api.Comment("Ignoring %i prims, %s is not supported" % (num_prims, prim_name))
     return
