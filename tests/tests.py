@@ -914,6 +914,9 @@ class TestShapes(TestGeo):
         convert.setRenderFlag(True)
         self.compare_scene()
 
+    @unittest.skipIf(
+        hou.applicationVersion() < (17, 5), "Only supported in Houdini 17.5 and higher"
+    )
     def test_curves_bspline(self):
         grid = self.geo.createNode("grid")
         grid.parmTuple("size").set([2, 2])
