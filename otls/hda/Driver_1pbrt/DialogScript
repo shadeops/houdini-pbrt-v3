@@ -1218,6 +1218,18 @@
             disablewhen "{ soho_outputmode != 0 }"
             parmtag { "spare_category" "SOHO Intrinsics" }
         }
+		parm {
+			name    "soho_spoolrenderoutput"
+			label   "Render Output"
+			type    ordinal
+			default { "off" }
+			help    "Controls whether to capture the render output and add to the node info"
+			menu {
+				"off"   "Don't capture render output"
+				"on"    "Capture render output for graphical apps"
+				"force" "Capture render output for all apps"
+			}
+		}
         groupsimple {
             name    "soho_config"
             label   "Soho Config"
