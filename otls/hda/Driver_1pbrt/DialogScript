@@ -518,20 +518,6 @@
         export  none
     }
     parm {
-        name    "renderpreview"
-        baseparm
-        label   "Render to MPlay"
-        joinnext
-        export  none
-    }
-    parm {
-        name    "executebackground"
-        baseparm
-        label   "Render to Disk in Background"
-        joinnext
-        export  none
-    }
-    parm {
         name    "renderdialog"
         baseparm
         label   "Controls..."
