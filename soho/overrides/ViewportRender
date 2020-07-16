@@ -1,0 +1,13 @@
+#ifndef __PBRT_SOHO_VIEWPORTRENDER_OVERRIDES__
+#define __PBRT_SOHO_VIEWPORTRENDER_OVERRIDES__
+
+#include "$HFS/houdini/soho/overrides/ViewportRender"
+
+{
+	override.inherit	CommonView
+	override.name	PBRT
+	
+	filename	[ "viewport.exr" ]
+}
+
+#endif
