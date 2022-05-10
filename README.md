@@ -1,8 +1,14 @@
+:warning: *Archived Repo* :warning: 
+===========================
+
+With the release of [pbrt-v4](https://github.com/mmp/pbrt-v4) and [houdini-pbrt-v4](https://github.com/shadeops/houdini-pbrt-v4) this exporter is no longer being maintained. Additionally when developing the exporter for houdini-pbrt-v4 various bugs were found with this release that were not backported. If there is a compelling reason to continue to support pbrt-v3 please log an issue under the houdini-pbrt-v4 repo.
+
+
 Houdini Exporter for pbrt Version 3
 ===================================
 
-**houdini-pbrt-v3** for [SideFX's Software Houdini](http://www.sidefx.com) is a scene exporter for the
-[pbrt-v3 renderer](http://pbrt.org/). The goal is to provide complete coverage for the features avaiable within pbrt-v3 through
+**houdini-pbrt-v3** for [SideFX's Software Houdini](https://www.sidefx.com) is a scene exporter for the
+[pbrt-v3 renderer](https://pbrt.org/). The goal is to provide complete coverage for the features avaiable within pbrt-v3 through
 an interface familiar with Houdini user.
 
 Motivation
